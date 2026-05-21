@@ -20,7 +20,7 @@ export default function PeoplePage() {
   return (
     <main className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-black text-gray-900 font-[family-name:var(--font-playfair)]">People</h1>
+        <h1 className="text-5xl font-extrabold uppercase tracking-tight font-[family-name:var(--font-barlow)]" style={{ color: "#f5f5f0" }}>People</h1>
       </div>
 
       <input
@@ -28,7 +28,8 @@ export default function PeoplePage() {
         placeholder="Search by name, skill, or discipline..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm mb-6 focus:outline-none focus:ring-2 focus:ring-green-700"
+        className="w-full rounded-full px-5 py-2.5 text-sm mb-6 focus:outline-none focus:ring-2 focus:ring-green-700"
+        style={{ backgroundColor: "#132d1c", border: "1px solid #1e4430", color: "#f5f5f0" }}
       />
 
       {filteredPeople.length === 0 ? (

@@ -22,10 +22,10 @@ export default function DisciplineFilterBar({
       {/* All pill */}
       <button
         onClick={onToggleAll}
-        className={`shrink-0 px-3 py-1 rounded-full text-sm font-medium border transition-colors ${
+        className={`shrink-0 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border transition-colors ${
           allActive
             ? "bg-green-700 text-white border-green-700"
-            : "bg-white text-green-700 border-green-700"
+            : "border-green-700 text-green-400"
         }`}
       >
         All
@@ -39,10 +39,10 @@ export default function DisciplineFilterBar({
           <button
             key={discipline}
             onClick={() => onToggle(discipline)}
-            className={`shrink-0 px-3 py-1 rounded-full text-sm font-medium border transition-colors ${
+            className={`shrink-0 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border transition-colors ${
               isActive
                 ? `${colors.tailwindBg} ${colors.tailwindText} border-transparent`
-                : `bg-white border-current`
+                : `bg-transparent border-current`
             }`}
             style={!isActive ? { color: colors.hex, borderColor: colors.hex } : {}}
           >

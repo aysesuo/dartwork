@@ -3,10 +3,8 @@ import { ArrowRight, CalendarRange } from "lucide-react";
 import ProjectCard from "@/components/project/ProjectCard";
 import EventCard from "@/components/events/EventCard";
 import EventDotsMonth from "@/components/home/EventDotsMonth";
-import PersonCard from "@/components/people/PersonCard";
 import projectsData from "@/data/projects.json";
 import eventsData from "@/data/events.json";
-import peopleData from "@/data/people.json";
 import { DartworkEvent } from "@/lib/calendarAdapter";
 
 const RECENT_PROJECTS = [...projectsData]
@@ -30,20 +28,18 @@ const MONTH_ANCHOR =
       )
     : new Date();
 
-const FEATURED_PEOPLE = peopleData.slice(0, 3);
-
 const GREEN = "#00693E";
 
 export default function HomePage() {
   return (
     <main className="max-w-5xl mx-auto px-4 py-10 sm:py-14">
       {/* Hero */}
-      <section className="mb-16 text-center sm:text-left">
-        <h1 className="text-4xl font-black tracking-tight text-gray-900 sm:text-5xl leading-tight font-[family-name:var(--font-playfair)]">
+      <section className="mb-20 pt-6 text-center sm:text-left">
+        <h1 className="text-6xl font-extrabold tracking-tight sm:text-8xl leading-[1.0] font-[family-name:var(--font-barlow)] uppercase">
           Build your{" "}
-          <span className="text-gray-900">d</span><span style={{ color: GREEN }}>Art</span><span className="text-gray-900">work</span>
+          <span style={{ color: "#AAFF47" }}>d</span><span style={{ color: "#FF6B35" }} className="italic font-[family-name:var(--font-playfair)]">Art</span><span style={{ color: "#AAFF47" }}>work</span>
         </h1>
-        <p className="mt-4 text-lg text-gray-500 max-w-2xl sm:mx-0 mx-auto">
+        <p className="mt-5 text-base max-w-md sm:mx-0 mx-auto" style={{ color: "#7fa88a" }}>
           Find projects to join, meet talented peers, and find what&apos;s
           happening on campus.
         </p>
@@ -51,15 +47,16 @@ export default function HomePage() {
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:items-start">
           <Link
             href="/projects"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-white text-sm font-semibold transition-opacity hover:opacity-90"
-            style={{ backgroundColor: "#C96040" }}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-white text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-90"
+            style={{ backgroundColor: "#FF6B35" }}
           >
             Browse Projects
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
           <Link
             href="/events"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold border-2 border-gray-700 bg-transparent text-gray-700 hover:bg-black/5 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest border-2 bg-transparent transition-colors hover:bg-white/10"
+            style={{ borderColor: "#7fa88a", color: "#f5f5f0" }}
           >
             <CalendarRange className="h-4 w-4" aria-hidden="true" />
             See the Calendar
@@ -83,25 +80,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* People */}
-      <section className="mb-14">
-        <SectionHeading title="People" href="/people" linkLabel="All people" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {FEATURED_PEOPLE.map((person) => (
-            <Link
-              key={person.id}
-              href="/people"
-              className="rounded-xl transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
-            >
-              <PersonCard person={person} showContact={false} />
-            </Link>
-          ))}
-        </div>
-      </section>
-
       {/* Coming Up + Mini Calendar */}
       <section>
-        <SectionHeading title="Coming Up" href="/events" linkLabel="All events" />
+        <SectionHeading title="Events Coming Up" href="/events" linkLabel="All events" />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-2">
             {UPCOMING_EVENTS.length > 0 ? (
@@ -148,10 +129,11 @@ function SectionHeading({
 }) {
   return (
     <div className="mb-4 flex items-end justify-between">
-      <h2 className="text-2xl font-black tracking-tight text-gray-900 font-[family-name:var(--font-playfair)]">{title}</h2>
+      <h2 className="text-2xl font-black tracking-tight font-[family-name:var(--font-playfair)]" style={{ color: "#f5f5f0" }}>{title}</h2>
       <Link
         href={href}
-        className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+        className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest transition-colors hover:opacity-70"
+        style={{ color: "#FF6B35" }}
       >
         {linkLabel}
         <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />

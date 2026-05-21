@@ -23,7 +23,7 @@ export default function EventCard({ event }: EventCardProps) {
     : null;
 
   return (
-    <div className="bg-white rounded-2xl border border-amber-200 p-5 flex flex-col gap-3 hover:shadow-md transition-shadow h-full">
+    <div className="rounded-3xl border p-6 flex flex-col gap-3 hover:shadow-lg transition-shadow h-full" style={{ backgroundColor: "#132d1c", borderColor: "#1e4430" }}>
       <div className="flex flex-wrap gap-1">
         {event.disciplines.map((d) => {
           const colors = getDisciplineColor(d);
@@ -38,22 +38,22 @@ export default function EventCard({ event }: EventCardProps) {
         })}
       </div>
 
-      <h3 className="font-semibold text-gray-900 text-lg leading-snug">
+      <h3 className="font-bold text-xl leading-snug uppercase tracking-tight font-[family-name:var(--font-barlow)]" style={{ color: "#f5f5f0" }}>
         {event.title}
       </h3>
 
-      <p className="text-sm font-medium text-gray-700">
+      <p className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: "#9db5a5" }}>
         {dateStr} · {timeStr}
         {endTimeStr ? ` – ${endTimeStr}` : ""}
       </p>
 
-      <p className="text-sm text-gray-500">{event.location}</p>
+      <p className="text-sm" style={{ color: "#7fa88a" }}>{event.location}</p>
 
-      <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
+      <p className="text-sm leading-relaxed line-clamp-3" style={{ color: "#9db5a5" }}>
         {event.description}
       </p>
 
-      <p className="mt-auto pt-2 border-t border-gray-100 text-xs text-gray-400">
+      <p className="mt-auto pt-2 border-t text-[10px] uppercase tracking-widest font-semibold" style={{ borderColor: "#1e4430", color: "#7fa88a" }}>
         by {event.organizer}
       </p>
     </div>

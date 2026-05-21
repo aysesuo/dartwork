@@ -48,7 +48,7 @@ export default function EventsPage() {
   return (
     <main className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-black text-gray-900 font-[family-name:var(--font-playfair)]">Events</h1>
+        <h1 className="text-5xl font-extrabold uppercase tracking-tight font-[family-name:var(--font-barlow)]" style={{ color: "#f5f5f0" }}>Events</h1>
         <div className="flex items-center gap-2">
           <div className="flex border border-gray-200 rounded-lg overflow-hidden text-sm">
             <button
@@ -78,8 +78,8 @@ export default function EventsPage() {
             href="https://tally.so/r/VL4QEN"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 text-white rounded-full text-sm font-semibold transition-opacity hover:opacity-90"
-            style={{ backgroundColor: "#C96040" }}
+            className="px-4 py-2 text-white rounded-full text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-90"
+            style={{ backgroundColor: "#FF6B35" }}
           >
             Post an Event
           </a>
@@ -188,7 +188,7 @@ export default function EventsPage() {
               <button
                 onClick={() => downloadIcs(selectedEvent)}
                 className="px-4 py-2 text-white rounded-full text-sm font-semibold transition-opacity hover:opacity-90"
-                style={{ backgroundColor: "#C96040" }}
+                style={{ backgroundColor: "#FF6B35" }}
               >
                 Add to Calendar
               </button>

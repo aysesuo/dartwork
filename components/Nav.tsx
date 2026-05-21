@@ -21,17 +21,16 @@ export function DesktopNav() {
 
   return (
     <nav
-      className="hidden md:block border-b border-amber-200 sticky top-0 z-40"
-      style={{ backgroundColor: "#F9F6D2" }}
+      className="hidden md:block sticky top-0 z-40"
+      style={{ backgroundColor: "#0a1f14", borderBottom: "1px solid #1e4430" }}
       aria-label="Primary"
     >
       <div className="max-w-5xl mx-auto flex h-14 items-center justify-between px-4">
         <Link
           href="/"
-          className="text-xl font-black tracking-tight font-[family-name:var(--font-playfair)]"
-          style={{ color: GREEN }}
+          className="text-xl font-black tracking-tight font-[family-name:var(--font-barlow)] uppercase"
         >
-          d<span className="text-gray-900">Art</span>work
+          <span style={{ color: "#AAFF47" }}>d</span><span style={{ color: "#FF6B35" }} className="italic font-[family-name:var(--font-playfair)]">Art</span><span style={{ color: "#AAFF47" }}>work</span>
         </Link>
 
         <ul className="flex items-center gap-1">
@@ -42,10 +41,10 @@ export function DesktopNav() {
                 <Link
                   href={href}
                   aria-current={active ? "page" : undefined}
-                  className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  className={`rounded-md px-3 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
                     active
                       ? "text-white"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                      : "text-gray-500 hover:text-white"
                   }`}
                   style={active ? { backgroundColor: GREEN } : undefined}
                 >
@@ -65,8 +64,8 @@ export function MobileNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-amber-200 md:hidden"
-      style={{ backgroundColor: "#F9F6D2" }}
+      className="fixed inset-x-0 bottom-0 z-50 md:hidden"
+      style={{ backgroundColor: "#0a1f14", borderTop: "1px solid #1e4430" }}
       aria-label="Primary"
     >
       <ul className="flex">
@@ -77,8 +76,8 @@ export function MobileNav() {
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`flex flex-col items-center gap-0.5 py-2.5 text-xs font-medium transition-colors ${
-                  active ? "" : "text-gray-500 hover:text-gray-900"
+                className={`flex flex-col items-center gap-0.5 py-2.5 text-[9px] font-bold uppercase tracking-widest transition-colors ${
+                  active ? "" : "text-gray-500 hover:text-white"
                 }`}
                 style={active ? { color: GREEN } : undefined}
               >
