@@ -1,0 +1,50 @@
+[
+  {
+    "id": "proj-001",
+    "title": "Ledyard: A Short Film",
+    "creatorName": "Dartmouth Student",
+    "creatorEmail": "student.30@dartmouth.edu",
+    "discipline": "Film",
+    "tags": ["short film", "documentary", "outdoor", "Dartmouth life"],
+    "positionsNeeded": ["Cinematographer", "Sound Designer", "Editor"],
+    "description": "A 15-minute documentary short following three members of the Ledyard Canoe Club through a season on the Connecticut River. Shooting begins in spring term. Looking for collaborators passionate about outdoor storytelling and willing to wake up before sunrise.",
+    "mediaUrl": null,
+    "datePosted": "2025-01-12"
+  },
+  {
+    "id": "proj-002",
+    "title": "Hop Stop — Original Musical",
+    "creatorName": "Dartmouth Student",
+    "creatorEmail": "student.30@dartmouth.edu",
+    "discipline": "Theater",
+    "tags": ["musical", "original", "Hopkins Center", "performance"],
+    "positionsNeeded": ["Music Director", "Choreographer", "Stage Manager"],
+    "description": "An original musical set in and around the Hopkins Center during finals week. Script is written, songs are drafted. Looking for a music director to arrange and a choreographer to bring it to life for a spring production.",
+    "mediaUrl": null,
+    "datePosted": "2025-01-18"
+  },
+  {
+    "id": "proj-003",
+    "title": "Unseen Dartmouth — Photo Series",
+    "creatorName": "Dartmouth Student",
+    "creatorEmail": "student.30@dartmouth.edu",
+    "discipline": "Photography",
+    "tags": ["photography", "documentary", "campus", "social justice"],
+    "positionsNeeded": ["Co-Photographer", "Writer/Editor"],
+    "description": "A photo essay series documenting campus spaces and communities that rarely appear in official Dartmouth media. Looking for a co-photographer with a documentary eye and a writer to develop captions and narrative text.",
+    "mediaUrl": null,
+    "datePosted": "2025-01-20"
+  },
+  {
+    "id": "proj-004",
+    "title": "Midnight EP",
+    "creatorName": "Dartmouth Student",
+    "creatorEmail": "student.30@dartmouth.edu",
+    "discipline": "Music",
+    "tags": ["indie", "EP", "recording", "original music"],
+    "positionsNeeded": ["Bassist", "Mixing Engineer"],
+    "description": "Recording a 5-track indie folk EP this term in the Rauner recording studio. Three tracks are fully arranged, two are still in progress. Need a bassist for studio sessions and someone who can mix the final tracks.",
+    "mediaUrl": null,
+    "datePosted": "2025-02-01"
+  }
+]

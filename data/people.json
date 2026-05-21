@@ -1,0 +1,83 @@
+[
+  {
+    "id": "person-001",
+    "name": "Dartmouth Student",
+    "disciplines": [
+      "Film",
+      "Photography"
+    ],
+    "skills": [
+      "Cinematography",
+      "Final Cut Pro",
+      "Documentary Filmmaking"
+    ],
+    "bio": "Junior from San Francisco. I make films about people and places that deserve more attention.",
+    "contactEmail": "student.30@dartmouth.edu",
+    "portfolioUrl": null
+  },
+  {
+    "id": "person-002",
+    "name": "Dartmouth Student",
+    "disciplines": [
+      "Theater",
+      "Music"
+    ],
+    "skills": [
+      "Playwriting",
+      "Music Composition",
+      "Directing"
+    ],
+    "bio": "Senior double majoring in Theater and Music. I write musicals.",
+    "contactEmail": "student.30@dartmouth.edu",
+    "portfolioUrl": null
+  },
+  {
+    "id": "person-003",
+    "name": "Dartmouth Student",
+    "disciplines": [
+      "Photography",
+      "Visual Art"
+    ],
+    "skills": [
+      "Documentary Photography",
+      "Lightroom",
+      "Darkroom Printing"
+    ],
+    "bio": "Sophomore studying sociology and visual art. My work focuses on community and belonging.",
+    "contactEmail": "student.30@dartmouth.edu",
+    "portfolioUrl": null
+  },
+  {
+    "id": "person-004",
+    "name": "Dartmouth Student",
+    "disciplines": [
+      "Music"
+    ],
+    "skills": [
+      "Guitar",
+      "Songwriting",
+      "Logic Pro",
+      "Vocals"
+    ],
+    "bio": "Junior from Vermont. Indie folk musician recording my first EP this term.",
+    "contactEmail": "student.30@dartmouth.edu",
+    "portfolioUrl": null
+  },
+  {
+    "id": "person-005",
+    "name": "Dartmouth Student",
+    "disciplines": [
+      "UX Design",
+      "Visual Art"
+    ],
+    "skills": [
+      "Figma",
+      "User Research",
+      "Illustration",
+      "Branding"
+    ],
+    "bio": "Senior studying cognitive science with a design focus. I work at the intersection of technology and creativity.",
+    "contactEmail": "student.30@dartmouth.edu",
+    "portfolioUrl": null
+  }
+]

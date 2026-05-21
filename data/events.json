@@ -1,0 +1,62 @@
+[
+  {
+    "id": "event-001",
+    "title": "Dartmouth Film Society Spring Screening",
+    "organizer": "Dartmouth Film Society",
+    "organizerEmail": "student.30@dartmouth.edu",
+    "location": "Loew Auditorium, Black Family Visual Arts Center",
+    "dateTime": "2025-04-04T19:00:00",
+    "endDateTime": "2025-04-04T21:30:00",
+    "description": "Spring term kickoff screening featuring short films made by Dartmouth students over winter term. Q&A with filmmakers to follow. Free and open to all.",
+    "disciplines": ["Film"],
+    "imageUrl": null
+  },
+  {
+    "id": "event-002",
+    "title": "Open Mic Night — Baker Tower Room",
+    "organizer": "Dartmouth Music Collective",
+    "organizerEmail": "student.30@dartmouth.edu",
+    "location": "Baker Tower Room",
+    "dateTime": "2025-04-10T20:00:00",
+    "endDateTime": "2025-04-10T22:00:00",
+    "description": "Monthly open mic night open to all performers — musicians, poets, comedians, spoken word artists. Sign up at the door. 5 minute slots, no experience required.",
+    "disciplines": ["Music", "Writing", "Theater"],
+    "imageUrl": null
+  },
+  {
+    "id": "event-003",
+    "title": "Senior Art Thesis Exhibition Opening",
+    "organizer": "Dartmouth Studio Art Department",
+    "organizerEmail": "student.30@dartmouth.edu",
+    "location": "Jaffe-Friede Gallery, Hopkins Center",
+    "dateTime": "2025-04-17T17:00:00",
+    "endDateTime": "2025-04-17T20:00:00",
+    "description": "Opening reception for the annual senior thesis exhibition featuring work by graduating studio art majors. Meet the artists, see the work, free refreshments.",
+    "disciplines": ["Visual Art", "Photography"],
+    "imageUrl": null
+  },
+  {
+    "id": "event-004",
+    "title": "Hop Stop Musical — Workshop Reading",
+    "organizer": "Dartmouth Student",
+    "organizerEmail": "student.30@dartmouth.edu",
+    "location": "Bentley Theater, Hopkins Center",
+    "dateTime": "2025-04-24T18:30:00",
+    "endDateTime": "2025-04-24T20:00:00",
+    "description": "Workshop reading of Hop Stop, an original musical set during Dartmouth finals week. Come hear new songs and give feedback that will shape the full production next fall.",
+    "disciplines": ["Theater", "Music"],
+    "imageUrl": null
+  },
+  {
+    "id": "event-005",
+    "title": "Design + Tech Meetup",
+    "organizer": "Dartmouth Design Club",
+    "organizerEmail": "student.30@dartmouth.edu",
+    "location": "Tuck School Atrium",
+    "dateTime": "2025-05-01T17:00:00",
+    "endDateTime": "2025-05-01T19:00:00",
+    "description": "Informal meetup for students interested in design, UX, and technology. Lightning talks from 3 students, then open networking. Great for finding collaborators across disciplines.",
+    "disciplines": ["UX Design", "Visual Art"],
+    "imageUrl": null
+  }
+]
