@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Briefcase, Users, Calendar } from "lucide-react";
+import { Briefcase, Users, Calendar, UserCircle } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 
 const GREEN = "#00693E";
 
@@ -18,6 +19,7 @@ function isActive(pathname: string, href: string) {
 
 export function DesktopNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
 
   return (
     <nav
@@ -33,27 +35,39 @@ export function DesktopNav() {
           <span style={{ color: "#AAFF47" }}>d</span><span style={{ color: "#FF6B35" }} className="italic font-[family-name:var(--font-playfair)]">Art</span><span style={{ color: "#AAFF47" }}>work</span>
         </Link>
 
-        <ul className="flex items-center gap-1">
-          {NAV_ITEMS.map(({ href, label }) => {
-            const active = isActive(pathname, href);
-            return (
-              <li key={href}>
-                <Link
-                  href={href}
-                  aria-current={active ? "page" : undefined}
-                  className={`rounded-md px-3 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
-                    active
-                      ? "text-white"
-                      : "text-gray-500 hover:text-white"
-                  }`}
-                  style={active ? { backgroundColor: GREEN } : undefined}
-                >
-                  {label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="flex items-center gap-1">
+          <ul className="flex items-center gap-1">
+            {NAV_ITEMS.map(({ href, label }) => {
+              const active = isActive(pathname, href);
+              return (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    aria-current={active ? "page" : undefined}
+                    className={`rounded-md px-3 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
+                      active ? "text-white" : "text-gray-500 hover:text-white"
+                    }`}
+                    style={active ? { backgroundColor: GREEN } : undefined}
+                  >
+                    {label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          {user && (
+            <Link
+              href={`/profile/${user.uid}`}
+              aria-label="My profile"
+              className={`ml-2 rounded-md p-2 transition-colors ${
+                isActive(pathname, "/profile") ? "text-white" : "text-gray-500 hover:text-white"
+              }`}
+              style={isActive(pathname, "/profile") ? { backgroundColor: GREEN } : undefined}
+            >
+              <UserCircle className="h-5 w-5" aria-hidden="true" />
+            </Link>
+          )}
+        </div>
       </div>
     </nav>
   );
@@ -61,6 +75,14 @@ export function DesktopNav() {
 
 export function MobileNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  const mobileItems = [
+    ...NAV_ITEMS,
+    ...(user
+      ? [{ href: `/profile/${user.uid}`, label: "Profile", Icon: UserCircle } as const]
+      : []),
+  ];
 
   return (
     <nav
@@ -69,7 +91,7 @@ export function MobileNav() {
       aria-label="Primary"
     >
       <ul className="flex">
-        {NAV_ITEMS.map(({ href, label, Icon }) => {
+        {mobileItems.map(({ href, label, Icon }) => {
           const active = isActive(pathname, href);
           return (
             <li key={href} className="flex-1">

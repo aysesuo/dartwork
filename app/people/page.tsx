@@ -3,6 +3,7 @@
 import { useState } from "react";
 import peopleData from "@/data/people.json";
 import PersonCard from "@/components/people/PersonCard";
+import AuthGuard from "@/components/auth/AuthGuard";
 
 export default function PeoplePage() {
   const [search, setSearch] = useState("");
@@ -18,6 +19,7 @@ export default function PeoplePage() {
   });
 
   return (
+    <AuthGuard>
     <main className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-5xl font-extrabold uppercase tracking-tight font-[family-name:var(--font-barlow)]" style={{ color: "#f5f5f0" }}>People</h1>
@@ -44,5 +46,6 @@ export default function PeoplePage() {
         </div>
       )}
     </main>
+    </AuthGuard>
   );
 }

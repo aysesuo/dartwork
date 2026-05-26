@@ -4,6 +4,7 @@ import { useState } from "react";
 import projectsData from "@/data/projects.json";
 import ProjectCard from "@/components/project/ProjectCard";
 import DisciplineFilterBar from "@/components/shared/DisciplineFilterBar";
+import AuthGuard from "@/components/auth/AuthGuard";
 import { DISCIPLINES } from "@/lib/disciplines";
 
 export default function ProjectsPage() {
@@ -31,6 +32,7 @@ export default function ProjectsPage() {
   }
 
   return (
+    <AuthGuard>
     <main className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-5xl font-extrabold uppercase tracking-tight font-[family-name:var(--font-barlow)]" style={{ color: "#f5f5f0" }}>Projects</h1>
@@ -48,5 +50,6 @@ export default function ProjectsPage() {
         </div>
       )}
     </main>
+    </AuthGuard>
   );
 }

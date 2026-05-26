@@ -6,7 +6,7 @@ import eventsData from "@/data/events.json";
 import EventCard from "@/components/events/EventCard";
 import CalendarView from "@/components/events/CalendarView";
 import DisciplineFilterBar from "@/components/shared/DisciplineFilterBar";
-import { DISCIPLINES, getDisciplineColor } from "@/lib/disciplines";
+import { DISCIPLINES } from "@/lib/disciplines";
 import { DartworkEvent } from "@/lib/calendarAdapter";
 import { downloadIcs } from "@/lib/exportIcs";
 
@@ -46,7 +46,7 @@ export default function EventsPage() {
   }
 
   return (
-    <main className="max-w-5xl mx-auto px-4 py-8">
+    <main className="events-bg max-w-5xl mx-auto px-4 py-8 font-[family-name:var(--font-special-elite)]">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-5xl font-extrabold uppercase tracking-tight font-[family-name:var(--font-barlow)]" style={{ color: "#f5f5f0" }}>Events</h1>
         <div className="flex items-center gap-2">
@@ -100,16 +100,16 @@ export default function EventsPage() {
             No events match your filters.
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredEvents.map((event) => (
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-x-5">
+            {filteredEvents.map((event, i) => (
               <button
                 key={event.id}
                 type="button"
                 onClick={() => setSelectedEvent(event)}
-                className="rounded-xl text-left hover:-translate-y-0.5 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
+                className="block w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]"
                 aria-label={`Open details for ${event.title}`}
               >
-                <EventCard event={event} />
+                <EventCard event={event} index={i} />
               </button>
             ))}
           </div>
@@ -120,78 +120,72 @@ export default function EventsPage() {
 
       {selectedEvent && (
         <div
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          className="modal-backdrop fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
           onClick={() => setSelectedEvent(null)}
         >
           <div
-            className="bg-white rounded-xl max-w-lg w-full p-6 flex flex-col gap-4 max-h-[90vh] overflow-y-auto"
+            className="max-w-lg w-full max-h-[90vh] overflow-y-auto font-[family-name:var(--font-special-elite)]"
+            style={{ transform: "rotate(-0.5deg)" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex flex-wrap gap-1">
-                {selectedEvent.disciplines.map((d) => {
-                  const colors = getDisciplineColor(d);
-                  return (
-                    <span
-                      key={d}
-                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${colors.tailwindBg} ${colors.tailwindText}`}
-                    >
-                      {d}
-                    </span>
-                  );
-                })}
+            <div className="border-2 border-[#2a2a2a] bg-[#f0ead8] text-[#1a1a1a] p-6 flex flex-col gap-4">
+              {/* Header row */}
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-[10px] uppercase tracking-widest opacity-60">
+                  {selectedEvent.disciplines.join(" · ")}
+                </span>
+                <button
+                  onClick={() => setSelectedEvent(null)}
+                  className="text-[#1a1a1a] hover:opacity-60 text-2xl leading-none shrink-0"
+                  aria-label="Close"
+                >
+                  ×
+                </button>
               </div>
-              <button
-                onClick={() => setSelectedEvent(null)}
-                className="text-gray-400 hover:text-gray-600 text-xl leading-none shrink-0"
-                aria-label="Close"
-              >
-                ×
-              </button>
-            </div>
 
-            <h2 className="font-semibold text-xl text-gray-900">
-              {selectedEvent.title}
-            </h2>
+              {/* Headline */}
+              <h2 className="font-bold uppercase text-xl text-center border-y-2 border-[#2a2a2a] py-2 leading-tight tracking-wide">
+                {selectedEvent.title}
+              </h2>
 
-            <div className="text-sm text-gray-600 space-y-1">
-              <p className="font-medium">
-                {new Date(selectedEvent.dateTime).toLocaleDateString("en-US", {
-                  weekday: "long",
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-                {" · "}
-                {new Date(selectedEvent.dateTime).toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                })}
-                {selectedEvent.endDateTime
-                  ? ` – ${new Date(selectedEvent.endDateTime).toLocaleTimeString(
-                      "en-US",
-                      { hour: "numeric", minute: "2-digit" }
-                    )}`
-                  : ""}
+              {/* Date / time / location */}
+              <div className="text-[11px] uppercase tracking-widest opacity-70 space-y-0.5">
+                <p>
+                  {(() => {
+                    const d = new Date(selectedEvent.dateTime);
+                    const s = ["th","st","nd","rd"];
+                    const v = d.getDate() % 100;
+                    const ord = d.getDate() + (s[(v-20)%10] ?? s[v] ?? s[0]);
+                    return `${d.toLocaleDateString("en-US",{weekday:"long"})}, ${d.toLocaleDateString("en-US",{month:"long"})} ${ord}`;
+                  })()}
+                  {" · "}
+                  {new Date(selectedEvent.dateTime).toLocaleTimeString("en-US", {
+                    hour: "numeric", minute: "2-digit",
+                  })}
+                  {selectedEvent.endDateTime
+                    ? ` – ${new Date(selectedEvent.endDateTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`
+                    : ""}
+                </p>
+                <p>{selectedEvent.location}</p>
+              </div>
+
+              {/* Body */}
+              <p className="text-sm leading-relaxed" style={{ textAlign: "justify" }}>
+                {selectedEvent.description}
               </p>
-              <p className="text-gray-500">{selectedEvent.location}</p>
-            </div>
 
-            <p className="text-sm text-gray-600 leading-relaxed">
-              {selectedEvent.description}
-            </p>
-
-            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-              <p className="text-xs text-gray-400">
-                by {selectedEvent.organizer}
-              </p>
-              <button
-                onClick={() => downloadIcs(selectedEvent)}
-                className="px-4 py-2 text-white rounded-full text-sm font-semibold transition-opacity hover:opacity-90"
-                style={{ backgroundColor: "#FF6B35" }}
-              >
-                Add to Calendar
-              </button>
+              {/* Footer */}
+              <div className="flex items-center justify-between pt-3 border-t border-[#2a2a2a]">
+                <p className="text-[10px] uppercase tracking-widest opacity-60 italic normal-case">
+                  {selectedEvent.organizer}
+                </p>
+                <button
+                  onClick={() => downloadIcs(selectedEvent)}
+                  className="px-4 py-1.5 text-[#f0ead8] text-[11px] uppercase tracking-widest font-bold border border-[#2a2a2a] bg-[#2a2a2a] hover:bg-[#1a1a1a] transition-colors"
+                >
+                  Add to Calendar
+                </button>
+              </div>
             </div>
           </div>
         </div>

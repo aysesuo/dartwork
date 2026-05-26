@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Playfair_Display, Barlow_Condensed, Barlow } from "next/font/google";
+import { Geist_Mono, Playfair_Display, Barlow_Condensed, Barlow, Special_Elite } from "next/font/google";
 import { DesktopNav, MobileNav } from "@/components/Nav";
 import "./globals.css";
 
@@ -26,6 +26,12 @@ const barlowCondensed = Barlow_Condensed({
   weight: ["700", "800"],
 });
 
+const specialElite = Special_Elite({
+  variable: "--font-special-elite",
+  subsets: ["latin"],
+  weight: "400",
+});
+
 export const metadata: Metadata = {
   title: {
     default: "dArtwork",
@@ -43,7 +49,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${barlow.variable} ${geistMono.variable} ${playfair.variable} ${barlowCondensed.variable} h-full antialiased`}
+      className={`${barlow.variable} ${geistMono.variable} ${playfair.variable} ${barlowCondensed.variable} ${specialElite.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col" style={{ backgroundColor: "#0a1f14", color: "#f5f5f0" }}>
         <DesktopNav />
