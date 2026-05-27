@@ -40,8 +40,8 @@ export default function EventDotsMonth({
   const today = new Date();
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4">
-      <h3 className="mb-3 text-sm font-semibold text-gray-900">
+    <div className="rounded-3xl border p-4" style={{ backgroundColor: "#132d1c", borderColor: "#1e4430" }}>
+      <h3 className="mb-3 text-sm font-semibold" style={{ color: "#f5f5f0" }}>
         {format(monthAnchor, "MMMM yyyy")}
       </h3>
 
@@ -49,7 +49,7 @@ export default function EventDotsMonth({
         {WEEKDAY_LABELS.map((label, i) => (
           <div
             key={`${label}-${i}`}
-            className="pb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400"
+            className="pb-1 text-[10px] font-semibold uppercase tracking-wide" style={{ color: "#7fa88a" } as React.CSSProperties}
             aria-hidden="true"
           >
             {label}
@@ -71,8 +71,9 @@ export default function EventDotsMonth({
                   : format(day, "MMMM d")
               }
               className={`flex aspect-square flex-col items-center justify-center rounded-md text-xs ${
-                inMonth ? "text-gray-800" : "text-gray-300"
-              } ${isToday ? "bg-green-50 font-semibold" : ""}`}
+                inMonth ? "" : "opacity-30"
+              } ${isToday ? "font-semibold" : ""}`}
+              style={{ color: inMonth ? "#f5f5f0" : "#7fa88a", backgroundColor: isToday ? "#1e4430" : undefined }}
             >
               <span>{format(day, "d")}</span>
               {dayEvents.length > 0 && (
