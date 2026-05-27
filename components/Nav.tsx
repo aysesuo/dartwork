@@ -28,12 +28,14 @@ export function DesktopNav() {
       aria-label="Primary"
     >
       <div className="max-w-5xl mx-auto flex h-14 items-center justify-between px-4">
-        <Link
-          href="/"
-          className="text-xl font-black tracking-tight font-[family-name:var(--font-barlow)] uppercase"
-        >
-          <span style={{ color: "#AAFF47" }}>d</span><span style={{ color: "#FF6B35" }} className="italic font-[family-name:var(--font-playfair)]">Art</span><span style={{ color: "#AAFF47" }}>work</span>
-        </Link>
+        {pathname !== "/" && (
+          <Link
+            href="/"
+            className="text-xl font-black tracking-tight font-[family-name:var(--font-barlow)] uppercase"
+          >
+            <span style={{ color: "#AAFF47" }}>d</span><span style={{ color: "#FF6B35" }} className="italic font-[family-name:var(--font-playfair)]">Art</span><span style={{ color: "#AAFF47" }}>work</span>
+          </Link>
+        )}
 
         <div className="flex items-center gap-1">
           <ul className="flex items-center gap-1">
