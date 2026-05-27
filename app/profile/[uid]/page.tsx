@@ -72,7 +72,11 @@ function ProfileContent() {
         if (!profileRes.ok)            { setError("Could not load profile"); return; }
 
         setProfile(await profileRes.json());
-        if (projectsRes.ok) setProjects(await projectsRes.json());
+        if (projectsRes.ok) {
+          setProjects(await projectsRes.json());
+        } else {
+          console.error("Projects fetch failed:", projectsRes.status, await projectsRes.text());
+        }
       } catch {
         setError("Network error — please refresh");
       } finally {

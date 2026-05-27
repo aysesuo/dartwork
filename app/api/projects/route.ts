@@ -34,17 +34,24 @@ export async function GET(request: NextRequest) {
     .orderBy("createdAt", "desc");
 
   if (filterUid) {
+    // Single-field query (no composite index needed); filter showOnProfile in code
     query = adminDb
       .collection("projects")
       .where("creatorUid", "==", filterUid)
-      .where("showOnProfile", "==", true)
       .orderBy("createdAt", "desc");
   }
 
   const snap = await query.get();
 
   // Only return public-safe fields — creatorEmail intentionally omitted (HIGH-1)
-  const projects = snap.docs.map((doc) => {
+  let docs = snap.docs;
+
+  // When filtering by uid, only return projects the user chose to show on profile
+  if (filterUid) {
+    docs = docs.filter((doc) => doc.data().showOnProfile === true);
+  }
+
+  const projects = docs.map((doc) => {
     const d = doc.data();
     return {
       id:              doc.id,
