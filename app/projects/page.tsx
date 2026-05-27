@@ -91,12 +91,16 @@ function buildPinsForProjects(projects: Project[], existingPinIds: Set<string>):
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
+const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID;
+
 export default function ProjectsPage() {
   const { user } = useAuth();
+  const isAdmin = !!user && !!ADMIN_UID && user.uid === ADMIN_UID;
 
   // Live projects from Firestore merged with seed data
-  const [liveProjects, setLiveProjects] = useState<Project[]>([]);
+  const [liveProjects,    setLiveProjects]    = useState<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
+  const [deletingId,      setDeletingId]      = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -275,6 +279,29 @@ export default function ProjectsPage() {
     );
   }, []);
 
+  // ── Admin delete ──────────────────────────────────────────────────────────
+  const handleDelete = useCallback(async (projectId: string) => {
+    if (!confirm("Permanently delete this project from the site?")) return;
+    setDeletingId(projectId);
+    try {
+      const token = await auth.currentUser!.getIdToken();
+      const res = await fetch(`/api/projects/${projectId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Delete failed");
+      // Remove from local live projects list (seed data cards can't be deleted)
+      setLiveProjects((prev) => prev.filter((p) => p.id !== projectId));
+      // Clean up pins for deleted card
+      setPins((prev) => prev.filter((p) => p.cardId !== projectId));
+    } catch (err) {
+      alert("Could not delete project. Please try again.");
+      console.error(err);
+    } finally {
+      setDeletingId(null);
+    }
+  }, []);
+
   // ── Canvas height ──────────────────────────────────────────────────────────
   const indexed = allProjects.map((project, originalIndex) => ({
     project,
@@ -364,6 +391,9 @@ export default function ProjectsPage() {
                 dimmed={matchSet !== null && !matchSet.has(project.id)}
                 pinCount={pinCounts.get(project.id) ?? 0}
                 onDragMove={handleCardDragMove}
+                isAdmin={isAdmin}
+                onDelete={handleDelete}
+                deleting={deletingId === project.id}
               />
             ))}
 

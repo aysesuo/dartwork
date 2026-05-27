@@ -66,6 +66,10 @@ interface Props {
   pinCount?:   number;
   /** Called on every drag tick so pins can follow */
   onDragMove?: (cardId: string, x: number, y: number) => void;
+  /** Admin controls */
+  isAdmin?:  boolean;
+  onDelete?: (id: string) => void;
+  deleting?: boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -75,6 +79,9 @@ export default function DraggableProjectCard({
   dimmed    = false,
   pinCount  = 0,
   onDragMove,
+  isAdmin   = false,
+  onDelete,
+  deleting  = false,
 }: Props) {
   const init    = seededInitialPos(index);
   const initRot = BASE_ROTATIONS[index % BASE_ROTATIONS.length];
@@ -165,6 +172,38 @@ export default function DraggableProjectCard({
       }}
     >
       <ProjectCard project={project} index={index} decorated={false} />
+
+      {/* Admin delete button — only rendered for admin, only on Firestore projects */}
+      {isAdmin && onDelete && (
+        <button
+          onPointerDown={(e) => e.stopPropagation()} // prevent drag starting
+          onClick={(e) => { e.stopPropagation(); onDelete(project.id); }}
+          disabled={deleting}
+          title="Delete project"
+          style={{
+            position:        "absolute",
+            top:             6,
+            right:           6,
+            width:           22,
+            height:          22,
+            borderRadius:    "50%",
+            backgroundColor: deleting ? "rgba(180,0,0,0.5)" : "rgba(180,0,0,0.85)",
+            border:          "none",
+            color:           "#fff",
+            fontSize:        13,
+            lineHeight:      1,
+            cursor:          deleting ? "not-allowed" : "pointer",
+            display:         "flex",
+            alignItems:      "center",
+            justifyContent:  "center",
+            zIndex:          10,
+            boxShadow:       "0 1px 4px rgba(0,0,0,0.4)",
+            transition:      "background 0.15s",
+          }}
+        >
+          {deleting ? "…" : "✕"}
+        </button>
+      )}
     </div>
   );
 }
