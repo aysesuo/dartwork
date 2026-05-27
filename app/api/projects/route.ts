@@ -2,6 +2,19 @@ import type { NextRequest } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebase-admin";
 import { DISCIPLINES } from "@/lib/disciplines";
 
+export async function GET(request: NextRequest) {
+  const auth = await verifyDartmouth(request);
+  if ("error" in auth) return auth.error;
+
+  const snap = await adminDb
+    .collection("projects")
+    .orderBy("createdAt", "desc")
+    .get();
+
+  const projects = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  return Response.json(projects);
+}
+
 const DARTMOUTH_RE = /^[^@]+@dartmouth\.edu$/i;
 
 async function verifyDartmouth(

@@ -1,19 +1,28 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
-import projectsData from "@/data/projects.json";
+import seedData from "@/data/projects.json";
 import DraggableProjectCard, { seededInitialPos } from "@/components/project/DraggableProjectCard";
 import IndexCardFilter from "@/components/project/IndexCardFilter";
 import BoardPin from "@/components/project/BoardPin";
 import AuthGuard from "@/components/auth/AuthGuard";
 import { useAuth } from "@/lib/auth";
+import { auth } from "@/lib/firebase";
 import { cardPositions, CARD_WIDTH } from "@/lib/cardRegistry";
 
-// ── Derive stable filter option lists from the full dataset ───────────────────
-const ALL_DISCIPLINES = [...new Set(projectsData.map((p) => p.discipline))].sort();
-const ALL_TAGS        = [...new Set(projectsData.flatMap((p) => p.tags))].sort();
-const ALL_ROLES       = [...new Set(projectsData.flatMap((p) => p.positionsNeeded))].sort();
+// ── Project type ──────────────────────────────────────────────────────────────
+interface Project {
+  id: string;
+  title: string;
+  creatorName: string;
+  discipline: string;
+  tags: string[];
+  positionsNeeded: string[];
+  description: string;
+  mediaUrl?: string | null;
+  datePosted: string;
+}
 
 // ── Pin system types ──────────────────────────────────────────────────────────
 type PinColor = "red" | "blue" | "white";
@@ -43,17 +52,17 @@ const SNAP_RADIUS = 80;
 // Pin colours cycling per card
 const PIN_COLORS: PinColor[] = ["red", "blue", "white", "red", "blue"];
 
-/** Build initial pin positions: 1–2 pins per card, top corners */
-function buildInitialPins(): PinState[] {
+/** Build pin positions for a list of projects, skipping ids already pinned */
+function buildPinsForProjects(projects: Project[], existingPinIds: Set<string>): PinState[] {
   const pins: PinState[] = [];
-  projectsData.forEach((project, i) => {
+  projects.forEach((project, i) => {
+    if (existingPinIds.has(`${project.id}-pin-0`)) return; // already pinned
     const { left, top } = seededInitialPos(i);
     const seed = i * 3 + 1;
-    const count = (seed % 3 === 0) ? 2 : 1; // roughly 1/3 of cards get 2 pins
+    const count = (seed % 3 === 0) ? 2 : 1;
 
-    // Primary pin: top-left corner area
-    const ox1 = 18 + (seed % 20);   // 18–37 px from card left
-    const oy1 = 14 + (seed % 14);   // 14–27 px from card top
+    const ox1 = 18 + (seed % 20);
+    const oy1 = 14 + (seed % 14);
     pins.push({
       id: `${project.id}-pin-0`,
       color: PIN_COLORS[i % PIN_COLORS.length],
@@ -65,8 +74,7 @@ function buildInitialPins(): PinState[] {
     });
 
     if (count === 2) {
-      // Secondary pin: top-right corner area
-      const ox2 = CARD_WIDTH - 30 - (seed % 16); // 30–45 px from card right
+      const ox2 = CARD_WIDTH - 30 - (seed % 16);
       const oy2 = 14 + ((seed + 5) % 14);
       pins.push({
         id: `${project.id}-pin-1`,
@@ -85,12 +93,57 @@ function buildInitialPins(): PinState[] {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function ProjectsPage() {
   const { user } = useAuth();
+
+  // Live projects from Firestore merged with seed data
+  const [liveProjects, setLiveProjects] = useState<Project[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const token = await auth.currentUser!.getIdToken();
+        const res = await fetch("/api/projects", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Failed to fetch");
+        const data: Project[] = await res.json();
+        if (!cancelled) setLiveProjects(data);
+      } catch {
+        // Fall back to seed data silently
+      } finally {
+        if (!cancelled) setLoadingProjects(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  // Merge: seed data first (stable indices for layout), then live projects
+  // de-duplicated by id (live wins if same id exists in seed)
+  const allProjects = useMemo<Project[]>(() => {
+    const seedIds = new Set(seedData.map((p) => p.id));
+    const newProjects = liveProjects.filter((p) => !seedIds.has(p.id));
+    return [...(seedData as Project[]), ...newProjects];
+  }, [liveProjects]);
+
   const [selDisciplines, setSelDisciplines] = useState<Set<string>>(new Set());
   const [selTags,        setSelTags]        = useState<Set<string>>(new Set());
   const [selRoles,       setSelRoles]       = useState<Set<string>>(new Set());
 
-  const [pins,  setPins]  = useState<PinState[]>(buildInitialPins);
+  const [pins,  setPins]  = useState<PinState[]>(() => buildPinsForProjects(seedData as Project[], new Set()));
   const [holes, setHoles] = useState<Hole[]>([]);
+
+  // Add pins for newly fetched projects that don't have pins yet
+  useEffect(() => {
+    if (liveProjects.length === 0) return;
+    setPins((prev) => {
+      const existingIds = new Set(prev.map((p) => p.id));
+      const newPins = buildPinsForProjects(allProjects, existingIds);
+      return newPins.length ? [...prev, ...newPins] : prev;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allProjects]);
 
   function toggle<T>(set: Set<T>, val: T, setter: (s: Set<T>) => void) {
     const next = new Set(set);
@@ -104,6 +157,11 @@ export default function ProjectsPage() {
     setSelRoles(new Set());
   }
 
+  // ── Filter option lists derived from live data ────────────────────────────
+  const ALL_DISCIPLINES = useMemo(() => [...new Set(allProjects.map((p) => p.discipline))].sort(), [allProjects]);
+  const ALL_TAGS        = useMemo(() => [...new Set(allProjects.flatMap((p) => p.tags))].sort(), [allProjects]);
+  const ALL_ROLES       = useMemo(() => [...new Set(allProjects.flatMap((p) => p.positionsNeeded))].sort(), [allProjects]);
+
   // ── Filtering ──────────────────────────────────────────────────────────────
   const matchSet = useMemo(() => {
     const hasFilters =
@@ -111,7 +169,7 @@ export default function ProjectsPage() {
     if (!hasFilters) return null;
 
     return new Set(
-      projectsData
+      allProjects
         .filter((p) => {
           if (selDisciplines.size > 0 && !selDisciplines.has(p.discipline))
             return false;
@@ -123,7 +181,7 @@ export default function ProjectsPage() {
         })
         .map((p) => p.id),
     );
-  }, [selDisciplines, selTags, selRoles]);
+  }, [allProjects, selDisciplines, selTags, selRoles]);
 
   // ── Pin counts per card ────────────────────────────────────────────────────
   const pinCounts = useMemo(() => {
@@ -218,13 +276,13 @@ export default function ProjectsPage() {
   }, []);
 
   // ── Canvas height ──────────────────────────────────────────────────────────
-  const indexed = projectsData.map((project, originalIndex) => ({
+  const indexed = allProjects.map((project, originalIndex) => ({
     project,
     originalIndex,
   }));
-  const maxTop = Math.max(
-    ...indexed.map(({ originalIndex }) => seededInitialPos(originalIndex).top),
-  );
+  const maxTop = indexed.length
+    ? Math.max(...indexed.map(({ originalIndex }) => seededInitialPos(originalIndex).top))
+    : 0;
   const canvasHeight = maxTop + 460;
 
   return (
