@@ -9,6 +9,7 @@ import DisciplineFilterBar from "@/components/shared/DisciplineFilterBar";
 import { DISCIPLINES } from "@/lib/disciplines";
 import { DartworkEvent } from "@/lib/calendarAdapter";
 import { downloadIcs } from "@/lib/exportIcs";
+import AuthGuard from "@/components/auth/AuthGuard";
 
 export default function EventsPage() {
   const [view, setView] = useState<"list" | "calendar">("list");
@@ -46,6 +47,7 @@ export default function EventsPage() {
   }
 
   return (
+    <AuthGuard>
     <main className="events-bg max-w-5xl mx-auto px-4 py-8 font-[family-name:var(--font-special-elite)]">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-5xl font-extrabold uppercase tracking-tight font-[family-name:var(--font-barlow)]" style={{ color: "#f5f5f0" }}>Events</h1>
@@ -191,5 +193,6 @@ export default function EventsPage() {
         </div>
       )}
     </main>
+    </AuthGuard>
   );
 }

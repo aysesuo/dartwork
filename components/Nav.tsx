@@ -37,7 +37,7 @@ export function DesktopNav() {
           </Link>
         )}
 
-        <div className="flex items-center gap-1">
+        <div className="ml-auto flex items-center gap-1">
           <ul className="flex items-center gap-1">
             {NAV_ITEMS.map(({ href, label }) => {
               const active = isActive(pathname, href);
