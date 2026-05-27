@@ -18,14 +18,14 @@ const UNPINNED_SRC: Record<PinColor, string> = {
 
 // Pinned = top-down view (square crop). Unpinned = side view (wider).
 const PINNED_SIZE: Record<PinColor, { w: number; h: number }> = {
-  red:   { w: 170, h: 170 },
-  blue:  { w: 340, h: 340 },
-  white: { w: 170, h: 170 },
+  red:   { w: 36, h: 36 },
+  blue:  { w: 44, h: 44 },
+  white: { w: 36, h: 36 },
 };
 const UNPINNED_SIZE: Record<PinColor, { w: number; h: number }> = {
-  red:   { w: 250, h: 190 },
-  blue:  { w: 250, h: 190 },
-  white: { w: 250, h: 190 },
+  red:   { w: 52, h: 40 },
+  blue:  { w: 52, h: 40 },
+  white: { w: 52, h: 40 },
 };
 
 interface Props {
@@ -81,9 +81,11 @@ export default function BoardPin({ id, color, x, y, onDrop }: Props) {
         width:       size.w,
         height:      size.h,
         objectFit:   "contain",
+        objectPosition: "center",
         cursor:      dragging ? "grabbing" : "grab",
         zIndex:      dragging ? 1000 : 25,
         userSelect:  "none",
+        overflow:    "hidden",
         touchAction: "none",
         filter:      dragging
           ? "drop-shadow(0 6px 12px rgba(0,0,0,0.6))"
