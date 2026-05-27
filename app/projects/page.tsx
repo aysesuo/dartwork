@@ -91,11 +91,9 @@ function buildPinsForProjects(projects: Project[], existingPinIds: Set<string>):
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID;
-
 export default function ProjectsPage() {
   const { user } = useAuth();
-  const isAdmin = !!user && !!ADMIN_UID && user.uid === ADMIN_UID;
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Live projects from Firestore merged with seed data
   const [liveProjects,    setLiveProjects]    = useState<Project[]>([]);
@@ -108,12 +106,21 @@ export default function ProjectsPage() {
     (async () => {
       try {
         const token = await auth.currentUser!.getIdToken();
-        const res = await fetch("/api/projects", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error("Failed to fetch");
-        const data: Project[] = await res.json();
-        if (!cancelled) setLiveProjects(data);
+        const headers = { Authorization: `Bearer ${token}` };
+
+        const [projectsRes, profileRes] = await Promise.all([
+          fetch("/api/projects", { headers }),
+          fetch(`/api/users/${user.uid}`, { headers }),
+        ]);
+
+        if (projectsRes.ok) {
+          const data: Project[] = await projectsRes.json();
+          if (!cancelled) setLiveProjects(data);
+        }
+        if (profileRes.ok) {
+          const profile = await profileRes.json();
+          if (!cancelled) setIsAdmin(profile.isAdmin === true);
+        }
       } catch {
         // Fall back to seed data silently
       } finally {

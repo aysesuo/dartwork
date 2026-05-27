@@ -3,6 +3,8 @@ import { adminDb } from "@/lib/firebase-admin";
 import { verifyDartmouth } from "@/lib/verify-dartmouth";
 import { DISCIPLINES } from "@/lib/disciplines";
 
+const ADMIN_UID = process.env.ADMIN_UID;
+
 const DARTMOUTH_RE = /^[^@]+@dartmouth\.edu$/i;
 
 export async function GET(
@@ -41,12 +43,13 @@ export async function GET(
     onboardingComplete: data.onboardingComplete,
   };
 
-  // Only the owner receives their email and viewer list
+  // Only the owner receives their email, viewer list, and admin flag
   if (isOwner) {
     return Response.json({
       ...publicFields,
       email:             data.email,
       authorizedViewers: data.authorizedViewers ?? [],
+      isAdmin:           ADMIN_UID ? auth.callerUid === ADMIN_UID : false,
     });
   }
 
