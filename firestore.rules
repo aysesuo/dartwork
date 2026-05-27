@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // All reads and writes must go through the Next.js API routes (Admin SDK).
+    // Direct client-side Firestore SDK access is denied for all collections.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

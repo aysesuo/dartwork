@@ -1,28 +1,9 @@
 import type { NextRequest } from "next/server";
-import { adminAuth, adminDb } from "@/lib/firebase-admin";
+import { adminDb } from "@/lib/firebase-admin";
+import { verifyDartmouth } from "@/lib/verify-dartmouth";
+import { DISCIPLINES } from "@/lib/disciplines";
 
 const DARTMOUTH_RE = /^[^@]+@dartmouth\.edu$/i;
-
-// Verifies token is valid + Dartmouth. Returns caller uid & email, or an error Response.
-async function verifyDartmouth(
-  request: NextRequest
-): Promise<{ error: Response } | { callerUid: string; callerEmail: string }> {
-  const authHeader = request.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    return { error: Response.json({ error: "Unauthorized" }, { status: 401 }) };
-  }
-  let decoded;
-  try {
-    decoded = await adminAuth.verifyIdToken(authHeader.slice(7));
-  } catch {
-    return { error: Response.json({ error: "Invalid token" }, { status: 401 }) };
-  }
-  const callerEmail = decoded.email ?? "";
-  if (!DARTMOUTH_RE.test(callerEmail)) {
-    return { error: Response.json({ error: "Only Dartmouth accounts are permitted" }, { status: 403 }) };
-  }
-  return { callerUid: decoded.uid, callerEmail };
-}
 
 export async function GET(
   request: NextRequest,
@@ -48,7 +29,28 @@ export async function GET(
     }
   }
 
-  return Response.json({ uid, ...data });
+  // Always return a projected shape — never dump the raw Firestore document (HIGH-2)
+  const publicFields = {
+    uid,
+    displayName:        data.displayName,
+    gradYear:           data.gradYear,
+    concentration:      data.concentration,
+    disciplines:        data.disciplines,
+    bio:                data.bio,
+    isPrivate:          data.isPrivate,
+    onboardingComplete: data.onboardingComplete,
+  };
+
+  // Only the owner receives their email and viewer list
+  if (isOwner) {
+    return Response.json({
+      ...publicFields,
+      email:             data.email,
+      authorizedViewers: data.authorizedViewers ?? [],
+    });
+  }
+
+  return Response.json(publicFields);
 }
 
 export async function POST(
@@ -59,7 +61,6 @@ export async function POST(
   const auth = await verifyDartmouth(request);
   if ("error" in auth) return auth.error;
 
-  // Only the owner may write their own profile
   if (auth.callerUid !== uid) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -71,6 +72,7 @@ export async function POST(
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
+  // Strict allowlist — onboardingComplete and createdAt are server-controlled (MED-3, MED-4)
   const ALLOWED_FIELDS = new Set([
     "displayName",
     "gradYear",
@@ -79,15 +81,82 @@ export async function POST(
     "bio",
     "isPrivate",
     "authorizedViewers",
-    "onboardingComplete",
-    "createdAt",
   ]);
 
   const safe: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(body)) {
     if (ALLOWED_FIELDS.has(k)) safe[k] = v;
   }
+
+  // ── Field-level validation & sanitisation ─────────────────────────────────
+
+  if ("displayName" in safe) {
+    if (typeof safe.displayName !== "string" || safe.displayName.trim().length === 0)
+      return Response.json({ error: "Display name must be a non-empty string" }, { status: 400 });
+    safe.displayName = safe.displayName.trim().slice(0, 80);
+  }
+
+  if ("bio" in safe) {
+    if (typeof safe.bio !== "string")
+      return Response.json({ error: "Bio must be a string" }, { status: 400 });
+    safe.bio = safe.bio.trim().slice(0, 400);
+  }
+
+  if ("concentration" in safe) {
+    if (typeof safe.concentration !== "string")
+      return Response.json({ error: "Concentration must be a string" }, { status: 400 });
+    safe.concentration = safe.concentration.trim().slice(0, 80);
+  }
+
+  if ("gradYear" in safe) {
+    const year = Number(safe.gradYear);
+    const currentYear = new Date().getFullYear();
+    if (!Number.isInteger(year) || year < currentYear - 1 || year > currentYear + 6)
+      return Response.json({ error: "Invalid graduation year" }, { status: 400 });
+    safe.gradYear = year;
+  }
+
+  // Validate disciplines against the allowlist (MED-5)
+  if ("disciplines" in safe) {
+    if (!Array.isArray(safe.disciplines))
+      return Response.json({ error: "Disciplines must be an array" }, { status: 400 });
+    safe.disciplines = (safe.disciplines as unknown[])
+      .filter((d) => typeof d === "string" && DISCIPLINES.includes(d as never))
+      .slice(0, 9);
+  }
+
+  // Validate authorizedViewers — must all be @dartmouth.edu (HIGH-6)
+  if ("authorizedViewers" in safe) {
+    if (!Array.isArray(safe.authorizedViewers))
+      return Response.json({ error: "authorizedViewers must be an array" }, { status: 400 });
+    safe.authorizedViewers = (safe.authorizedViewers as unknown[])
+      .filter((v) => typeof v === "string" && DARTMOUTH_RE.test(v))
+      .slice(0, 200);
+  }
+
+  // isPrivate must be boolean
+  if ("isPrivate" in safe && typeof safe.isPrivate !== "boolean") {
+    return Response.json({ error: "isPrivate must be a boolean" }, { status: 400 });
+  }
+
+  // Always stamp email from the verified token (not from body)
   safe.email = auth.callerEmail;
+
+  // Set onboardingComplete server-side only when required fields are present (MED-3)
+  // Merge with existing doc so we don't unset it if already complete
+  const existing = await adminDb.collection("users").doc(uid).get();
+  const existingData = existing.data() ?? {};
+
+  const mergedDisplay = (safe.displayName ?? existingData.displayName ?? "").toString().trim();
+  const mergedDiscs   = (safe.disciplines ?? existingData.disciplines ?? []) as string[];
+  if (mergedDisplay.length > 0 && mergedDiscs.length > 0) {
+    safe.onboardingComplete = true;
+  }
+
+  // Set createdAt server-side on first write only (MED-4)
+  if (!existing.exists) {
+    safe.createdAt = new Date().toISOString();
+  }
 
   await adminDb.collection("users").doc(uid).set(safe, { merge: true });
   return Response.json({ ok: true });
