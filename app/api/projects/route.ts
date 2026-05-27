@@ -34,21 +34,21 @@ export async function GET(request: NextRequest) {
     .orderBy("createdAt", "desc");
 
   if (filterUid) {
-    // Single-field query (no composite index needed); filter showOnProfile in code
+    // where-only query — no orderBy so no composite index needed
     query = adminDb
       .collection("projects")
-      .where("creatorUid", "==", filterUid)
-      .orderBy("createdAt", "desc");
+      .where("creatorUid", "==", filterUid);
   }
 
   const snap = await query.get();
 
-  // Only return public-safe fields — creatorEmail intentionally omitted (HIGH-1)
   let docs = snap.docs;
 
-  // When filtering by uid, only return projects the user chose to show on profile
   if (filterUid) {
-    docs = docs.filter((doc) => doc.data().showOnProfile === true);
+    // Filter showOnProfile and sort by createdAt in JS (avoids composite index)
+    docs = docs
+      .filter((doc) => doc.data().showOnProfile === true)
+      .sort((a, b) => (b.data().createdAt ?? "").localeCompare(a.data().createdAt ?? ""));
   }
 
   const projects = docs.map((doc) => {
