@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth";
 import { sanitize } from "@/lib/sanitize";
 import { getDisciplineColor } from "@/lib/disciplines";
 import AuthGuard from "@/components/auth/AuthGuard";
+import ProjectCard from "@/components/project/ProjectCard";
 
 interface ProfileData {
   uid: string;
@@ -26,6 +27,8 @@ interface Project {
   description: string;
   discipline: string;
   positionsNeeded: string[];
+  tags: string[];
+  creatorName: string;
   mediaUrl?: string | null;
   datePosted: string;
 }
@@ -185,75 +188,24 @@ function ProfileContent() {
 
       {/* Projects */}
       {projects.length > 0 && (
-        <div className="mt-8">
+        <div className="mt-10">
           <h2
-            className="text-xs font-bold uppercase tracking-widest mb-4"
+            className="text-xs font-bold uppercase tracking-widest mb-6"
             style={{ color: "#7fa88a" }}
           >
             Projects
           </h2>
-          <div className="flex flex-col gap-3">
-            {projects.map((project) => (
-              <div
-                key={project.id}
-                className="rounded-2xl p-5"
-                style={{ backgroundColor: "#132d1c", border: "1px solid #1e4430" }}
-              >
-                <div className="flex items-start justify-between gap-3 mb-2">
-                  <h3
-                    className="font-bold text-base uppercase tracking-tight font-[family-name:var(--font-barlow)]"
-                    style={{ color: "#f5f5f0" }}
-                  >
-                    {sanitize(project.title)}
-                  </h3>
-                  <span
-                    className="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full"
-                    style={{
-                      backgroundColor: "rgba(0,105,62,0.3)",
-                      color: "#7fa88a",
-                      border: "1px solid #1e4430",
-                    }}
-                  >
-                    {project.discipline}
-                  </span>
-                </div>
-
-                {project.positionsNeeded.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {project.positionsNeeded.map((pos) => (
-                      <span
-                        key={pos}
-                        className="text-xs px-2 py-0.5 rounded"
-                        style={{
-                          backgroundColor: "rgba(255,107,53,0.15)",
-                          color: "#FF6B35",
-                          border: "1px solid rgba(255,107,53,0.3)",
-                        }}
-                      >
-                        {sanitize(pos)}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <p
-                  className="text-sm leading-relaxed line-clamp-3"
-                  style={{ color: "#c8ddd1" }}
-                >
-                  {sanitize(project.description)}
-                </p>
-
-                {project.mediaUrl && (
-                  <a
-                    href={project.mediaUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block mt-3 text-xs font-bold uppercase tracking-widest hover:opacity-70 transition-opacity"
-                    style={{ color: "#7fa88a" }}
-                  >
-                    View media →
-                  </a>
-                )}
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "2.5rem",
+              justifyContent: "flex-start",
+            }}
+          >
+            {projects.map((project, i) => (
+              <div key={project.id} style={{ width: 270, flexShrink: 0 }}>
+                <ProjectCard project={project} index={i} decorated />
               </div>
             ))}
           </div>
