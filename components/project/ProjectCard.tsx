@@ -85,27 +85,42 @@ export default function ProjectCard({
         </defs>
       </svg>
 
-      {/* Card */}
+      {/* Card — outer wrapper owns rotation, shadow, sizing. No filter here. */}
       <div
         style={{
-          backgroundImage: `url(${texture})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          filter: `url(#${filterId}) saturate(1.3)`,
           transform: decorated ? `rotate(${rotation}deg)` : undefined,
           boxShadow: decorated
             ? "3px 6px 12px rgba(0,0,0,0.35), 1px 2px 4px rgba(0,0,0,0.2)"
             : undefined,
           borderRadius: 0,
-          padding: "1.2rem 1.4rem 1.4rem",
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.55rem",
-          color: "#1a1008",
           position: "relative",
           isolation: "isolate",
         }}
       >
+        {/* Background layer — paper texture + torn-paper filter, no text */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: `url(${texture})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: `url(#${filterId}) saturate(1.3)`,
+          }}
+        />
+
+        {/* Content layer — sits above background, unfiltered so text is crisp */}
+        <div
+          style={{
+            position: "relative",
+            padding: "1.2rem 1.4rem 1.4rem",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.55rem",
+            color: "#1a1008",
+          }}
+        >
         {/* Overlay to lift text contrast over busy textures */}
         <div
           aria-hidden="true"
@@ -225,7 +240,8 @@ export default function ProjectCard({
             {project.description}
           </p>
         </div>
-      </div>
+        </div>{/* end content layer */}
+      </div>{/* end outer wrapper */}
     </>
   );
 }
