@@ -20,6 +20,16 @@ interface ProfileData {
   onboardingComplete: boolean;
 }
 
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  discipline: string;
+  positionsNeeded: string[];
+  mediaUrl?: string | null;
+  datePosted: string;
+}
+
 export default function ProfilePage() {
   return (
     <AuthGuard>
@@ -33,9 +43,10 @@ function ProfileContent() {
   const { user } = useAuth();
   const router = useRouter();
 
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [profile,  setProfile]  = useState<ProfileData | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [error,    setError]    = useState<string | null>(null);
+  const [loading,  setLoading]  = useState(true);
 
   const isOwner = user?.uid === uid;
 
@@ -44,23 +55,24 @@ function ProfileContent() {
     (async () => {
       try {
         const idToken = await auth.currentUser!.getIdToken();
-        const res = await fetch(`/api/users/${uid}`, {
-          headers: { Authorization: `Bearer ${idToken}` },
-        });
-        if (res.status === 403) {
-          const data = await res.json();
+        const headers = { Authorization: `Bearer ${idToken}` };
+
+        // Fetch profile and projects in parallel
+        const [profileRes, projectsRes] = await Promise.all([
+          fetch(`/api/users/${uid}`, { headers }),
+          fetch(`/api/projects?uid=${uid}`, { headers }),
+        ]);
+
+        if (profileRes.status === 403) {
+          const data = await profileRes.json();
           setError(data.error ?? "This profile is private");
           return;
         }
-        if (res.status === 404) {
-          setError("Profile not found");
-          return;
-        }
-        if (!res.ok) {
-          setError("Could not load profile");
-          return;
-        }
-        setProfile(await res.json());
+        if (profileRes.status === 404) { setError("Profile not found"); return; }
+        if (!profileRes.ok)            { setError("Could not load profile"); return; }
+
+        setProfile(await profileRes.json());
+        if (projectsRes.ok) setProjects(await projectsRes.json());
       } catch {
         setError("Network error — please refresh");
       } finally {
@@ -167,9 +179,86 @@ function ProfileContent() {
         </div>
       )}
 
+      {/* Projects */}
+      {projects.length > 0 && (
+        <div className="mt-8">
+          <h2
+            className="text-xs font-bold uppercase tracking-widest mb-4"
+            style={{ color: "#7fa88a" }}
+          >
+            Projects
+          </h2>
+          <div className="flex flex-col gap-3">
+            {projects.map((project) => (
+              <div
+                key={project.id}
+                className="rounded-2xl p-5"
+                style={{ backgroundColor: "#132d1c", border: "1px solid #1e4430" }}
+              >
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <h3
+                    className="font-bold text-base uppercase tracking-tight font-[family-name:var(--font-barlow)]"
+                    style={{ color: "#f5f5f0" }}
+                  >
+                    {sanitize(project.title)}
+                  </h3>
+                  <span
+                    className="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full"
+                    style={{
+                      backgroundColor: "rgba(0,105,62,0.3)",
+                      color: "#7fa88a",
+                      border: "1px solid #1e4430",
+                    }}
+                  >
+                    {project.discipline}
+                  </span>
+                </div>
+
+                {project.positionsNeeded.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {project.positionsNeeded.map((pos) => (
+                      <span
+                        key={pos}
+                        className="text-xs px-2 py-0.5 rounded"
+                        style={{
+                          backgroundColor: "rgba(255,107,53,0.15)",
+                          color: "#FF6B35",
+                          border: "1px solid rgba(255,107,53,0.3)",
+                        }}
+                      >
+                        {sanitize(pos)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <p
+                  className="text-sm leading-relaxed line-clamp-3"
+                  style={{ color: "#c8ddd1" }}
+                >
+                  {sanitize(project.description)}
+                </p>
+
+                {project.mediaUrl && (
+                  <a
+                    href={project.mediaUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block mt-3 text-xs font-bold uppercase tracking-widest hover:opacity-70 transition-opacity"
+                    style={{ color: "#7fa88a" }}
+                  >
+                    View media →
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Private badge */}
       {profile.isPrivate && isOwner && (
-        <p className="text-xs" style={{ color: "#7fa88a" }}>
+        <p className="text-xs mt-6" style={{ color: "#7fa88a" }}>
           🔒 Your profile is private — only people you approve can see it.
         </p>
       )}

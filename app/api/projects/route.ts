@@ -20,16 +20,30 @@ function checkRateLimit(uid: string): boolean {
 }
 
 // ── GET — public-safe project list (no PII) ───────────────────────────────────
+// Optional query param: ?uid=<creatorUid>  → returns only that user's
+// projects where showOnProfile === true
 export async function GET(request: NextRequest) {
   const auth = await verifyDartmouth(request);
   if ("error" in auth) return auth.error;
 
-  const snap = await adminDb
-    .collection("projects")
-    .orderBy("createdAt", "desc")
-    .get();
+  const { searchParams } = new URL(request.url);
+  const filterUid = searchParams.get("uid");
 
-  // Only return public-safe fields — creatorEmail is intentionally omitted (HIGH-1)
+  let query: FirebaseFirestore.Query = adminDb
+    .collection("projects")
+    .orderBy("createdAt", "desc");
+
+  if (filterUid) {
+    query = adminDb
+      .collection("projects")
+      .where("creatorUid", "==", filterUid)
+      .where("showOnProfile", "==", true)
+      .orderBy("createdAt", "desc");
+  }
+
+  const snap = await query.get();
+
+  // Only return public-safe fields — creatorEmail intentionally omitted (HIGH-1)
   const projects = snap.docs.map((doc) => {
     const d = doc.data();
     return {
