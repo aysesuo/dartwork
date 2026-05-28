@@ -16,17 +16,17 @@ function lcg(seed: number) {
 
 export function seededInitialPos(index: number): { left: number; top: number } {
   const rng     = lcg(index * 31337 + 7);
-  const col     = index % 3;
-  const row     = Math.floor(index / 3);
-  const COL_W   = 275;
-  const ROW_H   = 380;
+  const col     = index % 4;
+  const row     = Math.floor(index / 4);
+  const COL_W   = 290;
+  const ROW_H   = 360;
   // X_START keeps col-0 cards clear of the filter card (right edge ≈ 122px)
   const X_START = 150;
   const baseLeft = X_START + col * COL_W;
   const baseTop  = row * ROW_H + 30;
   return {
-    left: baseLeft + (rng() - 0.5) * 40,           // ±20 px scatter
-    top:  Math.max(20, baseTop + (rng() - 0.5) * 50), // ±25 px, never above 20
+    left: baseLeft + (rng() - 0.5) * 36,              // ±18 px scatter
+    top:  Math.max(20, baseTop + (rng() - 0.5) * 44), // ±22 px, never above 20
   };
 }
 

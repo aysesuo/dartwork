@@ -322,7 +322,7 @@ export default function ProjectsPage() {
   const maxTop = indexed.length
     ? Math.max(...indexed.map(({ originalIndex }) => seededInitialPos(originalIndex).top))
     : 0;
-  const canvasHeight = maxTop + 460;
+  const canvasHeight = maxTop + 420;
 
   return (
     <AuthGuard>
@@ -342,7 +342,7 @@ export default function ProjectsPage() {
 
         {/* ── Content layer ── */}
         <main
-          className="relative max-w-5xl mx-auto px-4 py-8"
+          className="relative max-w-7xl mx-auto px-6 py-8"
           style={{ zIndex: 10 }}
         >
           {/* Header */}
