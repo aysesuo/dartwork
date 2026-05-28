@@ -38,8 +38,7 @@ export default function EditProfilePage() {
   const [newViewer, setNewViewer] = useState("");
 
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [busy,  setBusy]  = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
@@ -49,7 +48,7 @@ export default function EditProfilePage() {
     if (!user) return;
     (async () => {
       try {
-        const idToken = await user.getIdToken();
+        const idToken = await user.getIdToken(true);
         const res = await fetch(`/api/users/${user.uid}`, {
           headers: { Authorization: `Bearer ${idToken}` },
         });
@@ -100,14 +99,13 @@ export default function EditProfilePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setSuccess(false);
 
     if (!displayName.trim()) { setError("Display name is required"); return; }
     if (disciplines.length === 0) { setError("Select at least one discipline"); return; }
 
     setBusy(true);
     try {
-      const idToken = await user!.getIdToken();
+      const idToken = await user!.getIdToken(true);
       const res = await fetch(`/api/users/${user!.uid}`, {
         method: "POST",
         headers: {
@@ -122,7 +120,6 @@ export default function EditProfilePage() {
           bio: bio.trim(),
           isPrivate,
           authorizedViewers,
-          onboardingComplete: profile?.onboardingComplete ?? true,
         }),
       });
 
@@ -132,7 +129,7 @@ export default function EditProfilePage() {
         return;
       }
 
-      setSuccess(true);
+      router.push(`/profile/${user!.uid}`);
     } catch {
       setError("Network error — please try again");
     } finally {
@@ -315,12 +312,6 @@ export default function EditProfilePage() {
             {error}
           </p>
         )}
-        {success && (
-          <p className="text-sm rounded-xl px-4 py-2" style={{ backgroundColor: "#0d2e1a", color: "#69e5a0" }}>
-            Profile saved.
-          </p>
-        )}
-
         <button
           type="submit"
           disabled={busy}

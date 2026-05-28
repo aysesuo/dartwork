@@ -8,7 +8,6 @@ import IndexCardFilter from "@/components/project/IndexCardFilter";
 import BoardPin from "@/components/project/BoardPin";
 import AuthGuard from "@/components/auth/AuthGuard";
 import { useAuth } from "@/lib/auth";
-import { auth } from "@/lib/firebase";
 import { cardPositions, CARD_WIDTH } from "@/lib/cardRegistry";
 
 // ── Project type ──────────────────────────────────────────────────────────────
@@ -16,12 +15,14 @@ interface Project {
   id: string;
   title: string;
   creatorName: string;
+  creatorUid?: string;
   discipline: string;
   tags: string[];
   positionsNeeded: string[];
   description: string;
   mediaUrl?: string | null;
   datePosted: string;
+  status?: string;
 }
 
 // ── Pin system types ──────────────────────────────────────────────────────────
@@ -99,13 +100,14 @@ export default function ProjectsPage() {
   const [liveProjects,    setLiveProjects]    = useState<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [deletingId,      setDeletingId]      = useState<string | null>(null);
+  const [takingDownId,    setTakingDownId]    = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
     (async () => {
       try {
-        const token = await auth.currentUser!.getIdToken();
+        const token = await user.getIdToken(true);
         const headers = { Authorization: `Bearer ${token}` };
 
         const [projectsRes, profileRes] = await Promise.all([
@@ -288,10 +290,11 @@ export default function ProjectsPage() {
 
   // ── Admin delete ──────────────────────────────────────────────────────────
   const handleDelete = useCallback(async (projectId: string) => {
+    if (!user) return;
     if (!confirm("Permanently delete this project from the site?")) return;
     setDeletingId(projectId);
     try {
-      const token = await auth.currentUser!.getIdToken();
+      const token = await user.getIdToken(true);
       const res = await fetch(`/api/projects/${projectId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
@@ -307,7 +310,31 @@ export default function ProjectsPage() {
     } finally {
       setDeletingId(null);
     }
-  }, []);
+  }, [user]);
+
+  // ── Owner take-down ────────────────────────────────────────────────────────
+  const handleTakeDown = useCallback(async (projectId: string) => {
+    if (!user) return;
+    if (!confirm("Take down this project? It will be hidden from the board but you can reactivate it from your profile.")) return;
+    setTakingDownId(projectId);
+    try {
+      const token = await user.getIdToken(true);
+      const res = await fetch(`/api/projects/${projectId}`, {
+        method:  "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ status: "closed" }),
+      });
+      if (!res.ok) throw new Error("Take-down failed");
+      // Remove closed project from the board immediately
+      setLiveProjects((prev) => prev.filter((p) => p.id !== projectId));
+      setPins((prev) => prev.filter((p) => p.cardId !== projectId));
+    } catch (err) {
+      alert("Could not take down project. Please try again.");
+      console.error(err);
+    } finally {
+      setTakingDownId(null);
+    }
+  }, [user]);
 
   // ── Canvas height ──────────────────────────────────────────────────────────
   const indexed = allProjects.map((project, originalIndex) => ({
@@ -401,6 +428,9 @@ export default function ProjectsPage() {
                 isAdmin={isAdmin}
                 onDelete={handleDelete}
                 deleting={deletingId === project.id}
+                isOwner={!isAdmin && project.creatorUid === user?.uid}
+                onTakeDown={handleTakeDown}
+                takingDown={takingDownId === project.id}
               />
             ))}
 

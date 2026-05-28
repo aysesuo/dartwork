@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
@@ -30,6 +30,10 @@ interface Project {
   creatorName: string;
   mediaUrl?: string | null;
   datePosted: string;
+  // owner-only fields
+  showOnProfile?: boolean;
+  status?: string;
+  creatorUid?: string;
 }
 
 export default function ProfilePage() {
@@ -41,9 +45,9 @@ export default function ProfilePage() {
 }
 
 function ProfileContent() {
-  const { uid } = useParams<{ uid: string }>();
-  const { user } = useAuth();
-  const router = useRouter();
+  const { uid }    = useParams<{ uid: string }>();
+  const { user }   = useAuth();
+  const router     = useRouter();
 
   const [profile,  setProfile]  = useState<ProfileData | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -59,7 +63,6 @@ function ProfileContent() {
         const idToken = await user.getIdToken(true);
         const headers = { Authorization: `Bearer ${idToken}` };
 
-        // Fetch profile and projects in parallel
         const [profileRes, projectsRes] = await Promise.all([
           fetch(`/api/users/${uid}`, { headers }),
           fetch(`/api/projects?uid=${uid}`, { headers }),
@@ -74,11 +77,7 @@ function ProfileContent() {
         if (!profileRes.ok)            { setError("Could not load profile"); return; }
 
         setProfile(await profileRes.json());
-        if (projectsRes.ok) {
-          setProjects(await projectsRes.json());
-        } else {
-          console.error("Projects fetch failed:", projectsRes.status, await projectsRes.text());
-        }
+        if (projectsRes.ok) setProjects(await projectsRes.json());
       } catch {
         setError("Network error — please refresh");
       } finally {
@@ -87,6 +86,64 @@ function ProfileContent() {
     })();
   }, [user, uid]);
 
+  // ── Project controls ───────────────────────────────────────────────────────
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const patchProject = useCallback(
+    async (projectId: string, patch: Record<string, unknown>) => {
+      if (!user) return;
+      setBusyId(projectId);
+      try {
+        const token = await user.getIdToken(true);
+        const res   = await fetch(`/api/projects/${projectId}`, {
+          method:  "PATCH",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body:    JSON.stringify(patch),
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          alert(d.error ?? "Could not update project.");
+          return;
+        }
+        setProjects((prev) =>
+          prev.map((p) => (p.id === projectId ? { ...p, ...patch } : p)),
+        );
+      } catch {
+        alert("Network error — please try again.");
+      } finally {
+        setBusyId(null);
+      }
+    },
+    [user],
+  );
+
+  const deleteProject = useCallback(
+    async (projectId: string) => {
+      if (!user) return;
+      if (!confirm("Permanently delete this project? This cannot be undone.")) return;
+      setBusyId(projectId);
+      try {
+        const token = await user.getIdToken(true);
+        const res   = await fetch(`/api/projects/${projectId}`, {
+          method:  "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          alert(d.error ?? "Could not delete project.");
+          return;
+        }
+        setProjects((prev) => prev.filter((p) => p.id !== projectId));
+      } catch {
+        alert("Network error — please try again.");
+      } finally {
+        setBusyId(null);
+      }
+    },
+    [user],
+  );
+
+  // ── Loading / error / empty ────────────────────────────────────────────────
   if (loading) {
     return (
       <main className="max-w-2xl mx-auto px-4 py-10">
@@ -118,14 +175,15 @@ function ProfileContent() {
 
   if (!profile) return null;
 
-  const safeName = sanitize(profile.displayName ?? "");
-  const safeBio = sanitize(profile.bio ?? "");
+  const safeName          = sanitize(profile.displayName ?? "");
+  const safeBio           = sanitize(profile.bio ?? "");
   const safeConcentration = sanitize(profile.concentration ?? "");
-  const initials = safeName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+  const initials          = safeName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-10">
-      {/* Header */}
+
+      {/* ── Header ── */}
       <div className="flex items-start gap-5 mb-8">
         <div
           className="w-20 h-20 rounded-full flex items-center justify-center shrink-0 text-2xl font-bold text-white"
@@ -151,12 +209,12 @@ function ProfileContent() {
             className="shrink-0 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-80"
             style={{ border: "1px solid #1e4430", color: "#7fa88a" }}
           >
-            Edit
+            Edit Profile
           </Link>
         )}
       </div>
 
-      {/* Disciplines */}
+      {/* ── Disciplines ── */}
       {profile.disciplines?.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-6">
           {profile.disciplines.map((d) => {
@@ -173,7 +231,7 @@ function ProfileContent() {
         </div>
       )}
 
-      {/* Bio */}
+      {/* ── Bio ── */}
       {safeBio && (
         <div
           className="rounded-2xl p-5 mb-6"
@@ -185,7 +243,7 @@ function ProfileContent() {
         </div>
       )}
 
-      {/* Projects */}
+      {/* ── Projects ── */}
       {projects.length > 0 && (
         <div className="mt-10">
           <h2
@@ -194,20 +252,121 @@ function ProfileContent() {
           >
             Projects
           </h2>
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "2.5rem",
-              justifyContent: "flex-start",
-            }}
-          >
-            {projects.map((project, i) => (
-              <div key={project.id} style={{ width: 270, flexShrink: 0 }}>
-                <ProjectCard project={project} index={i} decorated />
-              </div>
-            ))}
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "2.5rem", justifyContent: "flex-start" }}>
+            {projects.map((project, i) => {
+              const isClosed = project.status === "closed";
+              const busy     = busyId === project.id;
+
+              return (
+                <div key={project.id} style={{ width: 270, flexShrink: 0 }}>
+                  {/* Card */}
+                  <div style={{ position: "relative" }}>
+                    <ProjectCard project={project} index={i} decorated />
+
+                    {/* Closed badge overlay */}
+                    {isClosed && (
+                      <div
+                        style={{
+                          position:        "absolute",
+                          inset:           0,
+                          backgroundColor: "rgba(0,0,0,0.55)",
+                          borderRadius:    "inherit",
+                          display:         "flex",
+                          alignItems:      "center",
+                          justifyContent:  "center",
+                          pointerEvents:   "none",
+                        }}
+                      >
+                        <span
+                          style={{
+                            padding:         "0.3rem 0.9rem",
+                            border:          "2px solid #FF6B35",
+                            color:           "#FF6B35",
+                            fontSize:        "0.7rem",
+                            fontWeight:      800,
+                            textTransform:   "uppercase",
+                            letterSpacing:   "0.15em",
+                            borderRadius:    4,
+                          }}
+                        >
+                          Closed
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Owner controls */}
+                  {isOwner && (
+                    <div
+                      style={{
+                        marginTop:      "0.6rem",
+                        display:        "flex",
+                        flexWrap:       "wrap",
+                        gap:            "0.4rem",
+                        alignItems:     "center",
+                      }}
+                    >
+                      {isClosed ? (
+                        /* Reactivate */
+                        <button
+                          disabled={busy}
+                          onClick={() => patchProject(project.id, { status: "active" })}
+                          style={controlBtn("#00693E")}
+                        >
+                          {busy ? "…" : "Reactivate"}
+                        </button>
+                      ) : (
+                        <>
+                          {/* Show / Hide on profile */}
+                          <button
+                            disabled={busy}
+                            onClick={() =>
+                              patchProject(project.id, { showOnProfile: !project.showOnProfile })
+                            }
+                            style={controlBtn(project.showOnProfile !== false ? "#1e4430" : "#00693E")}
+                            title={project.showOnProfile !== false ? "Hide from profile" : "Show on profile"}
+                          >
+                            {project.showOnProfile !== false ? "Visible" : "Hidden"}
+                          </button>
+
+                          {/* Edit */}
+                          <Link
+                            href={`/projects/${project.id}/edit`}
+                            style={controlBtn("#1e4430")}
+                          >
+                            Edit
+                          </Link>
+                        </>
+                      )}
+
+                      {/* Delete (always visible to owner) */}
+                      <button
+                        disabled={busy}
+                        onClick={() => deleteProject(project.id)}
+                        style={controlBtn("#3b0f0f", "#ff8a80")}
+                      >
+                        {busy ? "…" : "Delete"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
+        </div>
+      )}
+
+      {/* Post a project CTA (owner only, visible even if projects is empty) */}
+      {isOwner && (
+        <div className="mt-8 flex items-center gap-4">
+          <Link
+            href="/projects/new"
+            className="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest text-white transition-opacity hover:opacity-90"
+            style={{ backgroundColor: "#FF6B35" }}
+          >
+            + Post a Project
+          </Link>
         </div>
       )}
 
@@ -219,4 +378,21 @@ function ProfileContent() {
       )}
     </main>
   );
+}
+
+function controlBtn(bg: string, color = "#f5f5f0"): React.CSSProperties {
+  return {
+    padding:       "0.25rem 0.7rem",
+    borderRadius:  "999px",
+    border:        `1px solid ${bg}`,
+    backgroundColor: bg,
+    color,
+    fontSize:      "0.68rem",
+    fontWeight:    700,
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.1em",
+    cursor:        "pointer",
+    textDecoration: "none",
+    display:       "inline-block",
+  };
 }

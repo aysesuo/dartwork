@@ -67,21 +67,28 @@ interface Props {
   /** Called on every drag tick so pins can follow */
   onDragMove?: (cardId: string, x: number, y: number) => void;
   /** Admin controls */
-  isAdmin?:  boolean;
-  onDelete?: (id: string) => void;
-  deleting?: boolean;
+  isAdmin?:    boolean;
+  onDelete?:   (id: string) => void;
+  deleting?:   boolean;
+  /** Creator / owner controls */
+  isOwner?:    boolean;
+  onTakeDown?: (id: string) => void;
+  takingDown?: boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function DraggableProjectCard({
   project,
   index,
-  dimmed    = false,
-  pinCount  = 0,
+  dimmed     = false,
+  pinCount   = 0,
   onDragMove,
-  isAdmin   = false,
+  isAdmin    = false,
   onDelete,
-  deleting  = false,
+  deleting   = false,
+  isOwner    = false,
+  onTakeDown,
+  takingDown = false,
 }: Props) {
   const init    = seededInitialPos(index);
   const initRot = BASE_ROTATIONS[index % BASE_ROTATIONS.length];
@@ -202,6 +209,36 @@ export default function DraggableProjectCard({
           }}
         >
           {deleting ? "…" : "✕"}
+        </button>
+      )}
+
+      {/* Owner take-down button — shown to project creator (not admin-only) */}
+      {isOwner && !isAdmin && onTakeDown && (
+        <button
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onTakeDown(project.id); }}
+          disabled={takingDown}
+          title="Take down project"
+          style={{
+            position:        "absolute",
+            top:             6,
+            left:            6,
+            padding:         "0.15rem 0.55rem",
+            borderRadius:    "999px",
+            backgroundColor: takingDown ? "rgba(120,60,0,0.5)" : "rgba(255,107,53,0.85)",
+            border:          "none",
+            color:           "#fff",
+            fontSize:        "0.58rem",
+            fontWeight:      700,
+            textTransform:   "uppercase" as const,
+            letterSpacing:   "0.08em",
+            cursor:          takingDown ? "not-allowed" : "pointer",
+            zIndex:          10,
+            boxShadow:       "0 1px 4px rgba(0,0,0,0.4)",
+            transition:      "background 0.15s",
+          }}
+        >
+          {takingDown ? "…" : "Take Down"}
         </button>
       )}
     </div>

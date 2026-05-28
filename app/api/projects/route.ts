@@ -45,14 +45,30 @@ export async function GET(request: NextRequest) {
   let docs = snap.docs;
 
   if (filterUid) {
-    // Filter showOnProfile and sort by createdAt in JS (avoids composite index)
-    docs = docs
-      .filter((doc) => doc.data().showOnProfile === true)
-      .sort((a, b) => (b.data().createdAt ?? "").localeCompare(a.data().createdAt ?? ""));
+    const isOwner = filterUid === auth.callerUid;
+    if (isOwner) {
+      // Owner sees ALL their own projects (including hidden and closed)
+      docs = docs.sort(
+        (a, b) => (b.data().createdAt ?? "").localeCompare(a.data().createdAt ?? ""),
+      );
+    } else {
+      // Non-owner: only public, active projects on their profile
+      docs = docs
+        .filter(
+          (doc) =>
+            doc.data().showOnProfile === true &&
+            doc.data().status !== "closed",
+        )
+        .sort((a, b) => (b.data().createdAt ?? "").localeCompare(a.data().createdAt ?? ""));
+    }
+  } else {
+    // Global board: hide closed projects (no composite index needed — filter in JS)
+    docs = docs.filter((doc) => doc.data().status !== "closed");
   }
 
   const projects = docs.map((doc) => {
-    const d = doc.data();
+    const d       = doc.data();
+    const isOwner = filterUid === auth.callerUid;
     return {
       id:              doc.id,
       title:           d.title,
@@ -64,6 +80,9 @@ export async function GET(request: NextRequest) {
       creatorUid:      d.creatorUid,
       creatorName:     d.creatorName,
       datePosted:      d.datePosted,
+      status:          d.status ?? "active",
+      // showOnProfile only exposed to the owner
+      ...(isOwner ? { showOnProfile: d.showOnProfile ?? true } : {}),
     };
   });
 
