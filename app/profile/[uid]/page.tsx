@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { auth } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth";
 import { sanitize } from "@/lib/sanitize";
 import { getDisciplineColor } from "@/lib/disciplines";
@@ -57,7 +56,7 @@ function ProfileContent() {
     if (!user || !uid) return;
     (async () => {
       try {
-        const idToken = await auth.currentUser!.getIdToken();
+        const idToken = await user.getIdToken(true);
         const headers = { Authorization: `Bearer ${idToken}` };
 
         // Fetch profile and projects in parallel
