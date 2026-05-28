@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import PersonCard from "@/components/people/PersonCard";
 import AuthGuard from "@/components/auth/AuthGuard";
 import { useAuth } from "@/lib/auth";
@@ -119,7 +120,13 @@ export default function PeoplePage() {
         {!loading && !error && filteredPeople.length > 0 && (
           <div className="flex flex-col gap-3">
             {filteredPeople.map((person) => (
-              <PersonCard key={person.id} person={person} />
+              <Link
+                key={person.id}
+                href={`/profile/${person.id}`}
+                className="block rounded-3xl transition-opacity hover:opacity-80"
+              >
+                <PersonCard person={person} showContact={false} />
+              </Link>
             ))}
           </div>
         )}
