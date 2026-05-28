@@ -255,99 +255,59 @@ function ProfileContent() {
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: "2.5rem", justifyContent: "flex-start" }}>
             {projects.map((project, i) => {
-              const isClosed = project.status === "closed";
-              const busy     = busyId === project.id;
+              const busy = busyId === project.id;
 
               return (
                 <div key={project.id} style={{ width: 270, flexShrink: 0 }}>
                   {/* Card */}
-                  <div style={{ position: "relative" }}>
-                    <ProjectCard project={project} index={i} decorated />
-
-                    {/* Closed badge overlay */}
-                    {isClosed && (
-                      <div
-                        style={{
-                          position:        "absolute",
-                          inset:           0,
-                          backgroundColor: "rgba(0,0,0,0.55)",
-                          borderRadius:    "inherit",
-                          display:         "flex",
-                          alignItems:      "center",
-                          justifyContent:  "center",
-                          pointerEvents:   "none",
-                        }}
-                      >
-                        <span
-                          style={{
-                            padding:         "0.3rem 0.9rem",
-                            border:          "2px solid #FF6B35",
-                            color:           "#FF6B35",
-                            fontSize:        "0.7rem",
-                            fontWeight:      800,
-                            textTransform:   "uppercase",
-                            letterSpacing:   "0.15em",
-                            borderRadius:    4,
-                          }}
-                        >
-                          Closed
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  <ProjectCard project={project} index={i} decorated />
 
                   {/* Owner controls */}
                   {isOwner && (
                     <div
                       style={{
-                        marginTop:      "0.6rem",
-                        display:        "flex",
-                        flexWrap:       "wrap",
-                        gap:            "0.4rem",
-                        alignItems:     "center",
+                        marginTop:     "0.75rem",
+                        display:       "flex",
+                        flexDirection: "column",
+                        gap:           "0.45rem",
                       }}
                     >
-                      {isClosed ? (
-                        /* Reactivate */
+                      {/* Show in Projects toggle */}
+                      <ToggleRow
+                        label="Show in Projects"
+                        checked={project.status !== "closed"}
+                        disabled={busy}
+                        onChange={(on) =>
+                          patchProject(project.id, { status: on ? "active" : "closed" })
+                        }
+                      />
+
+                      {/* Show on Profile toggle */}
+                      <ToggleRow
+                        label="Show on Profile"
+                        checked={project.showOnProfile !== false}
+                        disabled={busy}
+                        onChange={(on) =>
+                          patchProject(project.id, { showOnProfile: on })
+                        }
+                      />
+
+                      {/* Edit + Delete */}
+                      <div style={{ display: "flex", gap: "0.4rem", marginTop: "0.2rem" }}>
+                        <Link
+                          href={`/projects/${project.id}/edit`}
+                          style={controlBtn("#1e4430")}
+                        >
+                          Edit
+                        </Link>
                         <button
                           disabled={busy}
-                          onClick={() => patchProject(project.id, { status: "active" })}
-                          style={controlBtn("#00693E")}
+                          onClick={() => deleteProject(project.id)}
+                          style={controlBtn("#3b0f0f", "#ff8a80")}
                         >
-                          {busy ? "…" : "Reactivate"}
+                          {busy ? "…" : "Delete"}
                         </button>
-                      ) : (
-                        <>
-                          {/* Show / Hide on profile */}
-                          <button
-                            disabled={busy}
-                            onClick={() =>
-                              patchProject(project.id, { showOnProfile: !project.showOnProfile })
-                            }
-                            style={controlBtn(project.showOnProfile !== false ? "#1e4430" : "#00693E")}
-                            title={project.showOnProfile !== false ? "Hide from profile" : "Show on profile"}
-                          >
-                            {project.showOnProfile !== false ? "Visible" : "Hidden"}
-                          </button>
-
-                          {/* Edit */}
-                          <Link
-                            href={`/projects/${project.id}/edit`}
-                            style={controlBtn("#1e4430")}
-                          >
-                            Edit
-                          </Link>
-                        </>
-                      )}
-
-                      {/* Delete (always visible to owner) */}
-                      <button
-                        disabled={busy}
-                        onClick={() => deleteProject(project.id)}
-                        style={controlBtn("#3b0f0f", "#ff8a80")}
-                      >
-                        {busy ? "…" : "Delete"}
-                      </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -382,17 +342,86 @@ function ProfileContent() {
 
 function controlBtn(bg: string, color = "#f5f5f0"): React.CSSProperties {
   return {
-    padding:       "0.25rem 0.7rem",
-    borderRadius:  "999px",
-    border:        `1px solid ${bg}`,
+    padding:         "0.25rem 0.7rem",
+    borderRadius:    "999px",
+    border:          `1px solid ${bg}`,
     backgroundColor: bg,
     color,
-    fontSize:      "0.68rem",
-    fontWeight:    700,
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.1em",
-    cursor:        "pointer",
-    textDecoration: "none",
-    display:       "inline-block",
+    fontSize:        "0.68rem",
+    fontWeight:      700,
+    textTransform:   "uppercase" as const,
+    letterSpacing:   "0.1em",
+    cursor:          "pointer",
+    textDecoration:  "none",
+    display:         "inline-block",
   };
+}
+
+function ToggleRow({
+  label,
+  checked,
+  disabled,
+  onChange,
+}: {
+  label:    string;
+  checked:  boolean;
+  disabled?: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <div
+      style={{
+        display:        "flex",
+        alignItems:     "center",
+        justifyContent: "space-between",
+        gap:            "0.5rem",
+      }}
+    >
+      <span
+        style={{
+          fontSize:      "0.65rem",
+          fontWeight:    700,
+          textTransform: "uppercase",
+          letterSpacing: "0.09em",
+          color:         "#7fa88a",
+        }}
+      >
+        {label}
+      </span>
+
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        disabled={disabled}
+        onClick={() => !disabled && onChange(!checked)}
+        style={{
+          width:           36,
+          height:          20,
+          borderRadius:    10,
+          border:          "none",
+          backgroundColor: checked ? "#00693E" : "#374151",
+          cursor:          disabled ? "not-allowed" : "pointer",
+          position:        "relative",
+          flexShrink:      0,
+          transition:      "background-color 0.2s",
+          opacity:         disabled ? 0.5 : 1,
+        }}
+      >
+        <span
+          style={{
+            position:        "absolute",
+            top:             3,
+            left:            checked ? 19 : 3,
+            width:           14,
+            height:          14,
+            borderRadius:    "50%",
+            backgroundColor: "#fff",
+            transition:      "left 0.2s",
+            boxShadow:       "0 1px 3px rgba(0,0,0,0.3)",
+          }}
+        />
+      </button>
+    </div>
+  );
 }

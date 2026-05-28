@@ -100,7 +100,6 @@ export default function ProjectsPage() {
   const [liveProjects,    setLiveProjects]    = useState<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [deletingId,      setDeletingId]      = useState<string | null>(null);
-  const [takingDownId,    setTakingDownId]    = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -312,29 +311,6 @@ export default function ProjectsPage() {
     }
   }, [user]);
 
-  // ── Owner take-down ────────────────────────────────────────────────────────
-  const handleTakeDown = useCallback(async (projectId: string) => {
-    if (!user) return;
-    if (!confirm("Take down this project? It will be hidden from the board but you can reactivate it from your profile.")) return;
-    setTakingDownId(projectId);
-    try {
-      const token = await user.getIdToken(true);
-      const res = await fetch(`/api/projects/${projectId}`, {
-        method:  "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body:    JSON.stringify({ status: "closed" }),
-      });
-      if (!res.ok) throw new Error("Take-down failed");
-      // Remove closed project from the board immediately
-      setLiveProjects((prev) => prev.filter((p) => p.id !== projectId));
-      setPins((prev) => prev.filter((p) => p.cardId !== projectId));
-    } catch (err) {
-      alert("Could not take down project. Please try again.");
-      console.error(err);
-    } finally {
-      setTakingDownId(null);
-    }
-  }, [user]);
 
   // ── Canvas height ──────────────────────────────────────────────────────────
   const indexed = allProjects.map((project, originalIndex) => ({
@@ -428,9 +404,6 @@ export default function ProjectsPage() {
                 isAdmin={isAdmin}
                 onDelete={handleDelete}
                 deleting={deletingId === project.id}
-                isOwner={!isAdmin && project.creatorUid === user?.uid}
-                onTakeDown={handleTakeDown}
-                takingDown={takingDownId === project.id}
               />
             ))}
 
