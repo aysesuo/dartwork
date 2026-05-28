@@ -114,7 +114,7 @@ export default function ProjectCard({
         <div
           style={{
             position: "relative",
-            padding: "1.2rem 1.4rem 1.4rem",
+            padding: "0 1.4rem 1.4rem",
             display: "flex",
             flexDirection: "column",
             gap: "0.55rem",
@@ -131,6 +131,9 @@ export default function ProjectCard({
             pointerEvents: "none",
           }}
         />
+
+        {/* ── Pin zone — blank top strip (~10% of card) reserved for pins ── */}
+        <div aria-hidden="true" style={{ height: "2.6rem", flexShrink: 0 }} />
 
         {/* ── Header ── */}
         <div style={{ position: "relative" }}>
