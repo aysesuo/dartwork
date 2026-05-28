@@ -104,24 +104,29 @@ export async function POST(request: NextRequest) {
 
   const ref = await adminDb.collection("applications").add(application);
 
-  // ── Email notification (fire-and-forget) ──────────────────────────────────
+  // ── Email notification (awaited temporarily for debugging) ──────────────
   const ownerEmail = project.creatorEmail as string | undefined;
+  let emailDebug = { ownerEmail: !!ownerEmail, hasApiKey: !!process.env.RESEND_API_KEY, error: null as string | null };
   if (ownerEmail) {
-    notifyApplicationReceived({
-      ownerEmail,
-      ownerName:              project.creatorName ?? "",
-      projectTitle:           project.title       ?? "",
-      projectId,
-      roleName:               roleAppliedFor,
-      applicantName,
-      applicantEmail:         auth.callerEmail,
-      applicantYear,
-      applicantConcentration,
-      whyThisRole,
-      experience,
-      portfolioLink,
-    }).catch(() => { /* silent — email failure must never break the response */ });
+    try {
+      await notifyApplicationReceived({
+        ownerEmail,
+        ownerName:              project.creatorName ?? "",
+        projectTitle:           project.title       ?? "",
+        projectId,
+        roleName:               roleAppliedFor,
+        applicantName,
+        applicantEmail:         auth.callerEmail,
+        applicantYear,
+        applicantConcentration,
+        whyThisRole,
+        experience,
+        portfolioLink,
+      });
+    } catch (err) {
+      emailDebug.error = String(err);
+    }
   }
 
-  return Response.json({ ok: true, id: ref.id }, { status: 201 });
+  return Response.json({ ok: true, id: ref.id, emailDebug }, { status: 201 });
 }
