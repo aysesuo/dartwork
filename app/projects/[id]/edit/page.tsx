@@ -121,8 +121,10 @@ function EditProjectContent() {
   const [rolesNeeded,   setRolesNeeded]   = useState("");
   const [mediaUrl,      setMediaUrl]      = useState("");
   const [showOnProfile, setShowOnProfile] = useState(true);
+  const [status,        setStatus]        = useState<"active" | "closed">("active");
 
   const [submitting, setSubmitting] = useState(false);
+  const [deleting,   setDeleting]   = useState(false);
   const [error,      setError]      = useState<string | null>(null);
 
   // Fetch existing project data
@@ -146,6 +148,7 @@ function EditProjectContent() {
         setRolesNeeded((data.positionsNeeded ?? []).join(", "));
         setMediaUrl(data.mediaUrl ?? "");
         setShowOnProfile(data.showOnProfile !== false);
+        setStatus(data.status === "closed" ? "closed" : "active");
         setLoaded(true);
       } catch {
         setFetchError("Network error — please refresh.");
@@ -175,6 +178,7 @@ function EditProjectContent() {
           rolesNeeded,
           mediaUrl:      mediaUrl.trim(),
           showOnProfile,
+          status,
         }),
       });
 
@@ -187,6 +191,27 @@ function EditProjectContent() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setSubmitting(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!user || !id) return;
+    if (!confirm("Are you sure? This cannot be undone.")) return;
+    setDeleting(true);
+    try {
+      const token = await user.getIdToken(true);
+      const res   = await fetch(`/api/projects/${id}`, {
+        method:  "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error ?? `Server error ${res.status}`);
+      }
+      router.push(`/profile/${user.uid}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not delete project.");
+      setDeleting(false);
     }
   }
 
@@ -325,10 +350,24 @@ function EditProjectContent() {
             />
           </Field>
 
-          {/* Show on profile toggle */}
+          {/* Show in Projects toggle */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
             <div>
-              <p style={{ ...labelStyle, marginBottom: "0.2rem" }}>Show on my profile</p>
+              <p style={{ ...labelStyle, marginBottom: "0.2rem" }}>Show in Projects</p>
+              <p style={{ fontSize: "0.7rem", color: "#f5f5f0", opacity: 0.45 }}>
+                List this project on the public /projects board.
+              </p>
+            </div>
+            <Toggle
+              checked={status === "active"}
+              onChange={(on) => setStatus(on ? "active" : "closed")}
+            />
+          </div>
+
+          {/* Show on Profile toggle */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
+            <div>
+              <p style={{ ...labelStyle, marginBottom: "0.2rem" }}>Show on Profile</p>
               <p style={{ fontSize: "0.7rem", color: "#f5f5f0", opacity: 0.45 }}>
                 Display this project on your public dArtwork profile.
               </p>
@@ -340,40 +379,62 @@ function EditProjectContent() {
           {error && (
             <p
               style={{
-                fontSize:   "0.82rem",
-                color:      "#ff6b6b",
-                background: "rgba(255,107,107,0.1)",
-                border:     "1px solid rgba(255,107,107,0.3)",
+                fontSize:     "0.82rem",
+                color:        "#ff6b6b",
+                background:   "rgba(255,107,107,0.1)",
+                border:       "1px solid rgba(255,107,107,0.3)",
                 borderRadius: 6,
-                padding:    "0.6rem 0.85rem",
+                padding:      "0.6rem 0.85rem",
               }}
             >
               {error}
             </p>
           )}
 
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={submitting}
-            style={{
-              padding:         "0.75rem 2rem",
-              backgroundColor: submitting ? "rgba(0,105,62,0.5)" : GREEN,
-              color:           "#fff",
-              border:          "none",
-              borderRadius:    "999px",
-              fontWeight:      700,
-              fontSize:        "0.8rem",
-              textTransform:   "uppercase",
-              letterSpacing:   "0.14em",
-              cursor:          submitting ? "not-allowed" : "pointer",
-              alignSelf:       "flex-start",
-              transition:      "opacity 0.15s",
-              minWidth:        160,
-            }}
-          >
-            {submitting ? "Saving…" : "Save Changes"}
-          </button>
+          {/* Save + Delete row */}
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+            <button
+              type="submit"
+              disabled={submitting || deleting}
+              style={{
+                padding:         "0.75rem 2rem",
+                backgroundColor: submitting ? "rgba(0,105,62,0.5)" : GREEN,
+                color:           "#fff",
+                border:          "none",
+                borderRadius:    "999px",
+                fontWeight:      700,
+                fontSize:        "0.8rem",
+                textTransform:   "uppercase",
+                letterSpacing:   "0.14em",
+                cursor:          submitting || deleting ? "not-allowed" : "pointer",
+                transition:      "opacity 0.15s",
+                minWidth:        160,
+              }}
+            >
+              {submitting ? "Saving…" : "Save Changes"}
+            </button>
+
+            <button
+              type="button"
+              disabled={submitting || deleting}
+              onClick={handleDelete}
+              style={{
+                padding:         "0.75rem 1.5rem",
+                backgroundColor: "transparent",
+                color:           deleting ? "rgba(255,107,107,0.5)" : "#ff6b6b",
+                border:          `1px solid ${deleting ? "rgba(255,107,107,0.3)" : "rgba(255,107,107,0.4)"}`,
+                borderRadius:    "999px",
+                fontWeight:      700,
+                fontSize:        "0.8rem",
+                textTransform:   "uppercase",
+                letterSpacing:   "0.14em",
+                cursor:          submitting || deleting ? "not-allowed" : "pointer",
+                transition:      "opacity 0.15s",
+              }}
+            >
+              {deleting ? "Deleting…" : "Delete Project"}
+            </button>
+          </div>
         </form>
       </div>
     </div>

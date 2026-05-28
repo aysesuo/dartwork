@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
@@ -85,63 +85,6 @@ function ProfileContent() {
       }
     })();
   }, [user, uid]);
-
-  // ── Project controls ───────────────────────────────────────────────────────
-  const [busyId, setBusyId] = useState<string | null>(null);
-
-  const patchProject = useCallback(
-    async (projectId: string, patch: Record<string, unknown>) => {
-      if (!user) return;
-      setBusyId(projectId);
-      try {
-        const token = await user.getIdToken(true);
-        const res   = await fetch(`/api/projects/${projectId}`, {
-          method:  "PATCH",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body:    JSON.stringify(patch),
-        });
-        if (!res.ok) {
-          const d = await res.json().catch(() => ({}));
-          alert(d.error ?? "Could not update project.");
-          return;
-        }
-        setProjects((prev) =>
-          prev.map((p) => (p.id === projectId ? { ...p, ...patch } : p)),
-        );
-      } catch {
-        alert("Network error — please try again.");
-      } finally {
-        setBusyId(null);
-      }
-    },
-    [user],
-  );
-
-  const deleteProject = useCallback(
-    async (projectId: string) => {
-      if (!user) return;
-      if (!confirm("Permanently delete this project? This cannot be undone.")) return;
-      setBusyId(projectId);
-      try {
-        const token = await user.getIdToken(true);
-        const res   = await fetch(`/api/projects/${projectId}`, {
-          method:  "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) {
-          const d = await res.json().catch(() => ({}));
-          alert(d.error ?? "Could not delete project.");
-          return;
-        }
-        setProjects((prev) => prev.filter((p) => p.id !== projectId));
-      } catch {
-        alert("Network error — please try again.");
-      } finally {
-        setBusyId(null);
-      }
-    },
-    [user],
-  );
 
   // ── Loading / error / empty ────────────────────────────────────────────────
   if (loading) {
@@ -254,65 +197,24 @@ function ProfileContent() {
           </h2>
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: "2.5rem", justifyContent: "flex-start" }}>
-            {projects.map((project, i) => {
-              const busy = busyId === project.id;
+            {projects.map((project, i) => (
+              <div key={project.id} style={{ width: 270, flexShrink: 0 }}>
+                {/* Card */}
+                <ProjectCard project={project} index={i} decorated />
 
-              return (
-                <div key={project.id} style={{ width: 270, flexShrink: 0 }}>
-                  {/* Card */}
-                  <ProjectCard project={project} index={i} decorated />
-
-                  {/* Owner controls */}
-                  {isOwner && (
-                    <div
-                      style={{
-                        marginTop:     "0.75rem",
-                        display:       "flex",
-                        flexDirection: "column",
-                        gap:           "0.45rem",
-                      }}
+                {/* Owner controls */}
+                {isOwner && (
+                  <div style={{ marginTop: "0.6rem" }}>
+                    <Link
+                      href={`/projects/${project.id}/edit`}
+                      style={controlBtn("#1e4430")}
                     >
-                      {/* Show in Projects toggle */}
-                      <ToggleRow
-                        label="Show in Projects"
-                        checked={project.status !== "closed"}
-                        disabled={busy}
-                        onChange={(on) =>
-                          patchProject(project.id, { status: on ? "active" : "closed" })
-                        }
-                      />
-
-                      {/* Show on Profile toggle */}
-                      <ToggleRow
-                        label="Show on Profile"
-                        checked={project.showOnProfile !== false}
-                        disabled={busy}
-                        onChange={(on) =>
-                          patchProject(project.id, { showOnProfile: on })
-                        }
-                      />
-
-                      {/* Edit + Delete */}
-                      <div style={{ display: "flex", gap: "0.4rem", marginTop: "0.2rem" }}>
-                        <Link
-                          href={`/projects/${project.id}/edit`}
-                          style={controlBtn("#1e4430")}
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          disabled={busy}
-                          onClick={() => deleteProject(project.id)}
-                          style={controlBtn("#3b0f0f", "#ff8a80")}
-                        >
-                          {busy ? "…" : "Delete"}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                      Edit
+                    </Link>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -357,71 +259,3 @@ function controlBtn(bg: string, color = "#f5f5f0"): React.CSSProperties {
   };
 }
 
-function ToggleRow({
-  label,
-  checked,
-  disabled,
-  onChange,
-}: {
-  label:    string;
-  checked:  boolean;
-  disabled?: boolean;
-  onChange: (value: boolean) => void;
-}) {
-  return (
-    <div
-      style={{
-        display:        "flex",
-        alignItems:     "center",
-        justifyContent: "space-between",
-        gap:            "0.5rem",
-      }}
-    >
-      <span
-        style={{
-          fontSize:      "0.65rem",
-          fontWeight:    700,
-          textTransform: "uppercase",
-          letterSpacing: "0.09em",
-          color:         "#7fa88a",
-        }}
-      >
-        {label}
-      </span>
-
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        disabled={disabled}
-        onClick={() => !disabled && onChange(!checked)}
-        style={{
-          width:           36,
-          height:          20,
-          borderRadius:    10,
-          border:          "none",
-          backgroundColor: checked ? "#00693E" : "#374151",
-          cursor:          disabled ? "not-allowed" : "pointer",
-          position:        "relative",
-          flexShrink:      0,
-          transition:      "background-color 0.2s",
-          opacity:         disabled ? 0.5 : 1,
-        }}
-      >
-        <span
-          style={{
-            position:        "absolute",
-            top:             3,
-            left:            checked ? 19 : 3,
-            width:           14,
-            height:          14,
-            borderRadius:    "50%",
-            backgroundColor: "#fff",
-            transition:      "left 0.2s",
-            boxShadow:       "0 1px 3px rgba(0,0,0,0.3)",
-          }}
-        />
-      </button>
-    </div>
-  );
-}
