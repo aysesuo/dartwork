@@ -6,6 +6,7 @@ import seedData from "@/data/projects.json";
 import DraggableProjectCard, { seededInitialPos } from "@/components/project/DraggableProjectCard";
 import IndexCardFilter from "@/components/project/IndexCardFilter";
 import BoardPin from "@/components/project/BoardPin";
+import ProjectDetailSheet, { type SheetProject } from "@/components/project/ProjectDetailSheet";
 import AuthGuard from "@/components/auth/AuthGuard";
 import { useAuth } from "@/lib/auth";
 import { cardPositions, CARD_WIDTH } from "@/lib/cardRegistry";
@@ -100,6 +101,7 @@ export default function ProjectsPage() {
   const [liveProjects,    setLiveProjects]    = useState<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [deletingId,      setDeletingId]      = useState<string | null>(null);
+  const [selectedProject, setSelectedProject] = useState<SheetProject | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -404,6 +406,7 @@ export default function ProjectsPage() {
                 isAdmin={isAdmin}
                 onDelete={handleDelete}
                 deleting={deletingId === project.id}
+                onCardClick={setSelectedProject}
               />
             ))}
 
@@ -421,6 +424,12 @@ export default function ProjectsPage() {
           </div>
         </main>
       </div>
+
+      {/* Project detail slide-over + application dialog */}
+      <ProjectDetailSheet
+        project={selectedProject}
+        onClose={() => setSelectedProject(null)}
+      />
     </AuthGuard>
   );
 }

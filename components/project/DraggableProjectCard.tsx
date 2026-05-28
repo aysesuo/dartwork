@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useDrag } from "@use-gesture/react";
 import ProjectCard from "./ProjectCard";
 import { cardPositions } from "@/lib/cardRegistry";
@@ -50,12 +50,14 @@ interface Project {
   id: string;
   title: string;
   creatorName: string;
+  creatorUid?: string;
   discipline: string;
   tags: string[];
   positionsNeeded: string[];
   description: string;
   mediaUrl?: string | null;
   datePosted: string;
+  status?: string;
 }
 
 interface Props {
@@ -67,9 +69,11 @@ interface Props {
   /** Called on every drag tick so pins can follow */
   onDragMove?: (cardId: string, x: number, y: number) => void;
   /** Admin controls */
-  isAdmin?:  boolean;
-  onDelete?: (id: string) => void;
-  deleting?: boolean;
+  isAdmin?:     boolean;
+  onDelete?:    (id: string) => void;
+  deleting?:    boolean;
+  /** Card click — opens detail sheet (suppressed if a drag occurred) */
+  onCardClick?: (project: Project) => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -79,9 +83,10 @@ export default function DraggableProjectCard({
   dimmed     = false,
   pinCount   = 0,
   onDragMove,
-  isAdmin  = false,
+  isAdmin     = false,
   onDelete,
-  deleting = false,
+  deleting    = false,
+  onCardClick,
 }: Props) {
   const init    = seededInitialPos(index);
   const initRot = BASE_ROTATIONS[index % BASE_ROTATIONS.length];
@@ -98,6 +103,9 @@ export default function DraggableProjectCard({
   const [rotation, setRotation] = useState(initRot);
   const [lifted,   setLifted]   = useState(false);
   const [zIndex,   setZIndex]   = useState(index + 1);
+
+  // True if the pointer moved enough to count as a drag (suppresses click)
+  const isDragging = useRef(false);
 
   const isPinned = pinCount > 0;
   const isLoose  = !isPinned && !lifted;
@@ -119,14 +127,20 @@ export default function DraggableProjectCard({
   );
 
   const bind = useDrag(
-    ({ offset: [ox, oy], first, last }) => {
+    ({ offset: [ox, oy], movement: [mx, my], first, last }) => {
       setPos({ x: ox, y: oy });
       // Keep registry current so pin snap detection reads fresh positions
       cardPositions.set(project.id, { x: ox, y: oy });
       // Notify page so pinned pins can follow
       onDragMove?.(project.id, ox, oy);
-      if (first) { setLifted(true);  setZIndex(999); }
-      if (last)  { handleDragEnd(ox, oy); }
+      if (first) {
+        setLifted(true);
+        setZIndex(999);
+        isDragging.current = false; // reset on each new pointer-down
+      }
+      // Mark as drag once movement exceeds 5 px in any direction
+      if (Math.abs(mx) > 5 || Math.abs(my) > 5) isDragging.current = true;
+      if (last) { handleDragEnd(ox, oy); }
     },
     { from: () => [pos.x, pos.y] },
   );
@@ -152,6 +166,9 @@ export default function DraggableProjectCard({
   return (
     <div
       {...bind()}
+      onClick={() => {
+        if (!isDragging.current) onCardClick?.(project);
+      }}
       style={{
         position:      "absolute",
         left:          0,
