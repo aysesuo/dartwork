@@ -205,7 +205,7 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
   // ── Derived values ───────────────────────────────────────────────────────
   const isOwner     = !!project && !!user && user.uid === project.creatorUid;
   const isSeedCard  = !!project && !project.creatorUid; // seed data — not in Firestore
-  const canApply    = !isOwner && !isSeedCard;
+  const canApply    = !isSeedCard; // isOwner check temporarily disabled for testing
 
   const disciplineColors = project ? getDisciplineColor(project.discipline) : null;
 

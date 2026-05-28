@@ -59,9 +59,9 @@ export async function POST(request: NextRequest) {
 
   const project = projectSnap.data()!;
 
-  // ── Prevent self-application ──────────────────────────────────────────────
-  if (project.creatorUid === auth.callerUid)
-    return Response.json({ error: "You cannot apply to your own project" }, { status: 400 });
+  // ── Prevent self-application (temporarily disabled for testing) ───────────
+  // if (project.creatorUid === auth.callerUid)
+  //   return Response.json({ error: "You cannot apply to your own project" }, { status: 400 });
 
   // ── Prevent duplicate applications ───────────────────────────────────────
   const dupSnap = await adminDb
