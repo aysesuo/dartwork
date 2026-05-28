@@ -16,16 +16,19 @@ const UNPINNED_SRC: Record<PinColor, string> = {
   white: "/textures/pin-white-unpinned.png",
 };
 
-// Visual (display) sizes
-const PINNED_SIZE: Record<PinColor, { w: number; h: number }> = {
-  red:   { w: 425, h: 425 },
-  blue:  { w: 425, h: 425 },
-  white: { w: 425, h: 425 },
+// Visual sizes + offsetX corrects for pin head not being at image centre.
+// Blue pinned head sits at ~35 % from left  → shift image right +65 px
+// Blue unpinned head sits at ~23 % from left → shift image right +160 px
+// Red/white heads are well-centred in their images → offsetX: 0
+const PINNED_SIZE: Record<PinColor, { w: number; h: number; offsetX: number }> = {
+  red:   { w: 260, h: 260, offsetX:   0 },
+  blue:  { w: 425, h: 425, offsetX:  65 },
+  white: { w: 260, h: 260, offsetX:   0 },
 };
-const UNPINNED_SIZE: Record<PinColor, { w: number; h: number }> = {
-  red:   { w: 625, h: 475 },
-  blue:  { w: 625, h: 475 },
-  white: { w: 625, h: 475 },
+const UNPINNED_SIZE: Record<PinColor, { w: number; h: number; offsetX: number }> = {
+  red:   { w: 390, h: 295, offsetX:   0 },
+  blue:  { w: 625, h: 475, offsetX: 160 },
+  white: { w: 390, h: 295, offsetX:   0 },
 };
 
 // Hit zone: small enough that cards underneath remain grabbable
@@ -82,7 +85,7 @@ export default function BoardPin({ id, color, x, y, onDrop }: Props) {
         draggable={false}
         style={{
           position:       "absolute",
-          left:           pos.x - size.w / 2,
+          left:           pos.x - size.w / 2 + size.offsetX,
           top:            pos.y - size.h / 2,
           width:          size.w,
           height:         size.h,
