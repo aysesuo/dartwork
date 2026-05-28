@@ -19,7 +19,7 @@ const UNPINNED_SRC: Record<PinColor, string> = {
 // Visual (display) sizes — large so the pin looks great
 const PINNED_SIZE: Record<PinColor, { w: number; h: number }> = {
   red:   { w: 850, h: 850 },
-  blue:  { w: 1700, h: 1700 },
+  blue:  { w: 850, h: 850 },
   white: { w: 850, h: 850 },
 };
 const UNPINNED_SIZE: Record<PinColor, { w: number; h: number }> = {
