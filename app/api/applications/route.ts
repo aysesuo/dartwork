@@ -4,6 +4,41 @@ import { verifyDartmouth } from "@/lib/verify-dartmouth";
 import { sanitize } from "@/lib/sanitize";
 import { notifyApplicationReceived } from "@/lib/notify";
 
+// ── GET — fetch applications received by the logged-in user's projects ────────
+export async function GET(request: NextRequest) {
+  const auth = await verifyDartmouth(request);
+  if ("error" in auth) return auth.error;
+
+  const snap = await adminDb
+    .collection("applications")
+    .where("ownerUid", "==", auth.callerUid)
+    .get();
+
+  const applications = snap.docs
+    .map((doc) => {
+      const d = doc.data();
+      return {
+        id:                     doc.id,
+        projectId:              d.projectId,
+        projectTitle:           d.projectTitle,
+        roleAppliedFor:         d.roleAppliedFor,
+        applicantName:          d.applicantName,
+        applicantEmail:         d.applicantEmail,
+        applicantYear:          d.applicantYear ?? null,
+        applicantConcentration: d.applicantConcentration ?? "",
+        whyThisRole:            d.whyThisRole,
+        experience:             d.experience ?? "",
+        portfolioLink:          d.portfolioLink ?? "",
+        createdAt:              d.createdAt,
+        status:                 d.status ?? "pending",
+      };
+    })
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
+  return Response.json(applications);
+}
+
+// ── POST — submit an application ──────────────────────────────────────────────
 export async function POST(request: NextRequest) {
   const auth = await verifyDartmouth(request);
   if ("error" in auth) return auth.error;
@@ -59,9 +94,9 @@ export async function POST(request: NextRequest) {
 
   const project = projectSnap.data()!;
 
-  // ── Prevent self-application (temporarily disabled for testing) ───────────
-  // if (project.creatorUid === auth.callerUid)
-  //   return Response.json({ error: "You cannot apply to your own project" }, { status: 400 });
+  // ── Prevent self-application ──────────────────────────────────────────────
+  if (project.creatorUid === auth.callerUid)
+    return Response.json({ error: "You cannot apply to your own project" }, { status: 400 });
 
   // ── Prevent duplicate applications ───────────────────────────────────────
   const dupSnap = await adminDb
@@ -81,14 +116,15 @@ export async function POST(request: NextRequest) {
   const profile     = profileSnap.exists ? profileSnap.data()! : {};
 
   const applicantName          = (profile.displayName as string | undefined) ?? auth.displayName;
-  const applicantYear          = (profile.gradYear as number | undefined) ?? null;
+  const applicantYear          = (profile.gradYear    as number | undefined) ?? null;
   const applicantConcentration = (profile.concentration as string | undefined) ?? "";
 
   // ── Save application ──────────────────────────────────────────────────────
   const now = new Date();
   const application = {
     projectId,
-    projectTitle:          project.title   ?? "",
+    projectTitle:          project.title      ?? "",
+    ownerUid:              project.creatorUid ?? "",  // enables inbox query
     roleAppliedFor,
     applicantUid:          auth.callerUid,
     applicantName,
@@ -104,29 +140,24 @@ export async function POST(request: NextRequest) {
 
   const ref = await adminDb.collection("applications").add(application);
 
-  // ── Email notification (awaited temporarily for debugging) ──────────────
+  // ── Email notification (fire-and-forget) ─────────────────────────────────
   const ownerEmail = project.creatorEmail as string | undefined;
-  let emailDebug = { ownerEmail: !!ownerEmail, hasApiKey: !!process.env.RESEND_API_KEY, error: null as string | null };
   if (ownerEmail) {
-    try {
-      await notifyApplicationReceived({
-        ownerEmail,
-        ownerName:              project.creatorName ?? "",
-        projectTitle:           project.title       ?? "",
-        projectId,
-        roleName:               roleAppliedFor,
-        applicantName,
-        applicantEmail:         auth.callerEmail,
-        applicantYear,
-        applicantConcentration,
-        whyThisRole,
-        experience,
-        portfolioLink,
-      });
-    } catch (err) {
-      emailDebug.error = String(err);
-    }
+    notifyApplicationReceived({
+      ownerEmail,
+      ownerName:              project.creatorName ?? "",
+      projectTitle:           project.title       ?? "",
+      projectId,
+      roleName:               roleAppliedFor,
+      applicantName,
+      applicantEmail:         auth.callerEmail,
+      applicantYear,
+      applicantConcentration,
+      whyThisRole,
+      experience,
+      portfolioLink,
+    }).catch(() => { /* email failure must never break the response */ });
   }
 
-  return Response.json({ ok: true, id: ref.id, emailDebug }, { status: 201 });
+  return Response.json({ ok: true, id: ref.id }, { status: 201 });
 }

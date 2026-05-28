@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Briefcase, Users, Calendar, UserCircle } from "lucide-react";
+import { Briefcase, Users, Calendar, UserCircle, Inbox } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
 const GREEN = "#00693E";
@@ -58,16 +58,28 @@ export function DesktopNav() {
             })}
           </ul>
           {user && (
-            <Link
-              href={`/profile/${user.uid}`}
-              aria-label="My profile"
-              className={`ml-2 rounded-md p-2 transition-colors ${
-                isActive(pathname, "/profile") ? "text-white" : "text-gray-500 hover:text-white"
-              }`}
-              style={isActive(pathname, "/profile") ? { backgroundColor: GREEN } : undefined}
-            >
-              <UserCircle className="h-5 w-5" aria-hidden="true" />
-            </Link>
+            <>
+              <Link
+                href="/inbox"
+                aria-label="Inbox"
+                className={`ml-2 rounded-md p-2 transition-colors ${
+                  isActive(pathname, "/inbox") ? "text-white" : "text-gray-500 hover:text-white"
+                }`}
+                style={isActive(pathname, "/inbox") ? { backgroundColor: GREEN } : undefined}
+              >
+                <Inbox className="h-5 w-5" aria-hidden="true" />
+              </Link>
+              <Link
+                href={`/profile/${user.uid}`}
+                aria-label="My profile"
+                className={`ml-1 rounded-md p-2 transition-colors ${
+                  isActive(pathname, "/profile") ? "text-white" : "text-gray-500 hover:text-white"
+                }`}
+                style={isActive(pathname, "/profile") ? { backgroundColor: GREEN } : undefined}
+              >
+                <UserCircle className="h-5 w-5" aria-hidden="true" />
+              </Link>
+            </>
           )}
         </div>
       </div>
@@ -82,7 +94,10 @@ export function MobileNav() {
   const mobileItems = [
     ...NAV_ITEMS,
     ...(user
-      ? [{ href: `/profile/${user.uid}`, label: "Profile", Icon: UserCircle } as const]
+      ? [
+          { href: "/inbox",              label: "Inbox",   Icon: Inbox       } as const,
+          { href: `/profile/${user.uid}`, label: "Profile", Icon: UserCircle } as const,
+        ]
       : []),
   ];
 

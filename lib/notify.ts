@@ -76,7 +76,8 @@ export async function notifyApplicationReceived(
   });
 
   if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Resend ${res.status}: ${body}`);
+    // Email failure is non-fatal — application is already saved to Firestore.
+    // Log for observability but do not throw.
+    console.error(`Resend ${res.status}: ${await res.text()}`);
   }
 }
