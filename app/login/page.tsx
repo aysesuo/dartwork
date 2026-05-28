@@ -42,7 +42,6 @@ export default function LoginPage() {
     setBusy(true);
     try {
       const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ hd: "dartmouth.edu" });
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 

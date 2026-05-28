@@ -3,6 +3,7 @@
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "./firebase";
 import type { User } from "firebase/auth";
+import { isAllowedEmail } from "./owner";
 
 export function useAuth(): { user: User | null | undefined; loading: boolean } {
   const [user, loading] = useAuthState(auth);
@@ -14,5 +15,5 @@ const DARTMOUTH_RE = /^[^@]+@dartmouth\.edu$/i;
 
 export function requireDartmouth(email: string | null | undefined): boolean {
   if (!email) return false;
-  return DARTMOUTH_RE.test(email);
+  return DARTMOUTH_RE.test(email) || isAllowedEmail(email);
 }

@@ -7,6 +7,7 @@
  */
 import type { NextRequest } from "next/server";
 import { adminAuth } from "@/lib/firebase-admin";
+import { isAllowedEmail } from "@/lib/owner";
 
 const DARTMOUTH_RE = /^[^@]+@dartmouth\.edu$/i;
 
@@ -33,7 +34,7 @@ export async function verifyDartmouth(request: NextRequest): Promise<VerifyResul
   }
 
   const callerEmail = decoded.email ?? "";
-  if (!DARTMOUTH_RE.test(callerEmail)) {
+  if (!DARTMOUTH_RE.test(callerEmail) && !isAllowedEmail(callerEmail)) {
     return { error: Response.json({ error: "Only Dartmouth accounts are permitted" }, { status: 403 }) };
   }
 
