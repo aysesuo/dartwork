@@ -27,7 +27,7 @@ const PINNED_SIZE: Record<PinColor, { w: number; h: number; offsetX: number }> =
 };
 const UNPINNED_SIZE: Record<PinColor, { w: number; h: number; offsetX: number }> = {
   red:   { w: 390, h: 295, offsetX:   0 },
-  blue:  { w: 625, h: 475, offsetX: 160 },
+  blue:  { w: 450, h: 340, offsetX:   0 },
   white: { w: 390, h: 295, offsetX:   0 },
 };
 
