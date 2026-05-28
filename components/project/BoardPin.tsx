@@ -16,17 +16,21 @@ const UNPINNED_SRC: Record<PinColor, string> = {
   white: "/textures/pin-white-unpinned.png",
 };
 
-// Pinned = top-down view (square crop). Unpinned = side view (wider).
+// Visual (display) sizes — large so the pin looks great
 const PINNED_SIZE: Record<PinColor, { w: number; h: number }> = {
-  red:   { w: 36, h: 36 },
-  blue:  { w: 44, h: 44 },
-  white: { w: 36, h: 36 },
+  red:   { w: 4250, h: 4250 },
+  blue:  { w: 8500, h: 8500 },
+  white: { w: 4250, h: 4250 },
 };
 const UNPINNED_SIZE: Record<PinColor, { w: number; h: number }> = {
-  red:   { w: 52, h: 40 },
-  blue:  { w: 52, h: 40 },
-  white: { w: 52, h: 40 },
+  red:   { w: 6250, h: 4750 },
+  blue:  { w: 6250, h: 4750 },
+  white: { w: 6250, h: 4750 },
 };
+
+// Hit zone: small enough that cards underneath are still grabbable
+const HIT_W = 40;
+const HIT_H = 40;
 
 interface Props {
   id: string;
@@ -42,7 +46,6 @@ export default function BoardPin({ id, color, x, y, onDrop }: Props) {
   const [pos, setPos] = useState({ x, y });
 
   // Keep local pos in sync with parent when not actively dragging
-  // (parent updates x/y when the pinned card moves)
   useEffect(() => {
     if (!dragging) setPos({ x, y });
   }, [x, y, dragging]);
@@ -64,34 +67,48 @@ export default function BoardPin({ id, color, x, y, onDrop }: Props) {
   );
 
   const size = dragging ? UNPINNED_SIZE[color] : PINNED_SIZE[color];
-  const src  = dragging ? UNPINNED_SRC[color] : PINNED_SRC[color];
+  const src  = dragging ? UNPINNED_SRC[color]  : PINNED_SRC[color];
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    // Small wrapper div = drag hit zone only
+    <div
       {...bind()}
-      src={src}
-      alt=""
-      aria-hidden="true"
-      draggable={false}
       style={{
         position:    "absolute",
-        left:        pos.x - size.w / 2,
-        top:         pos.y - size.h / 2,
-        width:       size.w,
-        height:      size.h,
-        objectFit:   "contain",
-        objectPosition: "center",
+        left:        pos.x - HIT_W / 2,
+        top:         pos.y - HIT_H / 2,
+        width:       HIT_W,
+        height:      HIT_H,
         cursor:      dragging ? "grabbing" : "grab",
         zIndex:      dragging ? 1000 : 25,
         userSelect:  "none",
-        overflow:    "hidden",
         touchAction: "none",
-        filter:      dragging
-          ? "drop-shadow(0 6px 12px rgba(0,0,0,0.6))"
-          : "drop-shadow(0 2px 5px rgba(0,0,0,0.45))",
-        transition:  dragging ? "none" : "filter 0.2s ease",
       }}
-    />
+    >
+      {/* Large visual image — pointer-events: none so it never blocks the card beneath */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+        style={{
+          position:       "absolute",
+          width:          size.w,
+          height:         size.h,
+          // Centre the image on the hit zone's centre point
+          left:           HIT_W / 2 - size.w / 2,
+          top:            HIT_H / 2 - size.h / 2,
+          objectFit:      "contain",
+          objectPosition: "center",
+          pointerEvents:  "none",
+          userSelect:     "none",
+          filter:         dragging
+            ? "drop-shadow(0 6px 12px rgba(0,0,0,0.6))"
+            : "drop-shadow(0 2px 5px rgba(0,0,0,0.45))",
+          transition:     dragging ? "none" : "filter 0.2s ease",
+        }}
+      />
+    </div>
   );
 }
