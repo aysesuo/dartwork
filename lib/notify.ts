@@ -61,7 +61,7 @@ export async function notifyApplicationReceived(
     .filter((l) => l !== null)
     .join("\n");
 
-  await fetch("https://api.resend.com/emails", {
+  const res  = await fetch("https://api.resend.com/emails", {
     method:  "POST",
     headers: {
       "Content-Type":  "application/json",
@@ -74,4 +74,9 @@ export async function notifyApplicationReceived(
       text:    lines,
     }),
   });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Resend ${res.status}: ${body}`);
+  }
 }
