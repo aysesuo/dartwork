@@ -12,13 +12,8 @@ import { verifyDartmouth } from "@/lib/verify-dartmouth";
  * - Never returns the email field.
  */
 export async function GET(request: NextRequest) {
-  console.log("[/api/users] Auth header prefix:", request.headers.get("Authorization")?.slice(0, 20) ?? "(none)");
-
   const auth = await verifyDartmouth(request);
-  if ("error" in auth) {
-    console.log("[/api/users] verifyDartmouth rejected:", await auth.error.clone().json().catch(() => "(unreadable)"));
-    return auth.error;
-  }
+  if ("error" in auth) return auth.error;
 
   // Single-field query — no composite index needed.
   // onboardingComplete guards against half-filled profiles.
