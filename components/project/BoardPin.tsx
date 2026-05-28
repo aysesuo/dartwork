@@ -18,14 +18,14 @@ const UNPINNED_SRC: Record<PinColor, string> = {
 
 // Visual (display) sizes
 const PINNED_SIZE: Record<PinColor, { w: number; h: number }> = {
-  red:   { w: 850, h: 850 },
-  blue:  { w: 850, h: 850 },
-  white: { w: 850, h: 850 },
+  red:   { w: 425, h: 425 },
+  blue:  { w: 425, h: 425 },
+  white: { w: 425, h: 425 },
 };
 const UNPINNED_SIZE: Record<PinColor, { w: number; h: number }> = {
-  red:   { w: 1250, h: 950 },
-  blue:  { w: 1250, h: 950 },
-  white: { w: 1250, h: 950 },
+  red:   { w: 625, h: 475 },
+  blue:  { w: 625, h: 475 },
+  white: { w: 625, h: 475 },
 };
 
 // Hit zone: small enough that cards underneath remain grabbable
