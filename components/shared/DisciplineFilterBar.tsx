@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { getDisciplineColor, DISCIPLINES } from "@/lib/disciplines";
+import { DISCIPLINES } from "@/lib/disciplines";
 
 interface DisciplineFilterBarProps {
   disciplines?: string[];
@@ -48,29 +48,23 @@ export default function DisciplineFilterBar({
         <span style={{ fontSize: "1.1rem", transform: open ? "rotate(180deg)" : "none" }}>▾</span>
       </button>
 
-      {/* Horizontal drop-down — words only, no boxes */}
+      {/* Vertical drop-down — light text, no box */}
       {open && (
         <div
           role="listbox"
-          className="absolute left-0 top-full mt-2 z-30 flex flex-wrap items-center gap-x-5 gap-y-1 px-4 py-2"
-          style={{
-            background: "rgba(20, 6, 6, 0.92)",
-            borderRadius: 8,
-            maxWidth: "min(90vw, 720px)",
-          }}
+          className="absolute left-0 top-full mt-2 z-30 flex flex-col items-start gap-1"
         >
           <button
             type="button"
             role="option"
             aria-selected={allActive}
             onClick={() => { onToggleAll(); setOpen(false); }}
-            className="hover:opacity-80 transition-opacity"
-            style={{ ...CAVEAT, fontSize: "1.45rem", lineHeight: 1.1, color: "#fff", textDecoration: allActive ? "underline" : "none" }}
+            className="hover:opacity-80 transition-opacity text-left"
+            style={{ ...CAVEAT, fontSize: "1.45rem", lineHeight: 1.1, color: "#f5f0e6", textShadow: "0 1px 3px rgba(0,0,0,0.6)", textDecoration: allActive ? "underline" : "none" }}
           >
             All
           </button>
           {disciplines.map((discipline) => {
-            const { hex } = getDisciplineColor(discipline);
             const isActive = !allActive && activeFilters.includes(discipline);
             return (
               <button
@@ -79,8 +73,8 @@ export default function DisciplineFilterBar({
                 role="option"
                 aria-selected={isActive}
                 onClick={() => { onToggle(discipline); setOpen(false); }}
-                className="hover:opacity-80 transition-opacity"
-                style={{ ...CAVEAT, fontSize: "1.45rem", lineHeight: 1.1, color: hex, textDecoration: isActive ? "underline" : "none" }}
+                className="hover:opacity-80 transition-opacity text-left"
+                style={{ ...CAVEAT, fontSize: "1.45rem", lineHeight: 1.1, color: "#f5f0e6", textShadow: "0 1px 3px rgba(0,0,0,0.6)", textDecoration: isActive ? "underline" : "none" }}
               >
                 {discipline}
               </button>
