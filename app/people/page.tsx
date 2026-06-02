@@ -179,8 +179,6 @@ function GazetteContent() {
             }}
           />
         </div>
-
-        <div style={{ borderTop: `1px solid ${INK}`, opacity: 0.35 }} />
       </header>
 
       {/* ══ BROADSHEET BODY ═══════════════════════════════════════════════════ */}
@@ -265,15 +263,8 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
         )}
 
         {/* ── WANTED banner ───────────────────────────────────────────────── */}
-        <div
-          style={{
-            textAlign:    "center",
-            borderTop:    `2px solid ${INK}`,
-            borderBottom: `2px solid ${INK}`,
-            padding:      "0.35rem 0",
-            marginBottom: "1.1rem",
-          }}
-        >
+        <div style={{ textAlign: "center", marginBottom: "1.1rem" }}>
+          <div style={{ borderTop: `2px solid ${INK}`, opacity: 0.85, margin: "0.15rem auto", width: "120px" }} />
           <span
             style={{
               fontFamily:    "var(--font-barlow)",
@@ -282,10 +273,14 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
               letterSpacing: "0.45em",
               textTransform: "uppercase",
               color:         INK,
+              display:       "block",
+              margin:        "0.2rem 0",
+              textShadow:    "0 0 0.5px rgba(26,26,26,0.3)",
             }}
           >
             WANTED
           </span>
+          <div style={{ borderTop: `2px solid ${INK}`, opacity: 0.85, margin: "0.15rem auto", width: "120px" }} />
         </div>
 
         {/* ── Three-column row: [FOR + disciplines] | [photo] | [REWARD + skills] ── */}
@@ -296,12 +291,13 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
             <p
               style={{
                 fontFamily:    "var(--font-special-elite)",
-                fontSize:      "0.58rem",
+                fontSize:      "0.72rem",
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
                 color:         INK,
-                fontWeight:    700,
-                marginBottom:  "0.3rem",
+                fontWeight:    900,
+                marginBottom:  "0.4rem",
+                textShadow:    "0 0 0.5px rgba(26,26,26,0.2)",
               }}
             >
               WANTED FOR
@@ -311,13 +307,15 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
                 key={d}
                 style={{
                   fontFamily:    "var(--font-special-elite)",
-                  fontSize:      "0.6rem",
+                  fontSize:      "0.68rem",
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
                   color:         INK,
-                  opacity:       0.8,
-                  lineHeight:    1.5,
+                  opacity:       0.9,
+                  lineHeight:    1.6,
                   margin:        0,
+                  fontWeight:    800,
+                  textShadow:    "0 0 0.5px rgba(26,26,26,0.15)",
                 }}
               >
                 {d}
@@ -357,12 +355,13 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
             <p
               style={{
                 fontFamily:    "var(--font-special-elite)",
-                fontSize:      "0.58rem",
+                fontSize:      "0.72rem",
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
                 color:         INK,
-                fontWeight:    700,
-                marginBottom:  "0.3rem",
+                fontWeight:    900,
+                marginBottom:  "0.4rem",
+                textShadow:    "0 0 0.5px rgba(26,26,26,0.2)",
               }}
             >
               REWARD
@@ -372,13 +371,15 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
                 key={s}
                 style={{
                   fontFamily:    "var(--font-special-elite)",
-                  fontSize:      "0.6rem",
+                  fontSize:      "0.68rem",
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
                   color:         INK,
-                  opacity:       0.8,
-                  lineHeight:    1.5,
+                  opacity:       0.9,
+                  lineHeight:    1.6,
                   margin:        0,
+                  fontWeight:    800,
+                  textShadow:    "0 0 0.5px rgba(26,26,26,0.15)",
                 }}
               >
                 {s}
@@ -403,8 +404,6 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
         >
           {safeName}
         </h2>
-
-        <InkRule />
 
         {/* ── Bio ───────────────────────────────────────────────────────────── */}
         {safeBio && (
@@ -440,9 +439,6 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
             ↗ {person.portfolioUrl}
           </p>
         )}
-
-        {/* Closing rule */}
-        <div style={{ borderTop: `1px solid ${INK}`, opacity: 0.25, marginTop: "1.5rem" }} />
       </article>
     </Link>
   );
