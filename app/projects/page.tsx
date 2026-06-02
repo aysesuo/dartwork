@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
 import seedData from "@/data/projects.json";
-import DraggableProjectCard, { seededInitialPos } from "@/components/project/DraggableProjectCard";
+import DraggableProjectCard, { seededInitialPos, columnsForWidth } from "@/components/project/DraggableProjectCard";
 import IndexCardFilter from "@/components/project/IndexCardFilter";
 import BoardPin from "@/components/project/BoardPin";
 import ProjectDetailSheet, { type SheetProject } from "@/components/project/ProjectDetailSheet";
@@ -59,11 +59,11 @@ const SNAP_RADIUS = 80;
 const PIN_COLORS: PinColor[] = ["red", "blue", "white", "red", "blue"];
 
 /** Build pin positions for a list of projects, skipping ids already pinned */
-function buildPinsForProjects(projects: Project[], existingPinIds: Set<string>): PinState[] {
+function buildPinsForProjects(projects: Project[], existingPinIds: Set<string>, cols: number): PinState[] {
   const pins: PinState[] = [];
   projects.forEach((project, i) => {
     if (existingPinIds.has(`${project.id}-pin-0`)) return; // already pinned
-    const { left, top } = seededInitialPos(i);
+    const { left, top } = seededInitialPos(i, cols);
     const seed = i * 3 + 1;
     const count = (seed % 3 === 0) ? 2 : 1;
 
@@ -151,19 +151,28 @@ export default function ProjectsPage() {
   const [selRoles,       setSelRoles]       = useState<Set<string>>(new Set());
   const [selCommitments, setSelCommitments] = useState<Set<string>>(new Set());
 
-  const [pins,  setPins]  = useState<PinState[]>(() => buildPinsForProjects(seedData as Project[], new Set()));
+  // Responsive column count — fills horizontal space so the board doesn't
+  // sprawl vertically. Recomputed on resize.
+  const [cols, setCols] = useState<number>(() =>
+    typeof window !== "undefined" ? columnsForWidth(window.innerWidth) : 4,
+  );
+  useEffect(() => {
+    const onResize = () => setCols(columnsForWidth(window.innerWidth));
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const [pins,  setPins]  = useState<PinState[]>([]);
   const [holes, setHoles] = useState<Hole[]>([]);
 
-  // Add pins for newly fetched projects that don't have pins yet
+  // Rebuild pins onto the current grid whenever the project list or the column
+  // count changes (the latter happens on resize, reflowing every card).
   useEffect(() => {
-    if (liveProjects.length === 0) return;
-    setPins((prev) => {
-      const existingIds = new Set(prev.map((p) => p.id));
-      const newPins = buildPinsForProjects(allProjects, existingIds);
-      return newPins.length ? [...prev, ...newPins] : prev;
-    });
+    setPins(buildPinsForProjects(allProjects, new Set(), cols));
+    setHoles([]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allProjects]);
+  }, [allProjects, cols]);
 
   function toggle<T>(set: Set<T>, val: T, setter: (s: Set<T>) => void) {
     const next = new Set(set);
@@ -340,7 +349,7 @@ export default function ProjectsPage() {
     originalIndex,
   }));
   const maxTop = indexed.length
-    ? Math.max(...indexed.map(({ originalIndex }) => seededInitialPos(originalIndex).top))
+    ? Math.max(...indexed.map(({ originalIndex }) => seededInitialPos(originalIndex, cols).top))
     : 0;
   const canvasHeight = maxTop + 380;
 
@@ -360,7 +369,11 @@ export default function ProjectsPage() {
           overflow:            "hidden",
           backgroundColor:     "#b8956a",
           backgroundImage:     "url(/textures/corkboard_final.png)",
-          backgroundSize:      "cover",
+          // Tile the texture at a fixed size instead of stretching it to "cover".
+          // Stretching upscaled the cork granules into a blurry, chunky mess; a
+          // smaller repeating tile zooms out so the grain reads crisp and dense.
+          backgroundSize:      "620px",
+          backgroundRepeat:    "repeat",
           backgroundPosition:  "center",
         }}
       >
@@ -439,6 +452,7 @@ export default function ProjectsPage() {
                 key={project.id}
                 project={project}
                 index={originalIndex}
+                cols={cols}
                 dimmed={matchSet !== null && !matchSet.has(project.id)}
                 pinCount={pinCounts.get(project.id) ?? 0}
                 onDragMove={handleCardDragMove}

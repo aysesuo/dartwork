@@ -127,7 +127,7 @@ function GazetteContent() {
             margin:        "0.5rem 0 0.3rem",
           }}
         >
-          The Dartwork Gazette
+          The People's Gazette
         </h1>
 
         <p
@@ -141,7 +141,7 @@ function GazetteContent() {
             margin:        "0 0 0.5rem",
           }}
         >
-          &ldquo;All the talent that&rsquo;s fit to print&rdquo;
+          &ldquo;Find dArtist to create with.&rdquo;
         </p>
 
         <DoubleRule />
@@ -293,10 +293,10 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
           <div style={{ borderTop: `2px solid ${INK}`, opacity: 0.85, margin: "0.15rem auto", width: "120px" }} />
         </div>
 
-        {/* ── Three-column row: [FOR + disciplines] | [photo] | [REWARD + skills] ── */}
+        {/* ── Two-column row: [WANTED FOR + interests] | [REWARD + skills] ── */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
 
-          {/* LEFT: WANTED FOR + disciplines */}
+          {/* LEFT: WANTED FOR + interests */}
           <div className="ink-print" style={{ flex: 1, textAlign: "right" }}>
             <p
               style={{

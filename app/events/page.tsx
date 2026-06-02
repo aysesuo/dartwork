@@ -207,6 +207,22 @@ export default function EventsPage() {
       >
         {!loading && !fetchErr && (
           <div className="absolute" style={{ left: "26%", right: "26%", top: "26%", bottom: "21%" }}>
+            <span
+              style={{
+                position: "absolute",
+                left: 0,
+                top: "-2.8rem",
+                fontFamily: "var(--font-caveat), cursive",
+                fontSize: "2.6rem",
+                fontWeight: 700,
+                color: "#3a342b",
+                lineHeight: 1,
+                transform: "rotate(-3deg)",
+                pointerEvents: "none",
+              }}
+            >
+              Events
+            </span>
             <CalendarView
               events={filteredEvents as DartworkEvent[]}
               onEventSelect={(e) => { setSelectedEvent(e as LiveEvent); setEditMode(false); }}
@@ -216,14 +232,8 @@ export default function EventsPage() {
       </div>
       <main className="events-bg max-w-5xl mx-auto px-4 py-8 font-[family-name:var(--font-special-elite)]" style={{ position: "relative", zIndex: 2 }}>
 
-        {/* ── Header ── */}
-        <div className="flex items-center justify-between mb-2">
-          <h1
-            className="leading-none"
-            style={{ fontFamily: "var(--font-caveat), cursive", fontSize: "3rem", color: "#f5f5f0" }}
-          >
-            Events
-          </h1>
+        {/* ── Header ── (the "Events" title now lives on the calendar itself) */}
+        <div className="flex items-center justify-end mb-2">
           <div className="flex items-center gap-2">
             {/* Post an Event — logged-in users only */}
             {user && (

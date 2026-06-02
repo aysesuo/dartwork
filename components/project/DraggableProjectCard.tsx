@@ -19,15 +19,26 @@ function lcg(seed: number) {
 // they start below its bottom edge instead of at the top.
 const FILTER_CLEARANCE = 500;
 
-export function seededInitialPos(index: number): { left: number; top: number } {
-  const rng     = lcg(index * 31337 + 7);
-  const col     = index % 5;
-  const row     = Math.floor(index / 5);
-  const COL_W   = 260;
-  const ROW_H   = 320;
-  const X_START = 150;
-  const baseLeft = X_START + col * COL_W;
-  const baseTop  = (col === 0 ? FILTER_CLEARANCE : 30) + row * ROW_H;
+// Shared grid metrics — also consumed by the projects page for canvas height
+// and pin placement so everything stays on the same grid.
+export const LAYOUT = { X_START: 150, COL_W: 260, ROW_H: 320, CARD_W: 270 };
+
+// How many card columns fit the given viewport width. More columns when there's
+// horizontal room means fewer rows and a shorter page, instead of sprawling
+// down. Capped so the rightmost card never spills past the board's right edge
+// (cards beyond it would be clipped by the board's overflow:hidden).
+export function columnsForWidth(viewportWidth: number): number {
+  const inner = viewportWidth - 32 - 48; // 16px board border ×2 + px-6 padding ×2
+  const fit   = 1 + Math.floor((inner - LAYOUT.X_START - LAYOUT.CARD_W - 14) / LAYOUT.COL_W);
+  return Math.max(2, Math.min(9, fit));
+}
+
+export function seededInitialPos(index: number, cols = 5): { left: number; top: number } {
+  const rng      = lcg(index * 31337 + 7);
+  const col      = index % cols;
+  const row      = Math.floor(index / cols);
+  const baseLeft = LAYOUT.X_START + col * LAYOUT.COL_W;
+  const baseTop  = (col === 0 ? FILTER_CLEARANCE : 30) + row * LAYOUT.ROW_H;
   return {
     left: baseLeft + (rng() - 0.5) * 28,              // ±14 px scatter
     top:  Math.max(20, baseTop + (rng() - 0.5) * 36), // ±18 px, never above 20
@@ -69,6 +80,8 @@ interface Project {
 interface Props {
   project:     Project;
   index:       number;
+  /** Number of columns in the responsive board grid */
+  cols?:       number;
   dimmed?:     boolean;
   /** Number of pins currently holding this card */
   pinCount?:   number;
@@ -86,6 +99,7 @@ interface Props {
 export default function DraggableProjectCard({
   project,
   index,
+  cols        = 5,
   dimmed     = false,
   pinCount   = 0,
   onDragMove,
@@ -94,7 +108,7 @@ export default function DraggableProjectCard({
   deleting    = false,
   onCardClick,
 }: Props) {
-  const init    = seededInitialPos(index);
+  const init    = seededInitialPos(index, cols);
   const initRot = BASE_ROTATIONS[index % BASE_ROTATIONS.length];
   const seed    = SEEDS[index % SEEDS.length];
 
@@ -116,11 +130,18 @@ export default function DraggableProjectCard({
   const isPinned = pinCount > 0;
   const isLoose  = !isPinned && !lifted;
 
-  // Register in the shared registry on mount and cleanup on unmount
+  // Reflow to the seeded grid slot whenever the column count changes (e.g. the
+  // window was resized), and keep the shared registry in sync.
   useEffect(() => {
-    cardPositions.set(project.id, { x: init.left, y: init.top });
+    const p = seededInitialPos(index, cols);
+    setPos({ x: p.left, y: p.top });
+    setRotation(BASE_ROTATIONS[index % BASE_ROTATIONS.length]);
+    cardPositions.set(project.id, { x: p.left, y: p.top });
+  }, [cols, index, project.id]);
+
+  // Cleanup registry entry on unmount
+  useEffect(() => {
     return () => { cardPositions.delete(project.id); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project.id]);
 
   const handleDragEnd = useCallback(

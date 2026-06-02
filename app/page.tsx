@@ -5,31 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import eventsData from "@/data/events.json";
 import { useAuth } from "@/lib/auth";
+import { getDisciplineColor } from "@/lib/disciplines";
 import SignInCard from "@/components/SignInCard";
 
 const INK = "#20180f";
 const KRAFT = "#d8c19a";
-
-// Map a discipline to one of the desk-calendar colour classes
-const DISCIPLINE_TO_CAL: Record<string, string> = {
-  Music: "d-music",
-  Film: "d-film",
-  "Visual Art": "d-art",
-  Photography: "d-photo",
-  Writing: "d-writing",
-  Theater: "d-theater",
-  "UX Design": "d-art",
-};
-
-// Colour swatch (hex) used in the "next up" dots, keyed by cal class
-const CAL_HEX: Record<string, string> = {
-  "d-music": "#d4a574",
-  "d-film": "#5a8fd4",
-  "d-art": "#d4632a",
-  "d-photo": "#5f9f8a",
-  "d-writing": "#8b7355",
-  "d-theater": "#a85a5a",
-};
 
 // The desk calendar shows April 2025 — derive its data from the real events
 const CAL_YEAR = 2025;
@@ -39,18 +19,19 @@ const monthEvents = [...eventsData]
   .map((e) => ({ ...e, _date: new Date(e.dateTime) }))
   .sort((a, b) => a._date.getTime() - b._date.getTime());
 
-// day-of-month → cal colour class, for events that fall in April 2025
-const calEventMap: Record<number, string> = {};
+// day-of-month → discipline hex, for events that fall in April 2025. Uses the
+// SAME discipline→colour map as the Events page calendar so the two stay in sync.
+const calEventHex: Record<number, string> = {};
 for (const e of monthEvents) {
   if (e._date.getFullYear() === CAL_YEAR && e._date.getMonth() === CAL_MONTH) {
-    calEventMap[e._date.getDate()] = DISCIPLINE_TO_CAL[e.disciplines[0]] ?? "d-art";
+    calEventHex[e._date.getDate()] = getDisciplineColor(e.disciplines[0] ?? "Other").hex;
   }
 }
 
 // First few upcoming events for the "next up" footer
 const nextUpEvents = monthEvents.slice(0, 3).map((e) => ({
   label: `${e._date.toLocaleDateString("en-US", { month: "short", day: "numeric" })} · ${e.title}`,
-  hex: CAL_HEX[DISCIPLINE_TO_CAL[e.disciplines[0]] ?? "d-art"] ?? "#d4632a",
+  hex: getDisciplineColor(e.disciplines[0] ?? "Other").hex,
 }));
 
 // Leading blank cells before April 1, 2025 (a Tuesday)
@@ -175,7 +156,6 @@ export default function LandingPage() {
             <span className="journal__label">My<br />Profile</span>
             <span className="journal__tag">tap to open</span>
           </div>
-          <span className="door__go">Profile ↗</span>
         </div>
 
         {/* DESK CALENDAR → EVENTS */}
@@ -187,11 +167,15 @@ export default function LandingPage() {
               {[...Array(CAL_LEAD)].map((_, i) => <div key={`empty-${i}`} className="deskcal__cell out"></div>)}
               {[...Array(CAL_DAYS)].map((_, d) => {
                 const dayNum = d + 1;
-                const c = calEventMap[dayNum];
+                const hex = calEventHex[dayNum];
                 return (
-                  <div key={dayNum} className={`deskcal__cell${c ? " " + c : ""}`}>
+                  <div
+                    key={dayNum}
+                    className="deskcal__cell"
+                    style={hex ? { backgroundColor: `${hex}59` } : undefined}
+                  >
                     {dayNum}
-                    {c && <span className="dot"></span>}
+                    {hex && <span className="dot" style={{ backgroundColor: hex, opacity: 1 }}></span>}
                   </div>
                 );
               })}
@@ -202,14 +186,13 @@ export default function LandingPage() {
               ))}
             </div>
           </div>
-          <span className="door__go">Events ↗</span>
         </div>
 
         {/* NEWSPAPER → PEOPLE */}
         <div className="prop news door lift" onClick={(e) => handleDoorClick(e, "people.html", "People")} style={{ left: "34%", top: "47%", transform: "rotate(2.5deg) scale(1.2)" } as any}>
           <div className="news__paper">
-            <div className="news__mast">People</div>
-            <div className="news__sub">"All the talent that's fit to print"</div>
+            <div className="news__mast">The People's Gazette</div>
+            <div className="news__sub">"Find dArtist to create with."</div>
             <div className="news__rule"></div>
             <div className="news__cols">
               {[
@@ -226,7 +209,6 @@ export default function LandingPage() {
               ))}
             </div>
           </div>
-          <span className="door__go">People ↗</span>
         </div>
 
         {/* COFFEE RING */}
@@ -238,7 +220,6 @@ export default function LandingPage() {
           onClick={(e) => handleDoorClick(e, "projects.html", "Projects")}
           style={{ left: "59%", top: "9%", width: "34%", height: "400px", transform: "scale(1.12)" }}
         >
-          <span className="door__go" style={{ left: "18px", right: "auto", top: "18px", bottom: "auto" }}>Projects ↗</span>
         </div>
 
         {/* PROJECT NOTES */}

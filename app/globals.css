@@ -314,7 +314,7 @@ html::after {
 /* masthead: vintage paper bg behind the DARTWORK ransom logo */
 .masthead {
   width: 320px;
-  background: var(--kraft) url("/textures/grunge-vintage-old-paper-background.jpg") center / cover;
+  background: var(--kraft) url("/textures/crumpled_page.png") center / cover;
   padding: 20px 16px;
   border-radius: 2px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.1);
