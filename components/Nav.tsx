@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Briefcase, Users, Calendar, UserCircle, Inbox } from "lucide-react";
+import { Briefcase, Users, Calendar, UserCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import RansomLogo from "@/components/RansomLogo";
 
@@ -13,6 +13,9 @@ const PROJECTS_PAPER = "/textures/paper-yellow.jpg";
 const PROJECT_FONT = 'var(--font-special-elite), "Courier New", monospace';
 const EVENTS_WOOD = "/textures/wood_sign.png";
 const WOOD_INK = "#3a2412";
+// People (gazette) menu — printed-ink type on the bare paper background
+const PEOPLE_INK = "#211910";
+const PEOPLE_FONT = "var(--font-playfair), serif";
 
 const NAV_ITEMS = [
   { href: "/projects", label: "Projects", Icon: Briefcase },
@@ -24,6 +27,19 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
+function MailboxIcon({ open, className }: { open: boolean; className?: string }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={open ? "/textures/mailbox_open.png" : "/textures/mailbox_closed.png"}
+      alt=""
+      aria-hidden="true"
+      className={className}
+      style={{ objectFit: "contain" }}
+    />
+  );
+}
+
 export function DesktopNav() {
   const pathname = usePathname();
   const { user } = useAuth();
@@ -31,7 +47,8 @@ export function DesktopNav() {
   if (pathname === "/") return null;
   const onEvents = isActive(pathname, "/events");
   const onProjects = isActive(pathname, "/projects");
-  const bare = onEvents || onProjects;
+  const onPeople = isActive(pathname, "/people");
+  const bare = onEvents || onProjects || onPeople;
 
   return (
     <nav
@@ -73,6 +90,8 @@ export function DesktopNav() {
                         ? "px-3 py-1.5 transition-transform hover:-translate-y-0.5"
                         : onEvents
                         ? `px-3 py-1 transition-opacity ${active ? "opacity-100" : "opacity-80 hover:opacity-100"}`
+                        : onPeople
+                        ? `ink-print px-3 py-1 transition-opacity ${active ? "opacity-100" : "opacity-70 hover:opacity-100"}`
                         : `rounded-md px-3 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${active ? "text-white" : "text-gray-500 hover:text-white"}`
                     }
                     style={
@@ -99,6 +118,16 @@ export function DesktopNav() {
                             textShadow: "0 1px 0 rgba(255,255,255,0.25)",
                             textDecoration: active ? "underline" : "none",
                           }
+                        : onPeople
+                        ? {
+                            fontFamily: PEOPLE_FONT,
+                            fontSize: "1.15rem",
+                            fontWeight: 800,
+                            letterSpacing: "0.01em",
+                            color: PEOPLE_INK,
+                            textDecoration: active ? "underline" : "none",
+                            textUnderlineOffset: 4,
+                          }
                         : active ? { backgroundColor: GREEN } : undefined
                     }
                   >
@@ -114,19 +143,19 @@ export function DesktopNav() {
                 href="/inbox"
                 aria-label="Inbox"
                 className={`ml-2 rounded-md p-2 transition-colors ${
-                  onProjects ? "hover:opacity-70" : onEvents ? "hover:opacity-70" : isActive(pathname, "/inbox") ? "text-white" : "text-gray-500 hover:text-white"
+                  onProjects || onEvents || onPeople ? "hover:opacity-70" : isActive(pathname, "/inbox") ? "text-white" : "text-gray-500 hover:text-white"
                 }`}
-                style={onProjects || onEvents ? { color: onEvents ? WOOD_INK : PROJECT_INK } : isActive(pathname, "/inbox") ? { backgroundColor: GREEN } : undefined}
+                style={onProjects || onEvents || onPeople ? { color: onEvents ? WOOD_INK : onPeople ? PEOPLE_INK : PROJECT_INK } : isActive(pathname, "/inbox") ? { backgroundColor: GREEN } : undefined}
               >
-                <Inbox className="h-5 w-5" aria-hidden="true" />
+                <MailboxIcon open={isActive(pathname, "/inbox")} className="h-5 w-5" />
               </Link>
               <Link
                 href={`/profile/${user.uid}`}
                 aria-label="My profile"
                 className={`ml-1 rounded-md p-2 transition-colors ${
-                  onProjects ? "hover:opacity-70" : onEvents ? "hover:opacity-70" : isActive(pathname, "/profile") ? "text-white" : "text-gray-500 hover:text-white"
+                  onProjects || onEvents || onPeople ? "hover:opacity-70" : isActive(pathname, "/profile") ? "text-white" : "text-gray-500 hover:text-white"
                 }`}
-                style={onProjects || onEvents ? { color: onEvents ? WOOD_INK : PROJECT_INK } : isActive(pathname, "/profile") ? { backgroundColor: GREEN } : undefined}
+                style={onProjects || onEvents || onPeople ? { color: onEvents ? WOOD_INK : onPeople ? PEOPLE_INK : PROJECT_INK } : isActive(pathname, "/profile") ? { backgroundColor: GREEN } : undefined}
               >
                 <UserCircle className="h-5 w-5" aria-hidden="true" />
               </Link>
@@ -146,7 +175,7 @@ export function MobileNav() {
     ...NAV_ITEMS,
     ...(user
       ? [
-          { href: "/inbox",              label: "Inbox",   Icon: Inbox       } as const,
+          { href: "/inbox",              label: "Inbox",   Icon: UserCircle  } as const, // icon overridden by MailboxIcon below
           { href: `/profile/${user.uid}`, label: "Profile", Icon: UserCircle } as const,
         ]
       : []),
@@ -155,7 +184,8 @@ export function MobileNav() {
   if (pathname === "/") return null;
   const onEvents = isActive(pathname, "/events");
   const onProjects = isActive(pathname, "/projects");
-  const bare = onEvents || onProjects;
+  const onPeople = isActive(pathname, "/people");
+  const bare = onEvents || onProjects || onPeople;
 
   return (
     <nav
@@ -188,6 +218,8 @@ export function MobileNav() {
                     ? "flex flex-col items-center gap-0.5 py-2.5 m-1 transition-transform hover:-translate-y-0.5"
                     : onEvents
                     ? "flex flex-col items-center gap-0.5 py-2.5 transition-opacity"
+                    : onPeople
+                    ? "ink-print flex flex-col items-center gap-0.5 py-2.5 transition-opacity"
                     : `flex flex-col items-center gap-0.5 py-2.5 text-[9px] font-bold uppercase tracking-widest transition-colors ${active ? "" : "text-gray-500 hover:text-white"}`
                 }
                 style={
@@ -213,10 +245,22 @@ export function MobileNav() {
                         color: WOOD_INK,
                         opacity: active ? 1 : 0.85,
                       }
+                    : onPeople
+                    ? {
+                        fontFamily: PEOPLE_FONT,
+                        fontSize: "0.9rem",
+                        fontWeight: 800,
+                        color: PEOPLE_INK,
+                        opacity: active ? 1 : 0.8,
+                      }
                     : active ? { color: GREEN } : undefined
                 }
               >
-                <Icon className="h-5 w-5" aria-hidden="true" />
+                {href === "/inbox" ? (
+                  <MailboxIcon open={active} className="h-5 w-5" />
+                ) : (
+                  <Icon className="h-5 w-5" aria-hidden="true" />
+                )}
                 {label}
               </Link>
             </li>

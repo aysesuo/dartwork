@@ -104,6 +104,7 @@ export default function ProjectsPage() {
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [deletingId,      setDeletingId]      = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<SheetProject | null>(null);
+  const [selectedIndex,   setSelectedIndex]   = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -439,7 +440,7 @@ export default function ProjectsPage() {
                 isAdmin={isAdmin}
                 onDelete={handleDelete}
                 deleting={deletingId === project.id}
-                onCardClick={setSelectedProject}
+                onCardClick={(p, i) => { setSelectedProject(p); setSelectedIndex(i); }}
               />
             ))}
 
@@ -461,6 +462,7 @@ export default function ProjectsPage() {
       {/* Project detail slide-over + application dialog */}
       <ProjectDetailSheet
         project={selectedProject}
+        index={selectedIndex}
         onClose={() => setSelectedProject(null)}
       />
     </AuthGuard>

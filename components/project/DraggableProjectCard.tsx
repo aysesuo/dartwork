@@ -74,7 +74,7 @@ interface Props {
   onDelete?:    (id: string) => void;
   deleting?:    boolean;
   /** Card click — opens detail sheet (suppressed if a drag occurred) */
-  onCardClick?: (project: Project) => void;
+  onCardClick?: (project: Project, index: number) => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -168,7 +168,7 @@ export default function DraggableProjectCard({
     <div
       {...bind()}
       onClick={() => {
-        if (!isDragging.current) onCardClick?.(project);
+        if (!isDragging.current) onCardClick?.(project, index);
       }}
       style={{
         position:      "absolute",

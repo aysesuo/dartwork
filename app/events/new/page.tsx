@@ -8,14 +8,15 @@ import { DISCIPLINES } from "@/lib/disciplines";
 
 const ORANGE = "#FF6B35";
 const GREEN  = "#00693E";
+const INK    = "#1a1008";
 
 const inputStyle: React.CSSProperties = {
   width:           "100%",
   padding:         "0.6rem 0.75rem",
-  background:      "rgba(255,255,255,0.07)",
-  border:          "1px solid rgba(255,255,255,0.18)",
+  background:      "rgba(255,255,255,0.55)",
+  border:          "1px solid rgba(26,16,8,0.28)",
   borderRadius:    "6px",
-  color:           "#f5f5f0",
+  color:           INK,
   fontSize:        "0.9rem",
   fontFamily:      "var(--font-sans), sans-serif",
   outline:         "none",
@@ -28,7 +29,7 @@ const labelStyle: React.CSSProperties = {
   fontWeight:      700,
   textTransform:   "uppercase",
   letterSpacing:   "0.12em",
-  color:           "#f5f5f0",
+  color:           INK,
   opacity:         0.7,
   marginBottom:    "0.4rem",
 };
@@ -52,7 +53,7 @@ function Field({
       </label>
       {children}
       {hint && (
-        <p style={{ fontSize: "0.7rem", color: "#f5f5f0", opacity: 0.45, marginTop: "0.3rem" }}>
+        <p style={{ fontSize: "0.7rem", color: INK, opacity: 0.6, marginTop: "0.3rem" }}>
           {hint}
         </p>
       )}
@@ -137,11 +138,14 @@ export default function NewEventPage() {
     <AuthGuard>
       <div
         style={{
-          minHeight:      "100vh",
-          padding:        "3rem 1rem 6rem",
-          display:        "flex",
-          flexDirection:  "column",
-          alignItems:     "center",
+          minHeight:          "100vh",
+          padding:            "3rem 1rem 6rem",
+          display:            "flex",
+          flexDirection:      "column",
+          alignItems:         "center",
+          backgroundImage:    "url(/textures/crumpled_page.png)",
+          backgroundSize:     "cover",
+          backgroundPosition: "center",
         }}
       >
         <div style={{ width: "100%", maxWidth: 560 }}>
@@ -156,8 +160,8 @@ export default function NewEventPage() {
               fontWeight:     700,
               textTransform:  "uppercase",
               letterSpacing:  "0.12em",
-              color:          "#f5f5f0",
-              opacity:        0.5,
+              color:          INK,
+              opacity:        0.6,
               textDecoration: "none",
               marginBottom:   "2rem",
             }}
@@ -172,13 +176,13 @@ export default function NewEventPage() {
               fontWeight:    800,
               textTransform: "uppercase",
               letterSpacing: "0.04em",
-              color:         "#f5f5f0",
+              color:         INK,
               marginBottom:  "0.4rem",
             }}
           >
             Post an Event
           </h1>
-          <p style={{ fontSize: "0.85rem", color: "#f5f5f0", opacity: 0.55, marginBottom: "2.5rem" }}>
+          <p style={{ fontSize: "0.85rem", color: INK, opacity: 0.7, marginBottom: "2.5rem" }}>
             Share a Dartmouth arts event with the dArtwork community.
           </p>
 
@@ -236,7 +240,7 @@ export default function NewEventPage() {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                style={{ ...inputStyle, colorScheme: "dark" }}
+                style={{ ...inputStyle, colorScheme: "light" }}
                 disabled={submitting}
               />
             </Field>
@@ -248,7 +252,7 @@ export default function NewEventPage() {
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  style={{ ...inputStyle, colorScheme: "dark" }}
+                  style={{ ...inputStyle, colorScheme: "light" }}
                   disabled={submitting}
                 />
               </Field>
@@ -257,7 +261,7 @@ export default function NewEventPage() {
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  style={{ ...inputStyle, colorScheme: "dark" }}
+                  style={{ ...inputStyle, colorScheme: "light" }}
                   disabled={submitting}
                 />
               </Field>
@@ -284,9 +288,9 @@ export default function NewEventPage() {
                       style={{
                         padding:         "0.35rem 0.85rem",
                         borderRadius:    "999px",
-                        border:          `1px solid ${checked ? GREEN : "rgba(255,255,255,0.2)"}`,
+                        border:          `1px solid ${checked ? GREEN : "rgba(26,16,8,0.3)"}`,
                         backgroundColor: checked ? GREEN : "transparent",
-                        color:           "#f5f5f0",
+                        color:           checked ? "#fff" : INK,
                         fontSize:        "0.78rem",
                         fontWeight:      600,
                         cursor:          submitting ? "not-allowed" : "pointer",

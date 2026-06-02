@@ -761,6 +761,16 @@ html::after {
 
 .news__paper {
   background: transparent;
+  /* Ink soaks into the paper grain instead of sitting flat on top */
+  mix-blend-mode: multiply;
+  text-shadow: 0 0 0.4px currentColor, 0 0 1px rgba(32,24,15,0.22);
+}
+
+/* Realistic letterpress ink — multiplies into the paper texture with a
+   faint fibre bleed. Applied to text-only containers (never over images). */
+.ink-print {
+  mix-blend-mode: multiply;
+  text-shadow: 0 0 0.4px currentColor, 0 0 1px rgba(32,24,15,0.22);
 }
 
 .news__mast {

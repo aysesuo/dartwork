@@ -57,17 +57,12 @@ const CAL_DAYS = new Date(CAL_YEAR, CAL_MONTH + 1, 0).getDate();
 
 export default function LandingPage() {
   const router = useRouter();
-  const [expanding, setExpanding] = useState(false);
-  const [expandPos, setExpandPos] = useState({ left: 0, top: 0, width: 0, height: 0, rot: 0 });
   const stageRef = useRef<HTMLDivElement>(null);
-  const [dragStates, setDragStates] = useState<Record<string, { x: number; y: number }>>({});
   const dragRefN0 = useRef<HTMLDivElement>(null);
   const dragRefN1 = useRef<HTMLDivElement>(null);
   const dragRefN2 = useRef<HTMLDivElement>(null);
   const dragRefs = [dragRefN0, dragRefN1, dragRefN2];
   const dragDownRef = useRef<{ el: HTMLElement; x: number; y: number; l: number; t: number; moved: boolean } | null>(null);
-  const openerRef = useRef<HTMLDivElement>(null);
-  const [applyGo, setApplyGo] = useState(false);
 
   // Typewriter effect
   const [tagline, setTagline] = useState("");
@@ -82,42 +77,18 @@ export default function LandingPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Expand animation
+  // Direct navigation — no animation
   const handleDoorClick = (e: React.MouseEvent, page: string, label: string) => {
-    if (expanding) return;
-    const target = e.currentTarget as HTMLElement;
-    const rect = target.getBoundingClientRect();
-    const style = getComputedStyle(target);
-    const transform = style.transform;
-    let rot = 0;
-    if (transform && transform !== "none") {
-      const m = transform.match(/matrix\(([^)]+)\)/);
-      if (m) {
-        const v = m[1].split(",");
-        rot = Math.atan2(parseFloat(v[1]), parseFloat(v[0])) * (180 / Math.PI);
-      }
-    }
-
-    setExpandPos({ left: rect.left, top: rect.top, width: rect.width, height: rect.height, rot });
-    setExpanding(true);
-    setApplyGo(false);
-
-    // Trigger transition after DOM is painted with initial state
-    setTimeout(() => setApplyGo(true), 16);
-
-    // Navigate after transition completes
-    setTimeout(() => {
-      if (page === "projects.html") router.push("/projects");
-      else if (page === "people.html") router.push("/people");
-      else if (page === "events.html") router.push("/events");
-      else if (page === "profile.html") router.push("/profile");
-    }, 680);
+    if (page === "projects.html") router.push("/projects");
+    else if (page === "people.html") router.push("/people");
+    else if (page === "events.html") router.push("/events");
+    else if (page === "profile.html") router.push("/profile");
   };
 
   // Drag logic
   const handlePointerDown = (e: React.PointerEvent, key: string) => {
     const target = e.currentTarget as HTMLElement;
-    if (stageRef.current && !expanding) {
+    if (stageRef.current) {
       const sr = stageRef.current.getBoundingClientRect();
       const r = target.getBoundingClientRect();
       const l = r.left - sr.left;
@@ -294,25 +265,6 @@ export default function LandingPage() {
           </div>
         ))}
       </div>
-
-      {/* EXPAND OVERLAY */}
-      {expanding && (
-        <div
-          ref={openerRef}
-          className={`opener opener--cork ${applyGo ? "go" : ""}`}
-          style={{
-            position: "fixed",
-            left: applyGo ? 0 : expandPos.left,
-            top: applyGo ? 0 : expandPos.top,
-            width: applyGo ? "100vw" : expandPos.width,
-            height: applyGo ? "100vh" : expandPos.height,
-            zIndex: 300,
-            transition: applyGo ? "all 0.66s cubic-bezier(0.25, 0.46, 0.45, 0.94)" : "none",
-          }}
-        >
-          <div className="opener__label"></div>
-        </div>
-      )}
 
       {/* HINT */}
       <div className="hint">✦ <span>tap an object to open its page · drag the notes · peel the flap</span></div>

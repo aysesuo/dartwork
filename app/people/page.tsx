@@ -19,7 +19,7 @@ interface Person {
   photoURL?:     string | null;
 }
 
-const INK = "#1a1a1a";
+const INK = "#211910";
 const STAMP_RED = "rgba(160, 28, 20, 0.82)";
 
 export default function PeoplePage() {
@@ -95,17 +95,25 @@ function GazetteContent() {
   });
 
   return (
-    <div style={{
-      minHeight:          "100vh",
-      color:              INK,
-      backgroundImage:    "url(/textures/grunge-vintage-old-paper-background.jpg)",
-      backgroundSize:     "cover",
-      backgroundPosition: "center",
-      backgroundRepeat:   "no-repeat",
-    }}>
+    <>
+    {/* Fixed paper backdrop — sits behind the transparent nav so the menu
+        ink reads as printed on the same continuous gazette paper. */}
+    <div
+      aria-hidden="true"
+      style={{
+        position:           "fixed",
+        inset:              0,
+        zIndex:             0,
+        backgroundImage:    "url(/textures/grunge-vintage-old-paper-background.jpg)",
+        backgroundSize:     "cover",
+        backgroundPosition: "center",
+        backgroundRepeat:   "no-repeat",
+      }}
+    />
+    <div style={{ position: "relative", zIndex: 1, minHeight: "100vh", color: INK }}>
     <main>
       {/* ══ MASTHEAD ══════════════════════════════════════════════════════════ */}
-      <header style={{ padding: "2rem 2.5rem 0", textAlign: "center" }}>
+      <header className="ink-print" style={{ padding: "2rem 2.5rem 0", textAlign: "center" }}>
         <DoubleRule />
 
         <h1
@@ -204,6 +212,7 @@ function GazetteContent() {
       </div>
     </main>
     </div>
+    </>
   );
 }
 
@@ -265,7 +274,7 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
         )}
 
         {/* ── WANTED banner ───────────────────────────────────────────────── */}
-        <div style={{ textAlign: "center", marginBottom: "1.1rem" }}>
+        <div className="ink-print" style={{ textAlign: "center", marginBottom: "1.1rem" }}>
           <div style={{ borderTop: `2px solid ${INK}`, opacity: 0.85, margin: "0.15rem auto", width: "120px" }} />
           <span
             style={{
@@ -277,7 +286,6 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
               color:         INK,
               display:       "block",
               margin:        "0.2rem 0",
-              textShadow:    "0 0 0.5px rgba(26,26,26,0.3)",
             }}
           >
             WANTED
@@ -289,7 +297,7 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
 
           {/* LEFT: WANTED FOR + disciplines */}
-          <div style={{ flex: 1, textAlign: "right" }}>
+          <div className="ink-print" style={{ flex: 1, textAlign: "right" }}>
             <p
               style={{
                 fontFamily:    "var(--font-special-elite)",
@@ -299,7 +307,6 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
                 color:         INK,
                 fontWeight:    900,
                 marginBottom:  "0.4rem",
-                textShadow:    "0 0 0.5px rgba(26,26,26,0.2)",
               }}
             >
               WANTED FOR
@@ -317,7 +324,6 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
                   lineHeight:    1.6,
                   margin:        0,
                   fontWeight:    800,
-                  textShadow:    "0 0 0.5px rgba(26,26,26,0.15)",
                 }}
               >
                 {d}
@@ -325,35 +331,8 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
             ))}
           </div>
 
-          {/* CENTER: photo — no border/box */}
-          <div
-            style={{
-              width:           90,
-              height:          90,
-              overflow:        "hidden",
-              flexShrink:      0,
-              backgroundColor: "transparent",
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={person.photoURL ?? "/images/dr_seuss.webp"}
-              alt={safeName}
-              style={{
-                width:        "100%",
-                height:       "100%",
-                objectFit:    "cover",
-                display:      "block",
-                // grayscale → crush contrast so only near-black survives
-                // multiply blends white→transparent, black→ink against the paper
-                filter:       "grayscale(1) contrast(8) brightness(0.7)",
-                mixBlendMode: "multiply",
-              }}
-            />
-          </div>
-
           {/* RIGHT: REWARD + skills */}
-          <div style={{ flex: 1, textAlign: "left" }}>
+          <div className="ink-print" style={{ flex: 1, textAlign: "left" }}>
             <p
               style={{
                 fontFamily:    "var(--font-special-elite)",
@@ -363,7 +342,6 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
                 color:         INK,
                 fontWeight:    900,
                 marginBottom:  "0.4rem",
-                textShadow:    "0 0 0.5px rgba(26,26,26,0.2)",
               }}
             >
               REWARD
@@ -381,7 +359,6 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
                   lineHeight:    1.6,
                   margin:        0,
                   fontWeight:    800,
-                  textShadow:    "0 0 0.5px rgba(26,26,26,0.15)",
                 }}
               >
                 {s}
@@ -392,6 +369,7 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
 
         {/* ── Name ──────────────────────────────────────────────────────────── */}
         <h2
+          className="ink-print"
           style={{
             fontFamily:    "var(--font-barlow)",
             fontSize:      "1.2rem",
@@ -410,6 +388,7 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
         {/* ── Bio ───────────────────────────────────────────────────────────── */}
         {safeBio && (
           <p
+            className="ink-print"
             style={{
               fontFamily:   "var(--font-special-elite)",
               fontSize:     "0.73rem",

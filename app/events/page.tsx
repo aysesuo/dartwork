@@ -7,7 +7,7 @@ import CalendarView from "@/components/events/CalendarView";
 import DisciplineFilterBar from "@/components/shared/DisciplineFilterBar";
 import { DISCIPLINES } from "@/lib/disciplines";
 import { DartworkEvent } from "@/lib/calendarAdapter";
-import { downloadIcs } from "@/lib/exportIcs";
+import { googleCalendarUrl } from "@/lib/googleCalendar";
 import AuthGuard from "@/components/auth/AuthGuard";
 import { useAuth } from "@/lib/auth";
 
@@ -319,7 +319,7 @@ export default function EventsPage() {
                         </button>
                       )}
                       <button
-                        onClick={() => downloadIcs(selectedEvent)}
+                        onClick={() => window.open(googleCalendarUrl(selectedEvent), "_blank", "noopener,noreferrer")}
                         className="px-4 py-1.5 text-[#f0ead8] text-[11px] uppercase tracking-widest font-bold border border-[#2a2a2a] bg-[#2a2a2a] hover:bg-[#1a1a1a] transition-colors"
                       >
                         Add to Calendar

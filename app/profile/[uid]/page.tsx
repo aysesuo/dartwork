@@ -121,19 +121,12 @@ function ProfileContent() {
 
   const safeName          = sanitize(profile.displayName ?? "");
   const safeBio           = sanitize(profile.bio ?? "");
-  const initials          = safeName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-10">
 
       {/* ── Header ── */}
       <div className="flex items-start gap-5 mb-8">
-        <div
-          className="w-20 h-20 rounded-full flex items-center justify-center shrink-0 text-2xl font-bold text-white"
-          style={{ backgroundColor: "#FF6B35" }}
-        >
-          {initials}
-        </div>
         <div className="flex-1 min-w-0">
           <h1
             className="text-4xl font-extrabold uppercase tracking-tight font-[family-name:var(--font-barlow)] leading-tight"

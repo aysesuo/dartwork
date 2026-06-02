@@ -5,16 +5,7 @@
 // When `decorated` is false those are suppressed so DraggableProjectCard
 // can own them.
 
-import { COMMITMENT_TEXTURES } from "@/lib/commitment";
-
-const TEXTURES = [
-  "/textures/paper-red.jpg",
-  "/textures/paper-yellow.jpg",
-  "/textures/paper-blue.jpg",
-  "/textures/paper-red-2.jpg",
-  "/textures/paper-yellow-2.jpg",
-  "/textures/paper-blue-2.jpg",
-];
+import { projectPaperTexture } from "@/lib/commitment";
 
 // Seeds as specified: 2, 7, 11, 5, 14
 const SEEDS = [2, 7, 11, 5, 14];
@@ -47,14 +38,7 @@ export default function ProjectCard({
   index = 0,
   decorated = true,
 }: ProjectCardProps) {
-  // Paper colour follows the time commitment when set, else falls back to the
-  // index-based texture rotation.
-  const commitmentTextures = project.commitment
-    ? COMMITMENT_TEXTURES[project.commitment]
-    : null;
-  const texture  = commitmentTextures
-    ? commitmentTextures[index % commitmentTextures.length]
-    : TEXTURES[index % TEXTURES.length];
+  const texture  = projectPaperTexture(project.commitment, index);
   const seed     = SEEDS[index % SEEDS.length];
   const rotation = ROTATIONS[index % ROTATIONS.length];
   const filterId = `torn-paper-${index}`;

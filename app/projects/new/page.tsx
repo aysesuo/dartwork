@@ -12,15 +12,16 @@ import { COMMITMENTS } from "@/lib/commitment";
 
 const GREEN  = "#00693E";
 const ORANGE = "#FF6B35";
+const INK    = "#1a1008";
 
 // ── Shared input style ────────────────────────────────────────────────────────
 const inputStyle: React.CSSProperties = {
   width:        "100%",
   padding:      "0.6rem 0.75rem",
-  background:   "rgba(255,255,255,0.07)",
-  border:       "1px solid rgba(255,255,255,0.18)",
+  background:   "rgba(255,255,255,0.55)",
+  border:       "1px solid rgba(26,16,8,0.28)",
   borderRadius: "6px",
-  color:        "#f5f5f0",
+  color:        INK,
   fontSize:     "0.9rem",
   fontFamily:   "var(--font-sans), sans-serif",
   outline:      "none",
@@ -33,7 +34,7 @@ const labelStyle: React.CSSProperties = {
   fontWeight:    700,
   textTransform: "uppercase",
   letterSpacing: "0.12em",
-  color:         "#f5f5f0",
+  color:         INK,
   opacity:       0.7,
   marginBottom:  "0.4rem",
 };
@@ -57,7 +58,7 @@ function Field({
       </label>
       {children}
       {hint && (
-        <p style={{ fontSize: "0.7rem", color: "#f5f5f0", opacity: 0.45, marginTop: "0.3rem" }}>
+        <p style={{ fontSize: "0.7rem", color: INK, opacity: 0.6, marginTop: "0.3rem" }}>
           {hint}
         </p>
       )}
@@ -84,7 +85,7 @@ function Toggle({
         borderRadius:    12,
         border:          "none",
         cursor:          "pointer",
-        backgroundColor: checked ? GREEN : "rgba(255,255,255,0.2)",
+        backgroundColor: checked ? GREEN : "rgba(26,16,8,0.25)",
         position:        "relative",
         transition:      "background 0.2s",
         flexShrink:      0,
@@ -221,11 +222,14 @@ export default function NewProjectPage() {
     <AuthGuard>
       <div
         style={{
-          minHeight:     "100vh",
-          padding:       "3rem 1rem 6rem",
-          display:       "flex",
-          flexDirection: "column",
-          alignItems:    "center",
+          minHeight:          "100vh",
+          padding:            "3rem 1rem 6rem",
+          display:            "flex",
+          flexDirection:      "column",
+          alignItems:         "center",
+          backgroundImage:    "url(/textures/crumpled_page.png)",
+          backgroundSize:     "cover",
+          backgroundPosition: "center",
         }}
       >
         <div style={{ width: "100%", maxWidth: 560 }}>
@@ -240,8 +244,8 @@ export default function NewProjectPage() {
               fontWeight:    700,
               textTransform: "uppercase",
               letterSpacing: "0.12em",
-              color:         "#f5f5f0",
-              opacity:       0.5,
+              color:         INK,
+              opacity:       0.6,
               textDecoration: "none",
               marginBottom:  "2rem",
             }}
@@ -256,13 +260,13 @@ export default function NewProjectPage() {
               fontWeight:    800,
               textTransform: "uppercase",
               letterSpacing: "0.04em",
-              color:         "#f5f5f0",
+              color:         INK,
               marginBottom:  "0.4rem",
             }}
           >
             Post a Project
           </h1>
-          <p style={{ fontSize: "0.85rem", color: "#f5f5f0", opacity: 0.55, marginBottom: "2.5rem" }}>
+          <p style={{ fontSize: "0.85rem", color: INK, opacity: 0.7, marginBottom: "2.5rem" }}>
             Tell the dArtwork community what you&apos;re making and who you need.
           </p>
 
@@ -317,9 +321,9 @@ export default function NewProjectPage() {
                       style={{
                         padding:      "0.4rem 0.9rem",
                         borderRadius: "999px",
-                        border:       `1px solid ${active ? GREEN : "rgba(255,255,255,0.25)"}`,
+                        border:       `1px solid ${active ? GREEN : "rgba(26,16,8,0.3)"}`,
                         background:   active ? GREEN : "transparent",
-                        color:        "#f5f5f0",
+                        color:        active ? "#fff" : INK,
                         fontSize:     "0.8rem",
                         fontFamily:   "var(--font-sans), sans-serif",
                         cursor:       submitting ? "not-allowed" : "pointer",
@@ -364,9 +368,9 @@ export default function NewProjectPage() {
                       style={{
                         padding:       "0.4rem 0.9rem",
                         borderRadius:  "999px",
-                        border:        `1px solid ${active ? GREEN : "rgba(255,255,255,0.25)"}`,
+                        border:        `1px solid ${active ? GREEN : "rgba(26,16,8,0.3)"}`,
                         background:    active ? GREEN : "transparent",
-                        color:         "#f5f5f0",
+                        color:         active ? "#fff" : INK,
                         fontSize:      "0.8rem",
                         fontFamily:    "var(--font-sans), sans-serif",
                         cursor:        submitting ? "not-allowed" : "pointer",
@@ -418,9 +422,9 @@ export default function NewProjectPage() {
                     style={{
                       padding:       "0.4rem 0.9rem",
                       borderRadius:  "999px",
-                      border:        "1px dashed rgba(255,255,255,0.4)",
+                      border:        "1px dashed rgba(26,16,8,0.4)",
                       background:    "transparent",
-                      color:         "#f5f5f0",
+                      color:         INK,
                       fontSize:      "0.8rem",
                       fontFamily:    "var(--font-sans), sans-serif",
                       cursor:        submitting ? "not-allowed" : "pointer",
@@ -444,7 +448,7 @@ export default function NewProjectPage() {
                       maxHeight:    240,
                       overflow:     "hidden",
                       borderRadius: 8,
-                      border:       "1px solid rgba(255,255,255,0.15)",
+                      border:       "1px solid rgba(26,16,8,0.2)",
                     }}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -465,9 +469,9 @@ export default function NewProjectPage() {
                     style={{
                       padding:       "0.5rem 1.2rem",
                       borderRadius:  "999px",
-                      border:        "1px solid rgba(255,255,255,0.25)",
+                      border:        "1px solid rgba(26,16,8,0.3)",
                       background:    "transparent",
-                      color:         "#f5f5f0",
+                      color:         INK,
                       fontSize:      "0.75rem",
                       fontWeight:    700,
                       textTransform: "uppercase",
@@ -487,8 +491,8 @@ export default function NewProjectPage() {
                       style={{
                         background:    "transparent",
                         border:        "none",
-                        color:         "#f5f5f0",
-                        opacity:       0.45,
+                        color:         INK,
+                        opacity:       0.55,
                         fontSize:      "0.75rem",
                         cursor:        "pointer",
                         padding:       "0.5rem 0",
@@ -515,7 +519,7 @@ export default function NewProjectPage() {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
               <div>
                 <p style={{ ...labelStyle, marginBottom: "0.2rem" }}>Show on my profile</p>
-                <p style={{ fontSize: "0.7rem", color: "#f5f5f0", opacity: 0.45 }}>
+                <p style={{ fontSize: "0.7rem", color: INK, opacity: 0.6 }}>
                   Display this project on your public dArtwork profile.
                 </p>
               </div>

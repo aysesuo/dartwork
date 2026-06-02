@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { getDisciplineColor } from "@/lib/disciplines";
-import { COMMITMENT_TEXTURES } from "@/lib/commitment";
+import { projectPaperTexture } from "@/lib/commitment";
 import {
   Sheet,
   SheetContent,
@@ -42,17 +42,21 @@ interface UserProfile {
 
 interface Props {
   project: SheetProject | null;
+  /** Board index of the card, so the sheet's paper colour matches the card. */
+  index?: number;
   onClose: () => void;
 }
 
 // ── Shared field styles ────────────────────────────────────────────────────────
+const INK = "#1a1008";
+
 const textareaStyle: React.CSSProperties = {
   width:       "100%",
   padding:     "0.55rem 0.75rem",
-  background:  "rgba(255,255,255,0.06)",
-  border:      "1px solid rgba(255,255,255,0.14)",
+  background:  "rgba(255,255,255,0.55)",
+  border:      "1px solid rgba(26,16,8,0.28)",
   borderRadius: 6,
-  color:       "#f5f5f0",
+  color:       INK,
   fontSize:    "0.85rem",
   resize:      "vertical",
   lineHeight:  1.6,
@@ -70,10 +74,10 @@ const urlInputStyle: React.CSSProperties = {
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.1rem" }}>
-      <span style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#7fa88a" }}>
+      <span style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: INK, opacity: 0.6 }}>
         {label}
       </span>
-      <span style={{ fontSize: "0.82rem", color: "#c8ddd1" }}>{value || "—"}</span>
+      <span style={{ fontSize: "0.82rem", color: INK }}>{value || "—"}</span>
     </div>
   );
 }
@@ -91,7 +95,7 @@ function FormField({
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-      <label style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#7fa88a" }}>
+      <label style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: INK, opacity: 0.6 }}>
         {label}
         {required && <span style={{ color: "#FF6B35", marginLeft: 4 }}>*</span>}
         {hint && (
@@ -106,7 +110,7 @@ function FormField({
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
-export default function ProjectDetailSheet({ project, onClose }: Props) {
+export default function ProjectDetailSheet({ project, index = 0, onClose }: Props) {
   const { user } = useAuth();
 
   // ── Responsive side ──────────────────────────────────────────────────────
@@ -211,15 +215,8 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
 
   const disciplineColors = project ? getDisciplineColor(project.discipline) : null;
 
-  // Paper texture matching the project's commitment colour (falls back to the
-  // plain crumpled page when no commitment is set), so the side-page matches
-  // the board card.
-  const commitmentTextures = project?.commitment
-    ? COMMITMENT_TEXTURES[project.commitment]
-    : null;
-  const paperTexture = commitmentTextures
-    ? commitmentTextures[0]
-    : "/textures/crumpled_page.png";
+  // Same coloured paper the board card uses, so the side-sheet matches it.
+  const paperTexture = projectPaperTexture(project?.commitment, index);
 
   // Pre-fill display values
   const prefillName  = profile?.displayName ?? user?.displayName ?? "";
@@ -440,13 +437,15 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
       <Dialog open={!!selectedRole} onOpenChange={(open) => { if (!open) closeApplication(); }}>
         <DialogContent
           style={{
-            backgroundColor: "#0f2318",
-            border:          "1px solid #1e4430",
-            color:           "#f5f5f0",
-            padding:         0,
+            backgroundImage:    "url(/textures/crumpled_page.png)",
+            backgroundSize:     "cover",
+            backgroundPosition: "center",
+            border:             "1px solid rgba(26,16,8,0.25)",
+            color:              INK,
+            padding:            0,
           }}
         >
-          <DialogHeader style={{ padding: "1.4rem 1.5rem 0", borderBottom: "1px solid #1e4430", paddingBottom: "1rem" }}>
+          <DialogHeader style={{ padding: "1.4rem 1.5rem 0", borderBottom: "1px solid rgba(26,16,8,0.2)", paddingBottom: "1rem" }}>
             <DialogTitle
               style={{
                 fontFamily:    "var(--font-barlow), sans-serif",
@@ -454,12 +453,12 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
                 fontWeight:    800,
                 textTransform: "uppercase",
                 letterSpacing: "0.04em",
-                color:         "#f5f5f0",
+                color:         INK,
               }}
             >
               Apply — {selectedRole}
             </DialogTitle>
-            <DialogDescription style={{ color: "#7fa88a", fontSize: "0.78rem", marginTop: "0.2rem" }}>
+            <DialogDescription style={{ color: INK, opacity: 0.65, fontSize: "0.78rem", marginTop: "0.2rem" }}>
               {project?.title}
             </DialogDescription>
           </DialogHeader>
@@ -477,10 +476,10 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
               }}
             >
               <span style={{ fontSize: "2.5rem", lineHeight: 1 }}>✓</span>
-              <p style={{ fontWeight: 700, color: "#f5f5f0", fontSize: "1rem", marginTop: "0.25rem" }}>
+              <p style={{ fontWeight: 700, color: INK, fontSize: "1rem", marginTop: "0.25rem" }}>
                 Application sent!
               </p>
-              <p style={{ color: "#7fa88a", fontSize: "0.85rem" }}>
+              <p style={{ color: INK, opacity: 0.65, fontSize: "0.85rem" }}>
                 The project owner will be in touch.
               </p>
             </div>
@@ -502,9 +501,9 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
                   flexDirection:   "column",
                   gap:             "0.6rem",
                   padding:         "0.85rem 1rem",
-                  backgroundColor: "rgba(255,255,255,0.04)",
+                  backgroundColor: "rgba(26,16,8,0.05)",
                   borderRadius:    8,
-                  border:          "1px solid rgba(255,255,255,0.08)",
+                  border:          "1px solid rgba(26,16,8,0.15)",
                 }}
               >
                 <ReadOnlyField label="Your name"           value={prefillName} />
@@ -526,8 +525,8 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
                 <p
                   style={{
                     fontSize: "0.62rem",
-                    color:    whyThisRole.length < 50 ? "#ff8a80" : "#7fa88a",
-                    opacity:  0.8,
+                    color:    whyThisRole.length < 50 ? "#c1440e" : INK,
+                    opacity:  0.7,
                   }}
                 >
                   {whyThisRole.length}/2000
@@ -565,9 +564,9 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
                 <p
                   style={{
                     fontSize:     "0.78rem",
-                    color:        "#ff8a80",
-                    background:   "rgba(255,138,128,0.08)",
-                    border:       "1px solid rgba(255,138,128,0.25)",
+                    color:        "#9a2d0a",
+                    background:   "rgba(193,68,14,0.1)",
+                    border:       "1px solid rgba(193,68,14,0.3)",
                     borderRadius: 6,
                     padding:      "0.5rem 0.75rem",
                   }}
