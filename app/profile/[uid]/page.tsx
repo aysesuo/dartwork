@@ -13,8 +13,9 @@ interface ProfileData {
   uid: string;
   displayName: string;
   gradYear: number;
-  concentration: string;
   disciplines: string[];
+  skills: string[];
+  interests: string[];
   bio: string;
   isPrivate: boolean;
   onboardingComplete: boolean;
@@ -120,7 +121,6 @@ function ProfileContent() {
 
   const safeName          = sanitize(profile.displayName ?? "");
   const safeBio           = sanitize(profile.bio ?? "");
-  const safeConcentration = sanitize(profile.concentration ?? "");
   const initials          = safeName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 
   return (
@@ -142,7 +142,6 @@ function ProfileContent() {
             {safeName}
           </h1>
           <p className="text-sm mt-1" style={{ color: "#7fa88a" }}>
-            {safeConcentration && <span>{safeConcentration} · </span>}
             {profile.gradYear && <span>Class of {profile.gradYear}</span>}
           </p>
         </div>
@@ -171,6 +170,46 @@ function ProfileContent() {
               </span>
             );
           })}
+        </div>
+      )}
+
+      {/* ── Skills ── */}
+      {profile.skills?.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#7fa88a" }}>
+            Skills
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {profile.skills.map((s) => (
+              <span
+                key={s}
+                className="px-3 py-1 rounded-full text-xs font-semibold"
+                style={{ backgroundColor: "#132d1c", border: "1px solid #1e4430", color: "#c8ddd1" }}
+              >
+                {s}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Interests ── */}
+      {profile.interests?.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#7fa88a" }}>
+            Interests
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {profile.interests.map((i) => (
+              <span
+                key={i}
+                className="px-3 py-1 rounded-full text-xs font-semibold"
+                style={{ backgroundColor: "#132d1c", border: "1px solid #1e4430", color: "#c8ddd1" }}
+              >
+                {i}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 

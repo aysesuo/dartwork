@@ -7,6 +7,8 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth, storage } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth";
 import { DISCIPLINES } from "@/lib/disciplines";
+import { SKILLS } from "@/lib/skills";
+import { INTERESTS } from "@/lib/interests";
 
 const GRAD_YEARS = [2025, 2026, 2027, 2028, 2029];
 
@@ -16,8 +18,9 @@ export default function OnboardingPage() {
 
   const [displayName,  setDisplayName]  = useState("");
   const [gradYear,     setGradYear]     = useState<number>(2028);
-  const [concentration,setConcentration]= useState("");
   const [disciplines,  setDisciplines]  = useState<string[]>([]);
+  const [skills,       setSkills]       = useState<string[]>([]);
+  const [interests,    setInterests]    = useState<string[]>([]);
   const [bio,          setBio]          = useState("");
   const [isPrivate,    setIsPrivate]    = useState(false);
 
@@ -39,6 +42,18 @@ export default function OnboardingPage() {
   function toggleDiscipline(d: string) {
     setDisciplines((prev) =>
       prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]
+    );
+  }
+
+  function toggleSkill(s: string) {
+    setSkills((prev) =>
+      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
+    );
+  }
+
+  function toggleInterest(i: string) {
+    setInterests((prev) =>
+      prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]
     );
   }
 
@@ -81,8 +96,9 @@ export default function OnboardingPage() {
         body: JSON.stringify({
           displayName:        displayName.trim(),
           gradYear,
-          concentration:      concentration.trim(),
           disciplines,
+          skills,
+          interests,
           bio:                bio.trim(),
           isPrivate,
           photoURL,
@@ -204,19 +220,6 @@ export default function OnboardingPage() {
           </select>
         </Field>
 
-        {/* Concentration */}
-        <Field label="Concentration (optional)">
-          <input
-            type="text"
-            value={concentration}
-            onChange={(e) => setConcentration(e.target.value)}
-            placeholder="e.g. Computer Science"
-            maxLength={80}
-            className={inputCls}
-            style={inputStyle}
-          />
-        </Field>
-
         {/* Disciplines */}
         <Field label="Disciplines (select all that apply)">
           <div className="flex flex-wrap gap-2 mt-1">
@@ -235,6 +238,54 @@ export default function OnboardingPage() {
                   }}
                 >
                   {d}
+                </button>
+              );
+            })}
+          </div>
+        </Field>
+
+        {/* Skills */}
+        <Field label="Skills (select all that apply)">
+          <div className="flex flex-wrap gap-2 mt-1">
+            {SKILLS.map((s) => {
+              const active = skills.includes(s);
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => toggleSkill(s)}
+                  className="px-3 py-1 rounded-full text-xs font-semibold transition-colors"
+                  style={{
+                    backgroundColor: active ? "#00693E" : "#132d1c",
+                    color:  active ? "#fff" : "#7fa88a",
+                    border: `1px solid ${active ? "#00693E" : "#1e4430"}`,
+                  }}
+                >
+                  {s}
+                </button>
+              );
+            })}
+          </div>
+        </Field>
+
+        {/* Interests */}
+        <Field label="Interests (select all that apply)">
+          <div className="flex flex-wrap gap-2 mt-1">
+            {INTERESTS.map((i) => {
+              const active = interests.includes(i);
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => toggleInterest(i)}
+                  className="px-3 py-1 rounded-full text-xs font-semibold transition-colors"
+                  style={{
+                    backgroundColor: active ? "#00693E" : "#132d1c",
+                    color:  active ? "#fff" : "#7fa88a",
+                    border: `1px solid ${active ? "#00693E" : "#1e4430"}`,
+                  }}
+                >
+                  {i}
                 </button>
               );
             })}

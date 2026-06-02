@@ -11,6 +11,7 @@ interface Person {
   name:          string;
   disciplines:   string[];
   skills:        string[];
+  interests:     string[];
   bio:           string;
   contactEmail:  string | null;
   portfolioUrl?: string | null;
@@ -68,6 +69,7 @@ function GazetteContent() {
           (p) =>
             p.name.toLowerCase().includes(q) ||
             p.skills.some((s) => s.toLowerCase().includes(q)) ||
+            p.interests.some((i) => i.toLowerCase().includes(q)) ||
             p.disciplines.some((d) => d.toLowerCase().includes(q)),
         )
         .map((p) => p.id),
@@ -302,7 +304,7 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
             >
               WANTED FOR
             </p>
-            {person.disciplines.map((d) => (
+            {person.interests.map((d) => (
               <p
                 key={d}
                 style={{

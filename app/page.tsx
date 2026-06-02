@@ -226,16 +226,15 @@ export default function LandingPage() {
             <div className="news__rule"></div>
             <div className="news__cols">
               {[
-                { name: "Aysesu", role: "Visual Art", wanted: "Mural collaborator", skills: "Painting · Risograph", interests: "Printmaking · Zines" },
-                { name: "Theo K.", role: "Film · Editor", wanted: "Doc shooter", skills: "Premiere · Color", interests: "Vérité · Sound" },
-                { name: "Michelle", role: "Writing", wanted: "Co-writer", skills: "Poetry · Essays", interests: "Lit mags · Slam" },
+                { name: "Aysesu", role: "Visual Art", skills: "Painting · Risograph", interests: "Murals · Zines" },
+                { name: "Theo K.", role: "Film · Editor", skills: "Premiere · Color", interests: "Documentary · Sound" },
+                { name: "Michelle", role: "Writing", skills: "Poetry · Essays", interests: "Lit Magazines · Performance" },
               ].map((p) => (
                 <div className="news__col" key={p.name}>
                   <b className="news__name">{p.name}</b>
                   <span className="news__role">{p.role}</span>
-                  <span className="news__wanted">Wanted for: {p.wanted}</span>
+                  <span className="news__wanted">Wanted for: {p.interests}</span>
                   <span className="news__field"><b>Reward</b> {p.skills}</span>
-                  <span className="news__field"><b>Interests</b> {p.interests}</span>
                 </div>
               ))}
             </div>

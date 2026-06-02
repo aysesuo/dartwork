@@ -2,6 +2,8 @@ import type { NextRequest } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { verifyDartmouth } from "@/lib/verify-dartmouth";
 import { DISCIPLINES } from "@/lib/disciplines";
+import { SKILLS } from "@/lib/skills";
+import { INTERESTS } from "@/lib/interests";
 
 const ADMIN_UID = process.env.ADMIN_UID;
 
@@ -36,8 +38,9 @@ export async function GET(
     uid,
     displayName:        data.displayName,
     gradYear:           data.gradYear,
-    concentration:      data.concentration,
     disciplines:        data.disciplines,
+    skills:             data.skills ?? [],
+    interests:          data.interests ?? [],
     bio:                data.bio,
     isPrivate:          data.isPrivate,
     onboardingComplete: data.onboardingComplete,
@@ -80,8 +83,9 @@ export async function POST(
   const ALLOWED_FIELDS = new Set([
     "displayName",
     "gradYear",
-    "concentration",
     "disciplines",
+    "skills",
+    "interests",
     "bio",
     "isPrivate",
     "authorizedViewers",
@@ -107,12 +111,6 @@ export async function POST(
     safe.bio = safe.bio.trim().slice(0, 400);
   }
 
-  if ("concentration" in safe) {
-    if (typeof safe.concentration !== "string")
-      return Response.json({ error: "Concentration must be a string" }, { status: 400 });
-    safe.concentration = safe.concentration.trim().slice(0, 80);
-  }
-
   if ("gradYear" in safe) {
     const year = Number(safe.gradYear);
     const currentYear = new Date().getFullYear();
@@ -128,6 +126,24 @@ export async function POST(
     safe.disciplines = (safe.disciplines as unknown[])
       .filter((d) => typeof d === "string" && DISCIPLINES.includes(d as never))
       .slice(0, 9);
+  }
+
+  // Validate skills against the allowlist
+  if ("skills" in safe) {
+    if (!Array.isArray(safe.skills))
+      return Response.json({ error: "Skills must be an array" }, { status: 400 });
+    safe.skills = (safe.skills as unknown[])
+      .filter((s) => typeof s === "string" && SKILLS.includes(s as never))
+      .slice(0, 25);
+  }
+
+  // Validate interests against the allowlist
+  if ("interests" in safe) {
+    if (!Array.isArray(safe.interests))
+      return Response.json({ error: "Interests must be an array" }, { status: 400 });
+    safe.interests = (safe.interests as unknown[])
+      .filter((i) => typeof i === "string" && INTERESTS.includes(i as never))
+      .slice(0, 20);
   }
 
   // Validate authorizedViewers — must all be @dartmouth.edu (HIGH-6)

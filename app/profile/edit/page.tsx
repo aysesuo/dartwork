@@ -8,14 +8,17 @@ import { auth, storage } from "@/lib/firebase";
 import { useAuth, requireDartmouth } from "@/lib/auth";
 import { sanitize } from "@/lib/sanitize";
 import { DISCIPLINES } from "@/lib/disciplines";
+import { SKILLS } from "@/lib/skills";
+import { INTERESTS } from "@/lib/interests";
 
 const GRAD_YEARS = [2025, 2026, 2027, 2028, 2029];
 
 interface ProfileData {
   displayName:        string;
   gradYear:           number;
-  concentration:      string;
   disciplines:        string[];
+  skills:             string[];
+  interests:          string[];
   bio:                string;
   isPrivate:          boolean;
   authorizedViewers:  string[];
@@ -32,8 +35,9 @@ export default function EditProfilePage() {
 
   const [displayName,   setDisplayName]   = useState("");
   const [gradYear,      setGradYear]      = useState<number>(2028);
-  const [concentration, setConcentration] = useState("");
   const [disciplines,   setDisciplines]   = useState<string[]>([]);
+  const [skills,        setSkills]        = useState<string[]>([]);
+  const [interests,     setInterests]     = useState<string[]>([]);
   const [bio,           setBio]           = useState("");
   const [isPrivate,     setIsPrivate]     = useState(false);
   const [authorizedViewers, setAuthorizedViewers] = useState<string[]>([]);
@@ -66,8 +70,9 @@ export default function EditProfilePage() {
         const data: ProfileData = await res.json();
         setDisplayName(sanitize(data.displayName ?? ""));
         setGradYear(data.gradYear ?? 2028);
-        setConcentration(sanitize(data.concentration ?? ""));
         setDisciplines(data.disciplines ?? []);
+        setSkills(data.skills ?? []);
+        setInterests(data.interests ?? []);
         setBio(sanitize(data.bio ?? ""));
         setIsPrivate(data.isPrivate ?? false);
         setAuthorizedViewers(data.authorizedViewers ?? []);
@@ -82,6 +87,18 @@ export default function EditProfilePage() {
   function toggleDiscipline(d: string) {
     setDisciplines((prev) =>
       prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]
+    );
+  }
+
+  function toggleSkill(s: string) {
+    setSkills((prev) =>
+      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
+    );
+  }
+
+  function toggleInterest(i: string) {
+    setInterests((prev) =>
+      prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]
     );
   }
 
@@ -142,8 +159,9 @@ export default function EditProfilePage() {
         body: JSON.stringify({
           displayName:       displayName.trim(),
           gradYear,
-          concentration:     concentration.trim(),
           disciplines,
+          skills,
+          interests,
           bio:               bio.trim(),
           isPrivate,
           authorizedViewers,
@@ -282,17 +300,6 @@ export default function EditProfilePage() {
           </select>
         </Field>
 
-        <Field label="Concentration (optional)">
-          <input
-            type="text"
-            value={concentration}
-            onChange={(e) => setConcentration(e.target.value)}
-            maxLength={80}
-            className={inputCls}
-            style={inputStyle}
-          />
-        </Field>
-
         <Field label="Disciplines">
           <div className="flex flex-wrap gap-2 mt-1">
             {DISCIPLINES.map((d) => {
@@ -310,6 +317,52 @@ export default function EditProfilePage() {
                   }}
                 >
                   {d}
+                </button>
+              );
+            })}
+          </div>
+        </Field>
+
+        <Field label="Skills">
+          <div className="flex flex-wrap gap-2 mt-1">
+            {SKILLS.map((s) => {
+              const active = skills.includes(s);
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => toggleSkill(s)}
+                  className="px-3 py-1 rounded-full text-xs font-semibold transition-colors"
+                  style={{
+                    backgroundColor: active ? "#00693E" : "#132d1c",
+                    color:  active ? "#fff" : "#7fa88a",
+                    border: `1px solid ${active ? "#00693E" : "#1e4430"}`,
+                  }}
+                >
+                  {s}
+                </button>
+              );
+            })}
+          </div>
+        </Field>
+
+        <Field label="Interests">
+          <div className="flex flex-wrap gap-2 mt-1">
+            {INTERESTS.map((i) => {
+              const active = interests.includes(i);
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => toggleInterest(i)}
+                  className="px-3 py-1 rounded-full text-xs font-semibold transition-colors"
+                  style={{
+                    backgroundColor: active ? "#00693E" : "#132d1c",
+                    color:  active ? "#fff" : "#7fa88a",
+                    border: `1px solid ${active ? "#00693E" : "#1e4430"}`,
+                  }}
+                >
+                  {i}
                 </button>
               );
             })}

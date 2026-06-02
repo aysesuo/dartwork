@@ -26,15 +26,12 @@ export async function GET(request: NextRequest) {
     .filter((doc) => doc.data().isPrivate !== true)
     .map((doc) => {
       const d = doc.data();
-      // concentration makes a useful searchable "skill" proxy
-      const skills: string[] = d.concentration
-        ? [d.concentration as string]
-        : [];
       return {
         id:           doc.id,
         name:         (d.displayName as string) ?? "",
         disciplines:  (d.disciplines as string[]) ?? [],
-        skills,
+        skills:       (d.skills as string[]) ?? [],
+        interests:    (d.interests as string[]) ?? [],
         bio:          (d.bio as string) ?? "",
         gradYear:     (d.gradYear as number | undefined) ?? null,
         photoURL:     (d.photoURL as string | undefined) ?? null,
