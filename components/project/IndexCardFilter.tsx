@@ -67,11 +67,11 @@ function CheckRow({
           fontFamily: 'var(--font-special-elite), "Courier New", monospace',
           fontSize: "0.62rem",
           color: INK,
-          opacity: checked ? 0.95 : 0.65,
+          opacity: checked ? 1 : 0.85,
           textTransform: "uppercase",
           letterSpacing: "0.06em",
           lineHeight: 1.3,
-          fontWeight: checked ? 700 : 400,
+          fontWeight: checked ? 800 : 700,
         }}
       >
         {label}
@@ -96,7 +96,8 @@ function Section({
           textTransform: "uppercase",
           letterSpacing: "0.18em",
           color: INK,
-          opacity: 0.45,
+          opacity: 0.7,
+          fontWeight: 700,
           marginBottom: "0.3rem",
           borderBottom: "1px solid rgba(26,16,8,0.18)",
           paddingBottom: "0.15rem",

@@ -81,7 +81,7 @@ export default function RootLayout({
       lang="en"
       className={`${barlow.variable} ${geistMono.variable} ${playfair.variable} ${barlowCondensed.variable} ${specialElite.variable} ${anton.variable} ${rye.variable} ${alfaSlab.variable} ${stardos.variable} ${caveat.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col" style={{ backgroundColor: "#0a1f14", color: "#f5f5f0" }}>
+      <body className="min-h-full flex flex-col" style={{ backgroundColor: "#1a1512", color: "#f5f5f0" }}>
         <DesktopNav />
         {/* pb-16 prevents the fixed mobile bottom nav from covering content */}
         <div className="pb-16 md:pb-0 flex-1">{children}</div>

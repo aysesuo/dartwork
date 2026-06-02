@@ -220,7 +220,7 @@ export default function EventsPage() {
         <div className="flex items-center justify-between mb-2">
           <h1
             className="leading-none"
-            style={{ fontFamily: "var(--font-caveat), cursive", fontSize: "3.75rem", color: "#f5f5f0" }}
+            style={{ fontFamily: "var(--font-caveat), cursive", fontSize: "3rem", color: "#f5f5f0" }}
           >
             Events
           </h1>
@@ -239,7 +239,7 @@ export default function EventsPage() {
         </div>
 
         {/* ── Discipline filter ── */}
-        <div className="mb-6">
+        <div className="-mt-3 mb-6">
           <DisciplineFilterBar
             activeFilters={activeFilters}
             onToggle={handleToggle}
