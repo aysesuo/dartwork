@@ -93,7 +93,7 @@ function GazetteContent() {
   });
 
   return (
-    <main style={{
+    <div style={{
       minHeight:          "100vh",
       color:              INK,
       backgroundImage:    "url(/textures/grunge-paper-background.jpg)",
@@ -101,6 +101,7 @@ function GazetteContent() {
       backgroundPosition: "center",
       backgroundRepeat:   "no-repeat",
     }}>
+    <main>
       {/* ══ MASTHEAD ══════════════════════════════════════════════════════════ */}
       <header style={{ padding: "2rem 2.5rem 0", textAlign: "center" }}>
         <DoubleRule />
@@ -202,6 +203,7 @@ function GazetteContent() {
         )}
       </div>
     </main>
+    </div>
   );
 }
 
