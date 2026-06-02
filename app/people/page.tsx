@@ -293,10 +293,10 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
           <div style={{ borderTop: `2px solid ${INK}`, opacity: 0.85, margin: "0.15rem auto", width: "120px" }} />
         </div>
 
-        {/* ── Two-column row: [WANTED FOR + interests] | [REWARD + skills] ── */}
+        {/* ── Two-column row: [WANTED FOR + skills] | [REWARD + interests] ── */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
 
-          {/* LEFT: WANTED FOR + interests */}
+          {/* LEFT: WANTED FOR + skills */}
           <div className="ink-print" style={{ flex: 1, textAlign: "right" }}>
             <p
               style={{
@@ -311,7 +311,7 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
             >
               WANTED FOR
             </p>
-            {person.interests.map((d) => (
+            {person.skills.map((d) => (
               <p
                 key={d}
                 style={{
@@ -331,7 +331,7 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
             ))}
           </div>
 
-          {/* RIGHT: REWARD + skills */}
+          {/* RIGHT: REWARD + interests */}
           <div className="ink-print" style={{ flex: 1, textAlign: "left" }}>
             <p
               style={{
@@ -346,7 +346,7 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
             >
               REWARD
             </p>
-            {person.skills.map((s) => (
+            {person.interests.map((s) => (
               <p
                 key={s}
                 style={{
