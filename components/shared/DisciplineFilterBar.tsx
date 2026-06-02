@@ -41,11 +41,11 @@ export default function DisciplineFilterBar({
         aria-haspopup="listbox"
         aria-expanded={open}
         className="inline-flex items-baseline gap-2 hover:opacity-80 transition-opacity"
-        style={{ ...CAVEAT, fontSize: "1.7rem", lineHeight: 1, color: "#fff" }}
+        style={{ ...CAVEAT, fontSize: "1.3rem", lineHeight: 1, color: "#fff" }}
       >
         <span style={{ opacity: 0.7 }}>Showing:</span>
         <span style={{ textDecoration: "underline" }}>{current}</span>
-        <span style={{ fontSize: "1.1rem", transform: open ? "rotate(180deg)" : "none" }}>▾</span>
+        <span style={{ fontSize: "0.9rem", transform: open ? "rotate(180deg)" : "none" }}>▾</span>
       </button>
 
       {/* Vertical drop-down — light text, no box */}
