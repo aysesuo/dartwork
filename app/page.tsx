@@ -1,194 +1,275 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Lock } from "lucide-react";
-import { useAuth } from "@/lib/auth";
-import ProjectCard from "@/components/project/ProjectCard";
-import EventCard from "@/components/events/EventCard";
-import EventDotsMonth from "@/components/home/EventDotsMonth";
-import projectsData from "@/data/projects.json";
-import eventsData from "@/data/events.json";
-import { DartworkEvent } from "@/lib/calendarAdapter";
 
-const RECENT_PROJECTS = [...projectsData]
-  .sort((a, b) => new Date(b.datePosted).getTime() - new Date(a.datePosted).getTime())
-  .slice(0, 3);
+const INK = "#20180f";
+const KRAFT = "#d8c19a";
 
-const UPCOMING_EVENTS = [...eventsData]
-  .filter((e) => new Date(e.dateTime) >= new Date())
-  .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime())
-  .slice(0, 2) as DartworkEvent[];
+export default function LandingPage() {
+  const router = useRouter();
+  const [expanding, setExpanding] = useState(false);
+  const [expandPos, setExpandPos] = useState({ left: 0, top: 0, width: 0, height: 0, rot: 0 });
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [dragStates, setDragStates] = useState<Record<string, { x: number; y: number }>>({});
+  const dragRefN0 = useRef<HTMLDivElement>(null);
+  const dragRefN1 = useRef<HTMLDivElement>(null);
+  const dragRefN2 = useRef<HTMLDivElement>(null);
+  const dragRefs = [dragRefN0, dragRefN1, dragRefN2];
+  const dragDownRef = useRef<{ el: HTMLElement; x: number; y: number; l: number; t: number; moved: boolean } | null>(null);
+  const openerRef = useRef<HTMLDivElement>(null);
+  const [applyGo, setApplyGo] = useState(false);
 
-const MONTH_ANCHOR =
-  UPCOMING_EVENTS.length > 0
-    ? new Date(UPCOMING_EVENTS[0].dateTime)
-    : eventsData.length > 0
-    ? new Date(
-        [...eventsData].sort(
-          (a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime()
-        )[0].dateTime
-      )
-    : new Date();
+  // Typewriter effect
+  const [tagline, setTagline] = useState("");
+  useEffect(() => {
+    const full = "Where dArtists meet, collaborate & showcase.";
+    let i = 0;
+    const interval = setInterval(() => {
+      i++;
+      setTagline(full.slice(0, i));
+      if (i >= full.length) clearInterval(interval);
+    }, 38 + Math.random() * 55);
+    return () => clearInterval(interval);
+  }, []);
 
-export default function HomePage() {
-  const { user, loading } = useAuth();
-  const signedIn = !loading && !!user;
+  // Expand animation
+  const handleDoorClick = (e: React.MouseEvent, page: string, label: string) => {
+    if (expanding) return;
+    const target = e.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const style = getComputedStyle(target);
+    const transform = style.transform;
+    let rot = 0;
+    if (transform && transform !== "none") {
+      const m = transform.match(/matrix\(([^)]+)\)/);
+      if (m) {
+        const v = m[1].split(",");
+        rot = Math.atan2(parseFloat(v[1]), parseFloat(v[0])) * (180 / Math.PI);
+      }
+    }
+
+    setExpandPos({ left: rect.left, top: rect.top, width: rect.width, height: rect.height, rot });
+    setExpanding(true);
+    setApplyGo(false);
+
+    // Trigger transition after DOM is painted with initial state
+    setTimeout(() => setApplyGo(true), 16);
+
+    // Navigate after transition completes
+    setTimeout(() => {
+      if (page === "projects.html") router.push("/projects");
+      else if (page === "people.html") router.push("/people");
+      else if (page === "events.html") router.push("/events");
+      else if (page === "profile.html") router.push("/profile");
+    }, 680);
+  };
+
+  // Drag logic
+  const handlePointerDown = (e: React.PointerEvent, key: string) => {
+    const target = e.currentTarget as HTMLElement;
+    if (stageRef.current && !expanding) {
+      const sr = stageRef.current.getBoundingClientRect();
+      const r = target.getBoundingClientRect();
+      const l = r.left - sr.left;
+      const t = r.top - sr.top;
+      dragDownRef.current = { el: target, x: e.clientX, y: e.clientY, l, t, moved: false };
+      target.style.transition = "none";
+      target.setPointerCapture?.(e.pointerId);
+    }
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (dragDownRef.current) {
+      const dx = e.clientX - dragDownRef.current.x;
+      const dy = e.clientY - dragDownRef.current.y;
+      if (Math.abs(dx) + Math.abs(dy) > 5) dragDownRef.current.moved = true;
+      dragDownRef.current.el.style.left = dragDownRef.current.l + dx + "px";
+      dragDownRef.current.el.style.top = dragDownRef.current.t + dy + "px";
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (dragDownRef.current) {
+      dragDownRef.current.el.style.transition = "";
+      dragDownRef.current = null;
+    }
+  };
 
   return (
-    <main className="max-w-5xl mx-auto px-4 py-10 sm:py-14">
+    <div className="desk" style={{ position: "fixed", inset: 0, overflow: "hidden" }}>
+      <div className="ruler"></div>
 
-      {/* Hero */}
-      <section className="mb-20 pt-6 text-center sm:text-left">
-        <h1 className="text-6xl font-extrabold tracking-tight sm:text-8xl leading-[1.0] font-[family-name:var(--font-barlow)] uppercase">
-          <span style={{ color: "#AAFF47" }}>d</span>
-          <span style={{ color: "#FF6B35" }} className="italic font-[family-name:var(--font-playfair)]">Art</span>
-          <span style={{ color: "#AAFF47" }}>work</span>
-        </h1>
-
-        <p className="mt-5 text-lg font-semibold max-w-md sm:mx-0 mx-auto" style={{ color: "#f5f5f0" }}>
-          Where dArtists meet, collaborate &amp; showcase.
-        </p>
-
-        {!signedIn && (
-          <div className="mt-8 max-w-sm sm:mx-0 mx-auto">
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-widest transition-opacity hover:opacity-70"
-              style={{ color: "#FF6B35" }}
-            >
-              Sign up to
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Link>
-            <ul className="mt-4 space-y-3">
-              {[
-                "Build an online portfolio that displays your work.",
-                "Find collaborators for any project or idea.",
-                "Discover or post dArtsy events on campus.",
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-3 text-sm" style={{ color: "#7fa88a" }}>
-                  <span
-                    className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: "#AAFF47" }}
-                    aria-hidden="true"
-                  />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </section>
-
-      {/* Projects to Join */}
-      <section className="mb-14">
-        <div className="mb-4 flex items-end justify-between">
-          <h2 className="text-2xl font-black tracking-tight font-[family-name:var(--font-playfair)]" style={{ color: "#f5f5f0" }}>
-            Projects to Join
-          </h2>
-          {signedIn && (
-            <Link
-              href="/projects"
-              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest transition-colors hover:opacity-70"
-              style={{ color: "#FF6B35" }}
-            >
-              All projects
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Link>
-          )}
-        </div>
-
-        {signedIn ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {RECENT_PROJECTS.map((project, i) => (
-              <Link
-                key={project.id}
-                href="/projects"
-                className="transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
-              >
-                <ProjectCard project={project} index={i} />
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <MemberGate label="Sign in to collaborate" />
-        )}
-      </section>
-
-      {/* Events Coming Up */}
-      <section>
-        <div className="mb-4 flex items-end justify-between">
-          <h2 className="text-2xl font-black tracking-tight font-[family-name:var(--font-playfair)]" style={{ color: "#f5f5f0" }}>
-            Events Coming Up
-          </h2>
-          {signedIn && (
-            <Link
-              href="/events"
-              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest transition-colors hover:opacity-70"
-              style={{ color: "#FF6B35" }}
-            >
-              All events
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Link>
-          )}
-        </div>
-
-        {signedIn ? (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-2">
-              {UPCOMING_EVENTS.length > 0 ? (
-                UPCOMING_EVENTS.map((event) => (
-                  <Link
-                    key={event.id}
-                    href="/events"
-                    className="rounded-xl transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
-                  >
-                    <EventCard event={event} />
-                  </Link>
-                ))
-              ) : (
-                <p className="col-span-full py-8 text-center text-sm text-gray-400">
-                  No upcoming events right now —{" "}
-                  <Link href="/events" className="underline hover:text-gray-700">
-                    browse past events
-                  </Link>
-                  .
-                </p>
-              )}
-            </div>
-            <div className="lg:col-span-1">
-              <EventDotsMonth
-                events={eventsData as DartworkEvent[]}
-                monthAnchor={MONTH_ANCHOR}
-              />
-            </div>
-          </div>
-        ) : (
-          <MemberGate label="Sign in to view upcoming events!" />
-        )}
-      </section>
-
-    </main>
-  );
-}
-
-function MemberGate({ label }: { label: string }) {
-  return (
-    <div
-      className="flex flex-col items-center justify-center gap-5 rounded-2xl py-16 px-8 text-center"
-      style={{ backgroundColor: "#0f2b1a", border: "1px solid #1e4430" }}
-    >
-      <Lock className="h-6 w-6" style={{ color: "#7fa88a" }} aria-hidden="true" />
-      <p className="text-sm" style={{ color: "#7fa88a" }}>
-        Members only. Sign in to see what&apos;s happening.
-      </p>
-      <Link
-        href="/login"
-        className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-white text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-90"
-        style={{ backgroundColor: "#FF6B35" }}
+      <div
+        className="stage"
+        ref={stageRef}
+        style={{ position: "absolute", inset: 0, zIndex: 3 }}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
       >
-        {label}
-        <ArrowRight className="h-4 w-4" aria-hidden="true" />
-      </Link>
+        {/* MASTHEAD */}
+        <div className="prop masthead lift" style={{ left: "3%", top: "7.5%", transform: "rotate(-1.4deg)" }}>
+          <div className="tape tape--washi" style={{ position: "absolute", left: "-26px", top: "-14px", transform: "rotate(-24deg)" }}></div>
+          <p className="masthead__eyebrow">Dartmouth's creative desk</p>
+          <h1 className="logo logo--ransom" id="logo">
+            <span className="logo__line">
+              <span className="rl" style={{ "--r": "-3deg", "--bg": "#f3ead4", "--fg": "#20180f", fontFamily: "'Anton'" } as any}>D</span>
+              <span className="rl" style={{ "--r": "4deg", "--bg": "#f0a6ad", "--fg": "#20180f", fontFamily: "'Rye'" } as any}>A</span>
+              <span className="rl" style={{ "--r": "2deg", "--bg": "#e7cd5e", "--fg": "#20180f", fontFamily: "'Special Elite'" } as any}>R</span>
+              <span className="rl" style={{ "--r": "-1deg", "--bg": "#a0d3e7", "--fg": "#20180f", fontFamily: "'Alfa Slab One'" } as any}>T</span>
+              <span className="rl" style={{ "--r": "3deg", "--bg": "#20180f", "--fg": "#f3ead4", fontFamily: "'Stardos Stencil'" } as any}>W</span>
+              <span className="rl" style={{ "--r": "-2deg", "--bg": "#f3ead4", "--fg": "#20180f", fontFamily: "'Anton'" } as any}>O</span>
+              <span className="rl" style={{ "--r": "1deg", "--bg": "#e7cd5e", "--fg": "#20180f", fontFamily: "'Rye'" } as any}>R</span>
+              <span className="rl" style={{ "--r": "-3deg", "--bg": "#f0a6ad", "--fg": "#20180f", fontFamily: "'Special Elite'" } as any}>K</span>
+            </span>
+          </h1>
+          <p className="tagline">{tagline}<span className="cursor">&nbsp;</span></p>
+          <button className="stamp" onClick={(e) => { e.currentTarget.classList.add("stamped"); setTimeout(() => e.currentTarget.classList.remove("stamped"), 320); }}>Post a project</button>
+        </div>
+
+        {/* PEEL CARD */}
+        <div className="prop peel lift" style={{ left: "3.5%", top: "44%", transform: "rotate(2deg)" }}>
+          <span className="pin pin-red"></span>
+          <div className="peel__base">
+            <p className="peel__hint">The fine print</p>
+            <p className="peel__msg">A student-run home where d<em>Art</em>ists find collaborators, show work, and turn loose ideas into real projects.</p>
+          </div>
+          <div className="peel__flap" onClick={(e) => e.currentTarget.parentElement?.classList.toggle("open")}>
+            <span className="corner">peel ↑</span>
+            <div className="big">What is dartwork?</div>
+            <div className="sm">peel to read</div>
+          </div>
+        </div>
+
+        {/* JOURNAL → PROFILE */}
+        <div className="prop journal door lift" onClick={(e) => handleDoorClick(e, "profile.html", "Profile")} style={{ left: "8%", top: "71%", "--j-rot": "5deg" } as any}>
+          <div className="journal__cover">
+            <span className="journal__edge"></span>
+            <span className="journal__band"></span>
+            <span className="journal__label">My<br />Journal</span>
+            <span className="journal__tag">your profile</span>
+          </div>
+          <span className="door__go">Profile ↗</span>
+        </div>
+
+        {/* DESK CALENDAR → EVENTS */}
+        <div className="prop deskcal door lift" onClick={(e) => handleDoorClick(e, "events.html", "Events")} style={{ left: "24%", top: "40%", "--cal-rot": "-2.5deg" } as any}>
+          <span className="deskcal__spiral"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <div className="deskcal__sheet">
+            <div className="deskcal__head"><span className="m">April</span><span className="y">'25</span></div>
+            <div className="deskcal__dow"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+            <div className="deskcal__grid" style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)" }}>
+              {[...Array(2)].map((_, i) => <div key={`empty-${i}`} className="deskcal__cell out"></div>)}
+              {[...Array(30)].map((_, d) => {
+                const dayNum = d + 1;
+                const eventMap: Record<number, string> = { 4: "d-music", 10: "d-film", 12: "d-art", 17: "d-writing", 19: "d-theater", 24: "d-art", 26: "d-photo" };
+                const c = eventMap[dayNum];
+                return (
+                  <div key={dayNum} className={`deskcal__cell${c ? " " + c : ""}`}>
+                    {dayNum}
+                    {c && <span className="dot"></span>}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="deskcal__next">
+              <p><span className="dot" style={{ "--dot": "#d4632a" } as any}></span>Apr 12 · Riso Print Fair</p>
+              <p><span className="dot" style={{ "--dot": "#5fb38a" } as any}></span>Apr 17 · Open Mic & Zine</p>
+            </div>
+          </div>
+          <span className="door__go">Events ↗</span>
+        </div>
+
+        {/* NEWSPAPER → PEOPLE */}
+        <div className="prop news door lift" onClick={(e) => handleDoorClick(e, "people.html", "People")} style={{ left: "42%", top: "50%", "--news-rot": "-2deg" } as any}>
+          <div className="news__paper">
+            <div className="news__mast">The Dartwork Gazette</div>
+            <div className="news__sub">"All the talent that's fit to print"</div>
+            <div className="news__rule"></div>
+            <div className="news__cols">
+              <div className="news__col"><b>Wanted</b><span>Cellist · Music</span></div>
+              <div className="news__col"><b>Wanted</b><span>Editor · Film</span></div>
+              <div className="news__col"><b>Wanted</b><span>Poet · Writing</span></div>
+            </div>
+          </div>
+          <span className="door__go">People ↗</span>
+        </div>
+
+        {/* COFFEE RING */}
+        <div className="coffee" style={{ left: "54%", top: "72%" }}></div>
+
+        {/* CORK BOARD → PROJECTS */}
+        <div
+          className="prop cork door"
+          onClick={(e) => handleDoorClick(e, "projects.html", "Projects")}
+          style={{ left: "63%", top: "5%", width: "34%", height: "400px" }}
+        >
+          <span className="door__go" style={{ left: "18px", right: "auto", top: "18px", bottom: "auto" }}>Projects ↗</span>
+        </div>
+
+        {/* PROJECT NOTES */}
+        {[
+          { color: "pink", film: "Film", roles: ["Cinematographer", "Editor"], title: "Ledyard: A Short Film", desc: "A 15-minute documentary...", rot: "-3deg" },
+          { color: "yellow", film: "Theater", roles: ["Music Director", "Stage Manager"], title: "Hop Stop — Original Musical", desc: "An original musical set in...", rot: "2.5deg" },
+          { color: "blue", film: "Photography", roles: ["Co-Photographer"], title: "Unseen Dartmouth", desc: "A photo essay on campus...", rot: "-1.5deg" },
+        ].map((note, i) => (
+          <div
+            key={i}
+            ref={dragRefs[i]}
+            className={`prop note stock-${note.color} lift wobble door`}
+            data-drag="true"
+            onClick={(e) => {
+              if (!dragDownRef.current?.moved) handleDoorClick(e, "projects.html", "Projects");
+            }}
+            onPointerDown={(e) => handlePointerDown(e, `n${i}`)}
+            style={{
+              left: i === 0 ? "64.5%" : i === 1 ? "81%" : "71%",
+              top: i === 0 ? "8%" : i === 1 ? "9%" : "46%",
+              transform: `rotate(${note.rot})`,
+              "--rot": note.rot,
+            } as any}
+          >
+            <span className="pin" style={{ "--pin": i === 0 ? "#e23b2e" : i === 1 ? "#2f6fe0" : "#eae6dd" } as any}></span>
+            <div className="note__paper"></div>
+            <div className="note__body">
+              <p className="note__kicker">{note.film}</p>
+              <div className="note__looking">
+                <span className="lbl">Looking for:</span>
+                {note.roles.map((role) => (
+                  <span key={role} className="tag">{role}</span>
+                ))}
+              </div>
+              <hr className="note__rule" />
+              <h3 className="note__title">{note.title}</h3>
+              <p className="note__by">Dartmouth Student</p>
+              <p className="note__desc">{note.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* EXPAND OVERLAY */}
+      {expanding && (
+        <div
+          ref={openerRef}
+          className={`opener opener--cork ${applyGo ? "go" : ""}`}
+          style={{
+            position: "fixed",
+            left: applyGo ? 0 : expandPos.left,
+            top: applyGo ? 0 : expandPos.top,
+            width: applyGo ? "100vw" : expandPos.width,
+            height: applyGo ? "100vh" : expandPos.height,
+            zIndex: 300,
+            transition: applyGo ? "all 0.66s cubic-bezier(0.25, 0.46, 0.45, 0.94)" : "none",
+          }}
+        >
+          <div className="opener__label"></div>
+        </div>
+      )}
+
+      {/* HINT */}
+      <div className="hint">✦ <span>tap an object to open its page · drag the notes · peel the flap</span></div>
     </div>
   );
 }
