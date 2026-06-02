@@ -23,11 +23,12 @@ export function DesktopNav() {
   const { user } = useAuth();
 
   if (pathname === "/") return null;
+  const onEvents = isActive(pathname, "/events");
 
   return (
     <nav
       className="hidden md:block sticky top-0 z-40"
-      style={{ backgroundColor: "#0a1f14", borderBottom: "1px solid #1e4430" }}
+      style={onEvents ? { backgroundColor: "transparent" } : { backgroundColor: "#0a1f14", borderBottom: "1px solid #1e4430" }}
       aria-label="Primary"
     >
       <div className="max-w-5xl mx-auto flex h-14 items-center justify-between px-4">
@@ -46,10 +47,16 @@ export function DesktopNav() {
                   <Link
                     href={href}
                     aria-current={active ? "page" : undefined}
-                    className={`rounded-md px-3 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
-                      active ? "text-white" : "text-gray-500 hover:text-white"
-                    }`}
-                    style={active ? { backgroundColor: GREEN } : undefined}
+                    className={
+                      onEvents
+                        ? `px-3 py-1 transition-opacity ${active ? "opacity-100" : "opacity-70 hover:opacity-100"}`
+                        : `rounded-md px-3 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${active ? "text-white" : "text-gray-500 hover:text-white"}`
+                    }
+                    style={
+                      onEvents
+                        ? { fontFamily: "var(--font-caveat), cursive", fontSize: "1.6rem", lineHeight: 1, color: "#fff", textDecoration: active ? "underline" : "none" }
+                        : active ? { backgroundColor: GREEN } : undefined
+                    }
                   >
                     {label}
                   </Link>
@@ -63,9 +70,9 @@ export function DesktopNav() {
                 href="/inbox"
                 aria-label="Inbox"
                 className={`ml-2 rounded-md p-2 transition-colors ${
-                  isActive(pathname, "/inbox") ? "text-white" : "text-gray-500 hover:text-white"
+                  onEvents ? "text-white hover:opacity-80" : isActive(pathname, "/inbox") ? "text-white" : "text-gray-500 hover:text-white"
                 }`}
-                style={isActive(pathname, "/inbox") ? { backgroundColor: GREEN } : undefined}
+                style={!onEvents && isActive(pathname, "/inbox") ? { backgroundColor: GREEN } : undefined}
               >
                 <Inbox className="h-5 w-5" aria-hidden="true" />
               </Link>
@@ -73,9 +80,9 @@ export function DesktopNav() {
                 href={`/profile/${user.uid}`}
                 aria-label="My profile"
                 className={`ml-1 rounded-md p-2 transition-colors ${
-                  isActive(pathname, "/profile") ? "text-white" : "text-gray-500 hover:text-white"
+                  onEvents ? "text-white hover:opacity-80" : isActive(pathname, "/profile") ? "text-white" : "text-gray-500 hover:text-white"
                 }`}
-                style={isActive(pathname, "/profile") ? { backgroundColor: GREEN } : undefined}
+                style={!onEvents && isActive(pathname, "/profile") ? { backgroundColor: GREEN } : undefined}
               >
                 <UserCircle className="h-5 w-5" aria-hidden="true" />
               </Link>
@@ -102,11 +109,12 @@ export function MobileNav() {
   ];
 
   if (pathname === "/") return null;
+  const onEvents = isActive(pathname, "/events");
 
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-50 md:hidden"
-      style={{ backgroundColor: "#0a1f14", borderTop: "1px solid #1e4430" }}
+      style={onEvents ? { backgroundColor: "transparent" } : { backgroundColor: "#0a1f14", borderTop: "1px solid #1e4430" }}
       aria-label="Primary"
     >
       <ul className="flex">
@@ -117,10 +125,16 @@ export function MobileNav() {
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`flex flex-col items-center gap-0.5 py-2.5 text-[9px] font-bold uppercase tracking-widest transition-colors ${
-                  active ? "" : "text-gray-500 hover:text-white"
-                }`}
-                style={active ? { color: GREEN } : undefined}
+                className={
+                  onEvents
+                    ? "flex flex-col items-center gap-0.5 py-2.5 transition-opacity"
+                    : `flex flex-col items-center gap-0.5 py-2.5 text-[9px] font-bold uppercase tracking-widest transition-colors ${active ? "" : "text-gray-500 hover:text-white"}`
+                }
+                style={
+                  onEvents
+                    ? { fontFamily: "var(--font-caveat), cursive", fontSize: "1.05rem", lineHeight: 1, color: "#fff", opacity: active ? 1 : 0.75 }
+                    : active ? { color: GREEN } : undefined
+                }
               >
                 <Icon className="h-5 w-5" aria-hidden="true" />
                 {label}

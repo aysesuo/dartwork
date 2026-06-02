@@ -151,9 +151,9 @@ export default function LandingPage() {
 
       {/* DECOR — scattered desk objects, behind the clickable props */}
       <div className="decor" aria-hidden style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none" }}>
-        <img src="/textures/ruler.png" alt="" style={{ position: "absolute", left: "30%", top: "4%", width: "230px", transform: "rotate(7deg)", opacity: 0.95 }} />
-        <img src="/textures/pen.png" alt="" style={{ position: "absolute", left: "5%", top: "78%", width: "190px", transform: "rotate(-28deg)", opacity: 0.95 }} />
-        <img src="/textures/fookie.png" alt="" style={{ position: "absolute", left: "43%", top: "80%", width: "120px", transform: "rotate(14deg)", opacity: 0.97 }} />
+        <img src="/textures/ruler.png" alt="" style={{ position: "absolute", left: "28%", top: "3%", width: "330px", transform: "rotate(7deg)", opacity: 0.95 }} />
+        <img src="/textures/pen.png" alt="" style={{ position: "absolute", left: "62%", top: "70%", width: "320px", transform: "rotate(-22deg)", opacity: 0.95 }} />
+        <img src="/textures/fookie.png" alt="" style={{ position: "absolute", left: "41%", top: "74%", width: "180px", transform: "rotate(14deg)", opacity: 0.97 }} />
       </div>
 
       <div
@@ -166,7 +166,7 @@ export default function LandingPage() {
         {/* MASTHEAD */}
         <div className="prop masthead lift" style={{ left: "2.5%", top: "11%", transform: "rotate(-3deg) scale(1.52)", transformOrigin: "top left" }}>
           <div className="tape tape--washi" style={{ position: "absolute", left: "-26px", top: "-14px", transform: "rotate(-24deg)" }}></div>
-          <p className="masthead__eyebrow">Dartmouth's creative desk</p>
+          <p className="masthead__eyebrow">Dartmouth's creative network</p>
           <h1 className="logo logo--ransom" id="logo">
             <span className="logo__line">
               <span className="rl" style={{ "--r": "3.5deg", "--bg": "#f3ead4", "--fg": "#20180f", fontFamily: "var(--font-anton)" } as any}>D</span>
@@ -192,8 +192,7 @@ export default function LandingPage() {
         </div>
 
         {/* DESK CALENDAR → EVENTS */}
-        <div className="prop deskcal door lift" onClick={(e) => handleDoorClick(e, "events.html", "Events")} style={{ left: "11%", top: "44%", transform: "rotate(-2.5deg) scale(1.15)" } as any}>
-          <span className="deskcal__spiral"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <div className="prop deskcal door lift" onClick={(e) => handleDoorClick(e, "events.html", "Events")} style={{ left: "-5%", top: "40%", transform: "rotate(-2.5deg) scale(1.15)" } as any}>
           <div className="deskcal__sheet">
             <div className="deskcal__head"><span className="m">April</span><span className="y">'25</span></div>
             <div className="deskcal__dow"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
@@ -220,7 +219,7 @@ export default function LandingPage() {
         </div>
 
         {/* NEWSPAPER → PEOPLE */}
-        <div className="prop news door lift" onClick={(e) => handleDoorClick(e, "people.html", "People")} style={{ left: "39%", top: "53%", transform: "rotate(2.5deg) scale(1.15)" } as any}>
+        <div className="prop news door lift" onClick={(e) => handleDoorClick(e, "people.html", "People")} style={{ left: "34%", top: "47%", transform: "rotate(2.5deg) scale(1.2)" } as any}>
           <div className="news__paper">
             <div className="news__mast">People</div>
             <div className="news__sub">"All the talent that's fit to print"</div>
@@ -235,7 +234,7 @@ export default function LandingPage() {
                   <b className="news__name">{p.name}</b>
                   <span className="news__role">{p.role}</span>
                   <span className="news__wanted">Wanted for: {p.wanted}</span>
-                  <span className="news__field"><b>Skills</b> {p.skills}</span>
+                  <span className="news__field"><b>Reward</b> {p.skills}</span>
                   <span className="news__field"><b>Interests</b> {p.interests}</span>
                 </div>
               ))}

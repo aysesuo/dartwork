@@ -580,14 +580,14 @@ html::after {
 }
 
 .journal__label {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 700;
   text-align: center;
   line-height: 1;
   letter-spacing: 0.01em;
   font-family: var(--font-caveat), cursive;
   color: #20180f;
-  transform: rotate(-2deg);
+  transform: rotate(-2deg) translateX(-8px);
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.55' intercept='0.5'/%3E%3CfeFuncG type='linear' slope='0.55' intercept='0.5'/%3E%3CfeFuncB type='linear' slope='0.55' intercept='0.5'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23g)'/%3E%3C/svg%3E");
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.55' intercept='0.5'/%3E%3CfeFuncG type='linear' slope='0.55' intercept='0.5'/%3E%3CfeFuncB type='linear' slope='0.55' intercept='0.5'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23g)'/%3E%3C/svg%3E");
   -webkit-mask-size: 70px 70px;
@@ -610,11 +610,12 @@ html::after {
 
 /* ── DESK CALENDAR ────────────────────────────────────────────────────── */
 .deskcal {
-  width: 340px;
-  background: #f5f5f0;
-  border: 1px solid rgba(0,0,0,0.1);
-  border-radius: 2px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  width: 640px;
+  aspect-ratio: 669 / 373;
+  background: url("/textures/calendar_holder.png") center / contain no-repeat;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
   padding: 0;
 }
 
@@ -637,48 +638,71 @@ html::after {
 }
 
 .deskcal__sheet {
-  padding: 16px;
+  position: absolute;
+  left: 26%;
+  right: 25%;
+  top: 23%;
+  bottom: 3%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  color: #2a2a2a;
 }
 
 .deskcal__head {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: baseline;
-  margin-bottom: 8px;
+  gap: 5px;
+  margin-bottom: 2px;
 }
 
 .deskcal__head .m {
-  font-size: 1rem;
+  font-family: var(--font-caveat), cursive;
+  font-size: 1.25rem;
   font-weight: 700;
+  line-height: 1;
 }
 
 .deskcal__head .y {
-  font-size: 0.8rem;
+  font-family: var(--font-caveat), cursive;
+  font-size: 1.05rem;
   opacity: 0.6;
+  line-height: 1;
 }
 
 .deskcal__dow {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
   text-align: center;
-  font-size: 0.7rem;
-  font-weight: 600;
-  opacity: 0.7;
+  font-family: var(--font-caveat), cursive;
+  font-size: 0.72rem;
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+.deskcal__grid {
+  flex: 1;
+  grid-auto-rows: 1fr;
+  gap: 1px;
 }
 
 .deskcal__cell {
-  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-caveat), cursive;
   font-size: 0.85rem;
-  border-radius: 2px;
+  font-weight: 700;
+  border-radius: 1px;
   position: relative;
-  background: #fff;
-  border: 1px solid rgba(0,0,0,0.05);
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.22);
+  color: #2a2a2a;
 }
+
+.deskcal__next { display: none; }
 
 .deskcal__cell.out {
   background: transparent;

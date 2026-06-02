@@ -15,6 +15,8 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
+const INK = "#3a342b";
+
 function sameDay(a: Date, b: Date) {
   return (
     a.getFullYear() === b.getFullYear() &&
@@ -65,115 +67,119 @@ export default function CalendarView({ events, onEventSelect }: CalendarViewProp
     return map;
   }, [events, viewYear, viewMonth]);
 
-  // Build a 6×7 grid of cells (null = blank padding day).
+  // Build the grid of cells (null = blank padding day).
   const cells: (number | null)[] = [];
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
   while (cells.length % 7 !== 0) cells.push(null);
+  const rows = cells.length / 7;
 
   function go(delta: number) {
     userNavigated.current = true;
     setView(new Date(viewYear, viewMonth + delta, 1));
   }
 
-  const ink = "#2a2a2a";
-
   return (
-    <div
-      className="relative w-full mx-auto"
-      style={{
-        maxWidth: 920,
-        aspectRatio: "301 / 211",
-        backgroundImage: "url(/textures/calendar.png)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      {/* Inner paper panel — masks the printed grid so our digital grid is the source of truth */}
-      <div
-        className="absolute flex flex-col"
-        style={{
-          left: "3.5%",
-          right: "3.5%",
-          top: "13.5%",
-          bottom: "5%",
-          background: "rgba(247, 246, 238, 0.86)",
-          color: ink,
-        }}
-      >
-        {/* ── Month header (handwritten) + nav ── */}
-        <div className="flex items-center justify-between px-2 pt-1 pb-0.5">
-          <button
-            onClick={() => go(-1)}
-            aria-label="Previous month"
-            className="px-2 leading-none hover:opacity-60 transition-opacity"
-            style={{ fontFamily: "var(--font-caveat), cursive", fontSize: "1.8rem" }}
-          >
-            ‹
-          </button>
-          <h3
-            className="text-center leading-none"
-            style={{ fontFamily: "var(--font-caveat), cursive", fontSize: "2.2rem", fontWeight: 700 }}
-          >
-            {MONTHS[viewMonth]} {viewYear}
-          </h3>
-          <button
-            onClick={() => go(1)}
-            aria-label="Next month"
-            className="px-2 leading-none hover:opacity-60 transition-opacity"
-            style={{ fontFamily: "var(--font-caveat), cursive", fontSize: "1.8rem" }}
-          >
-            ›
-          </button>
-        </div>
+    <div className="flex flex-col w-full h-full" style={{ color: INK }}>
+      {/* Hand-drawn wobble filter (applied to the grid lines only) */}
+      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden>
+        <filter id="cal-wobble">
+          <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n" />
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="4.5" />
+        </filter>
+      </svg>
 
-        {/* ── Weekday header (handwritten) ── */}
-        <div className="grid grid-cols-7 shrink-0" style={{ borderBottom: `1.5px solid ${ink}` }}>
-          {WEEKDAYS.map((w) => (
-            <div
-              key={w}
-              className="text-center pb-0.5"
-              style={{ fontFamily: "var(--font-caveat), cursive", fontSize: "1.05rem", fontWeight: 700 }}
-            >
-              {w}
-            </div>
-          ))}
-        </div>
+      {/* ── Month header + nav ── */}
+      <div className="flex items-center justify-between shrink-0">
+        <button
+          onClick={() => go(-1)}
+          aria-label="Previous month"
+          className="px-3 leading-none hover:opacity-50 transition-opacity"
+          style={{ fontFamily: "var(--font-caveat), cursive", fontSize: "2rem", color: INK }}
+        >
+          ‹
+        </button>
+        <h3
+          className="text-center leading-none"
+          style={{ fontFamily: "var(--font-caveat), cursive", fontSize: "2.4rem", fontWeight: 700, color: INK }}
+        >
+          {MONTHS[viewMonth]} {viewYear}
+        </h3>
+        <button
+          onClick={() => go(1)}
+          aria-label="Next month"
+          className="px-3 leading-none hover:opacity-50 transition-opacity"
+          style={{ fontFamily: "var(--font-caveat), cursive", fontSize: "2rem", color: INK }}
+        >
+          ›
+        </button>
+      </div>
 
-        {/* ── Day grid ── */}
+      {/* ── Weekday header ── */}
+      <div className="grid grid-cols-7 shrink-0">
+        {WEEKDAYS.map((w) => (
+          <div
+            key={w}
+            className="text-center pb-0.5"
+            style={{ fontFamily: "var(--font-caveat), cursive", fontSize: "1.15rem", fontWeight: 700, color: INK }}
+          >
+            {w}
+          </div>
+        ))}
+      </div>
+
+      {/* ── Day grid (fills remaining height) ── */}
+      <div className="relative flex-1 min-h-0">
+        {/* Hand-drawn ink grid lines */}
+        <svg
+          className="absolute inset-0 pointer-events-none"
+          width="100%"
+          height="100%"
+          viewBox={`0 0 700 ${rows * 100}`}
+          preserveAspectRatio="none"
+          style={{ filter: "url(#cal-wobble)" }}
+          aria-hidden
+        >
+          <g stroke={INK} strokeWidth={1.6} strokeLinecap="round" fill="none">
+            <rect x="2" y="2" width="696" height={rows * 100 - 4} />
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <line key={`v${i}`} x1={i * 100} y1="2" x2={i * 100} y2={rows * 100 - 2} />
+            ))}
+            {Array.from({ length: rows - 1 }, (_, j) => (
+              <line key={`h${j}`} x1="2" y1={(j + 1) * 100} x2="698" y2={(j + 1) * 100} />
+            ))}
+          </g>
+        </svg>
+
+        {/* Cells */}
         <div
-          className="grid grid-cols-7 flex-1"
-          style={{ gridAutoRows: "1fr" }}
+          className="grid grid-cols-7 absolute inset-0"
+          style={{ gridTemplateRows: `repeat(${rows}, 1fr)` }}
         >
           {cells.map((day, i) => {
             const isToday = day != null && sameDay(new Date(viewYear, viewMonth, day), today);
             const dayEvents = day != null ? eventsByDay[day] ?? [] : [];
+            const rot = ((i * 7) % 5) - 2; // -2..2deg, stable per cell
             return (
-              <div
-                key={i}
-                className="relative overflow-hidden"
-                style={{
-                  borderRight: (i % 7) !== 6 ? `1px solid ${ink}` : undefined,
-                  borderBottom: i < cells.length - 7 ? `1px solid ${ink}` : undefined,
-                  minHeight: 0,
-                }}
-              >
+              <div key={i} className="relative overflow-hidden" style={{ minHeight: 0 }}>
                 {day != null && (
                   <>
-                    {/* Day number (handwritten) */}
+                    {/* Day number */}
                     <span
-                      className="absolute top-0.5 left-1 leading-none select-none"
+                      className="absolute top-0.5 left-1.5 leading-none select-none"
                       style={{
                         fontFamily: "var(--font-caveat), cursive",
-                        fontSize: "1rem",
+                        fontSize: "1.25rem",
                         fontWeight: 700,
+                        color: INK,
+                        transform: `rotate(${rot}deg)`,
                         ...(isToday
                           ? {
                               color: "#fff",
                               background: "#9F1239",
                               borderRadius: "9999px",
-                              width: "1.4em",
-                              height: "1.4em",
+                              width: "1.5em",
+                              height: "1.5em",
                               display: "inline-flex",
                               alignItems: "center",
                               justifyContent: "center",
@@ -184,8 +190,8 @@ export default function CalendarView({ events, onEventSelect }: CalendarViewProp
                       {day}
                     </span>
 
-                    {/* Events */}
-                    <div className="absolute inset-x-0.5 top-5 flex flex-col gap-0.5">
+                    {/* Events — jotted as dot + handwritten title */}
+                    <div className="absolute inset-x-1 flex flex-col gap-0.5" style={{ top: "1.6rem" }}>
                       {dayEvents.slice(0, 3).map((ev) => {
                         const primary = ev.disciplines[0] ?? "Other";
                         const { hex } = getDisciplineColor(primary);
@@ -195,26 +201,34 @@ export default function CalendarView({ events, onEventSelect }: CalendarViewProp
                             type="button"
                             onClick={() => onEventSelect(ev)}
                             title={ev.title}
-                            className="block w-full text-left truncate px-1 py-px rounded-sm hover:opacity-90 transition-opacity"
-                            style={{
-                              backgroundColor: hex,
-                              color: "#fff",
-                              fontFamily: "var(--font-special-elite), monospace",
-                              fontSize: "0.6rem",
-                              lineHeight: 1.25,
-                            }}
+                            className="flex items-center gap-1 w-full text-left hover:opacity-70 transition-opacity"
                           >
-                            {ev.title}
+                            <span
+                              className="shrink-0 rounded-full"
+                              style={{ width: 7, height: 7, backgroundColor: hex, border: `1px solid ${INK}` }}
+                            />
+                            <span
+                              className="truncate"
+                              style={{
+                                fontFamily: "var(--font-caveat), cursive",
+                                fontSize: "1rem",
+                                lineHeight: 1.1,
+                                color: INK,
+                              }}
+                            >
+                              {ev.title}
+                            </span>
                           </button>
                         );
                       })}
                       {dayEvents.length > 3 && (
                         <span
-                          className="px-1"
                           style={{
-                            fontFamily: "var(--font-special-elite), monospace",
-                            fontSize: "0.55rem",
-                            opacity: 0.7,
+                            fontFamily: "var(--font-caveat), cursive",
+                            fontSize: "0.9rem",
+                            color: INK,
+                            opacity: 0.65,
+                            paddingLeft: 12,
                           }}
                         >
                           +{dayEvents.length - 3} more

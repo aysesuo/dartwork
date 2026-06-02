@@ -190,6 +190,7 @@ export default function EventsPage() {
 
   return (
     <AuthGuard>
+      <div aria-hidden style={{ position: "fixed", inset: 0, background: "#5e0611", zIndex: 0 }} />
       <main className="events-bg max-w-5xl mx-auto px-4 py-8 font-[family-name:var(--font-special-elite)]">
 
         {/* ── Header ── */}
@@ -243,9 +244,22 @@ export default function EventsPage() {
           </p>
         )}
 
-        {/* ── Calendar ── */}
+        {/* ── Calendar — laid onto the clipped white paper ── */}
         {!loading && !fetchErr && (
-          <CalendarView events={filteredEvents as DartworkEvent[]} onEventSelect={(e) => { setSelectedEvent(e as LiveEvent); setEditMode(false); }} />
+          <div
+            className="relative w-full mx-auto"
+            style={{
+              maxWidth: 1100,
+              aspectRatio: "1678 / 937",
+              backgroundImage: "url(/textures/calendar_background.png)",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            <div className="absolute" style={{ left: "24.5%", right: "24.5%", top: "24%", bottom: "13%" }}>
+              <CalendarView events={filteredEvents as DartworkEvent[]} onEventSelect={(e) => { setSelectedEvent(e as LiveEvent); setEditMode(false); }} />
+            </div>
+          </div>
         )}
 
         {/* ── Event detail / edit modal ── */}
