@@ -1,27 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import AuthGuard from "@/components/auth/AuthGuard";
 import { useAuth } from "@/lib/auth";
+import { storage } from "@/lib/firebase";
 import { DISCIPLINES } from "@/lib/disciplines";
 
-const INK    = "#1a1008";
 const GREEN  = "#00693E";
 const ORANGE = "#FF6B35";
 
 // ── Shared input style ────────────────────────────────────────────────────────
 const inputStyle: React.CSSProperties = {
-  width:       "100%",
-  padding:     "0.6rem 0.75rem",
-  background:  "rgba(255,255,255,0.07)",
-  border:      "1px solid rgba(255,255,255,0.18)",
+  width:        "100%",
+  padding:      "0.6rem 0.75rem",
+  background:   "rgba(255,255,255,0.07)",
+  border:       "1px solid rgba(255,255,255,0.18)",
   borderRadius: "6px",
-  color:       "#f5f5f0",
-  fontSize:    "0.9rem",
-  fontFamily:  "var(--font-sans), sans-serif",
-  outline:     "none",
-  boxSizing:   "border-box",
+  color:        "#f5f5f0",
+  fontSize:     "0.9rem",
+  fontFamily:   "var(--font-sans), sans-serif",
+  outline:      "none",
+  boxSizing:    "border-box",
 };
 
 const labelStyle: React.CSSProperties = {
@@ -119,9 +120,15 @@ function EditProjectContent() {
   const [description,   setDescription]   = useState("");
   const [discipline,    setDiscipline]    = useState("");
   const [rolesNeeded,   setRolesNeeded]   = useState("");
-  const [mediaUrl,      setMediaUrl]      = useState("");
   const [showOnProfile, setShowOnProfile] = useState(true);
   const [status,        setStatus]        = useState<"active" | "closed">("active");
+
+  // Image upload state
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [imageFile,       setImageFile]       = useState<File | null>(null);
+  const [imagePreview,    setImagePreview]     = useState<string | null>(null);
+  const [uploading,       setUploading]        = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [deleting,   setDeleting]   = useState(false);
@@ -144,9 +151,8 @@ function EditProjectContent() {
         setTitle(data.title ?? "");
         setDescription(data.description ?? "");
         setDiscipline(data.discipline ?? "");
-        // positionsNeeded is an array; join back for the textarea
         setRolesNeeded((data.positionsNeeded ?? []).join(", "));
-        setMediaUrl(data.mediaUrl ?? "");
+        setCurrentImageUrl(data.mediaUrl ?? null);
         setShowOnProfile(data.showOnProfile !== false);
         setStatus(data.status === "closed" ? "closed" : "active");
         setLoaded(true);
@@ -156,19 +162,47 @@ function EditProjectContent() {
     })();
   }, [user, id]);
 
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  async function uploadImage(): Promise<string | null> {
+    if (!imageFile || !user) return currentImageUrl;
+    setUploading(true);
+    try {
+      const compressed = await compressImage(imageFile, 1200);
+      const imageId    = `${user.uid}_${id}`;
+      const storageRef = ref(storage, `project-images/${imageId}`);
+      await uploadBytes(storageRef, compressed, { contentType: "image/jpeg" });
+      const url = await getDownloadURL(storageRef);
+      setCurrentImageUrl(url);
+      setImageFile(null);
+      setImagePreview(null);
+      return url;
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!user || !id) return;
     setError(null);
 
-    if (!title.trim())                { setError("Project title is required."); return; }
-    if (!discipline)                  { setError("Please select a discipline."); return; }
-    if (description.trim().length < 10) { setError("Description must be at least 10 characters."); return; }
+    if (!title.trim())                   { setError("Project title is required."); return; }
+    if (!discipline)                     { setError("Please select a discipline."); return; }
+    if (description.trim().length < 10)  { setError("Description must be at least 10 characters."); return; }
 
     setSubmitting(true);
     try {
-      const token = await user.getIdToken(true);
-      const res   = await fetch(`/api/projects/${id}`, {
+      const mediaUrl = await uploadImage();
+      const token    = await user.getIdToken(true);
+      const res = await fetch(`/api/projects/${id}`, {
         method:  "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body:    JSON.stringify({
@@ -176,7 +210,7 @@ function EditProjectContent() {
           description:   description.trim(),
           discipline,
           rolesNeeded,
-          mediaUrl:      mediaUrl.trim(),
+          mediaUrl:      mediaUrl ?? "",
           showOnProfile,
           status,
         }),
@@ -231,6 +265,8 @@ function EditProjectContent() {
     );
   }
 
+  const displayedImage = imagePreview ?? currentImageUrl;
+
   return (
     <div
       style={{
@@ -246,17 +282,17 @@ function EditProjectContent() {
         <a
           href={`/profile/${user?.uid}`}
           style={{
-            display:       "inline-flex",
-            alignItems:    "center",
-            gap:           "0.3rem",
-            fontSize:      "0.75rem",
-            fontWeight:    700,
-            textTransform: "uppercase",
-            letterSpacing: "0.12em",
-            color:         "#f5f5f0",
-            opacity:       0.5,
+            display:        "inline-flex",
+            alignItems:     "center",
+            gap:            "0.3rem",
+            fontSize:       "0.75rem",
+            fontWeight:     700,
+            textTransform:  "uppercase",
+            letterSpacing:  "0.12em",
+            color:          "#f5f5f0",
+            opacity:        0.5,
             textDecoration: "none",
-            marginBottom:  "2rem",
+            marginBottom:   "2rem",
           }}
         >
           ← My profile
@@ -338,16 +374,87 @@ function EditProjectContent() {
             />
           </Field>
 
-          {/* Media URL */}
-          <Field label="Media link" hint="Optional — portfolio link, demo, or mood board.">
-            <input
-              type="url"
-              value={mediaUrl}
-              onChange={(e) => setMediaUrl(e.target.value)}
-              placeholder="https://…"
-              style={inputStyle}
-              disabled={submitting}
-            />
+          {/* Project image upload */}
+          <Field label="Project image" hint="Optional — a photo, poster, mood board, or anything that shows your vision.">
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+
+              {/* Preview */}
+              {displayedImage && (
+                <div
+                  style={{
+                    width:        "100%",
+                    maxHeight:    240,
+                    overflow:     "hidden",
+                    borderRadius: 8,
+                    border:       "1px solid rgba(255,255,255,0.15)",
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={displayedImage}
+                    alt="Project image"
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                  />
+                </div>
+              )}
+
+              {/* Buttons */}
+              <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={submitting}
+                  style={{
+                    padding:       "0.5rem 1.2rem",
+                    borderRadius:  "999px",
+                    border:        "1px solid rgba(255,255,255,0.25)",
+                    background:    "transparent",
+                    color:         "#f5f5f0",
+                    fontSize:      "0.75rem",
+                    fontWeight:    700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    cursor:        "pointer",
+                    opacity:       submitting ? 0.5 : 1,
+                  }}
+                >
+                  {displayedImage ? "Change image" : "Upload image"}
+                </button>
+
+                {displayedImage && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageFile(null);
+                      setImagePreview(null);
+                      setCurrentImageUrl(null);
+                    }}
+                    disabled={submitting}
+                    style={{
+                      background:    "transparent",
+                      border:        "none",
+                      color:         "#f5f5f0",
+                      opacity:       0.45,
+                      fontSize:      "0.75rem",
+                      cursor:        "pointer",
+                      padding:       "0.5rem 0",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ display: "none" }}
+              />
+            </div>
           </Field>
 
           {/* Show in Projects toggle */}
@@ -395,10 +502,10 @@ function EditProjectContent() {
           <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
             <button
               type="submit"
-              disabled={submitting || deleting}
+              disabled={submitting || uploading || deleting}
               style={{
                 padding:         "0.75rem 2rem",
-                backgroundColor: submitting ? "rgba(0,105,62,0.5)" : GREEN,
+                backgroundColor: submitting || uploading ? "rgba(0,105,62,0.5)" : GREEN,
                 color:           "#fff",
                 border:          "none",
                 borderRadius:    "999px",
@@ -406,12 +513,12 @@ function EditProjectContent() {
                 fontSize:        "0.8rem",
                 textTransform:   "uppercase",
                 letterSpacing:   "0.14em",
-                cursor:          submitting || deleting ? "not-allowed" : "pointer",
+                cursor:          submitting || uploading || deleting ? "not-allowed" : "pointer",
                 transition:      "opacity 0.15s",
                 minWidth:        160,
               }}
             >
-              {submitting ? "Saving…" : "Save Changes"}
+              {uploading ? "Uploading image…" : submitting ? "Saving…" : "Save Changes"}
             </button>
 
             <button
@@ -439,4 +546,28 @@ function EditProjectContent() {
       </div>
     </div>
   );
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+async function compressImage(file: File, maxDim = 1200): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale  = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width  = Math.round(img.width  * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("Compression failed"))),
+        "image/jpeg",
+        0.88,
+      );
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
 }
