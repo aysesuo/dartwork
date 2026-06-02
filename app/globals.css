@@ -254,11 +254,7 @@ html::after {
 
 .desk {
   font-family: var(--font-sans), sans-serif;
-  background: #2a9d85;
-  background-image:
-    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.15) 39px, rgba(255,255,255,0.15) 40px),
-    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.15) 39px, rgba(255,255,255,0.15) 40px);
-  background-size: 40px 40px;
+  background: #2a9d85 url("/textures/cutting_mat_final.png") center / cover no-repeat;
   color: var(--ink);
   overflow: hidden;
   position: fixed;
@@ -794,12 +790,7 @@ html::after {
 
 /* ── CORK BOARD ────────────────────────────────────────────────────────── */
 .cork {
-  background: #b8956a;
-  background-image:
-    radial-gradient(circle at 15% 25%, rgba(255,255,255,0.1) 0%, transparent 50%),
-    radial-gradient(circle at 85% 75%, rgba(0,0,0,0.1) 0%, transparent 50%),
-    repeating-linear-gradient(45deg, transparent 0px, transparent 2px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 4px),
-    repeating-linear-gradient(-45deg, transparent 0px, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  background: #b8956a url("/textures/corkboard_final.png") center / cover;
   border: 16px solid #8b6f47;
   border-radius: 3px;
   box-shadow:
@@ -812,11 +803,7 @@ html::after {
   content: "";
   position: absolute;
   inset: 0;
-  background-image:
-    radial-gradient(circle, rgba(139, 90, 43, 0.15) 1px, transparent 1px),
-    radial-gradient(circle, rgba(0,0,0,0.08) 2px, transparent 2px);
-  background-size: 6px 6px, 12px 12px;
-  background-position: 0 0, 3px 3px;
+  background: radial-gradient(circle at 50% 40%, transparent 40%, rgba(0,0,0,0.12) 100%);
   pointer-events: none;
   border-radius: 2px;
 }
