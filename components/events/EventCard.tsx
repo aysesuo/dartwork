@@ -8,14 +8,6 @@ interface EventCardProps {
 
 const ROTATIONS = [-1.5, 0.8, -0.3, 1.2, -1.0, 0.5, -1.8, 0.7, -0.6, 1.4];
 
-const TEXTURES = [
-  "/textures/aiham-othman-TWRHgZ3mZEw-unsplash.jpg",
-  "/textures/heather-green-3ch06Zm4bV0-unsplash.jpg",
-  "/textures/pixelbuddha-studio-Ng5onpi5iRQ-unsplash.jpg",
-];
-
-const TINTS = ["#e8d5a3", "#d4c48a", "#c9b87a", "#dfd0a0", "#e2c87e"];
-
 function isWide(index: number) {
   return index % 5 === 3;
 }
@@ -41,8 +33,6 @@ function adNumber(id: string) {
 
 export default function EventCard({ event, index = 0 }: EventCardProps) {
   const rotation = ROTATIONS[index % ROTATIONS.length];
-  const texture = TEXTURES[index % TEXTURES.length];
-  const tint = TINTS[index % TINTS.length];
   const wide = isWide(index);
 
   const start = new Date(event.dateTime);
@@ -60,25 +50,9 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
     >
       <div
         className="relative border border-[#2a2a2a] text-[#1a1a1a] overflow-hidden hover:shadow-[4px_4px_0_rgba(0,0,0,0.25)] transition-shadow"
-        style={{ transform: `rotate(${rotation}deg)` }}
+        style={{ transform: `rotate(${rotation}deg)`, backgroundColor: "#f0ead8" }}
       >
-        {/* Layer 0 — real paper texture */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={texture}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ zIndex: 0 }}
-        />
-
-        {/* Layer 1 — warm tint overlay */}
-        <div
-          className="absolute inset-0"
-          style={{ backgroundColor: tint, mixBlendMode: "multiply", zIndex: 1 }}
-        />
-
-        {/* Layer 10 — all card content */}
+        {/* Card content */}
         <div className="relative p-4" style={{ zIndex: 10 }}>
           {/* Ad reference number */}
           <div className="text-[10px] font-bold tracking-widest mb-1 opacity-60">

@@ -330,15 +330,28 @@ export default function ProjectsPage() {
       <div
         style={{
           position:            "relative",
-          border:              "16px solid #c8b89a",
-          boxShadow:           "inset 0 0 80px rgba(0,0,0,0.45), inset 0 0 24px rgba(0,0,0,0.3), 0 0 0 3px #a8956a",
+          border:              "16px solid #8b6f47",
+          borderRadius:        "3px",
+          boxShadow:           "0 12px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.15)",
           minHeight:           "100vh",
           overflow:            "hidden",
+          backgroundColor:     "#b8956a",
           backgroundImage:     "url(/textures/corkboard_final.png)",
           backgroundSize:      "cover",
           backgroundPosition:  "center",
         }}
       >
+        {/* Vignette overlay to match landing .cork::before */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            pointerEvents: "none",
+            zIndex: 1,
+            background: "radial-gradient(circle at 50% 40%, transparent 40%, rgba(0,0,0,0.12) 100%)",
+          }}
+        />
 
         {/* ── Content layer ── */}
         <main

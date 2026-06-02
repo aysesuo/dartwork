@@ -133,7 +133,7 @@ export default function IndexCardFilter({
       style={{
         position: "absolute",
         top: -65,
-        left: -98,
+        left: 16,
         zIndex: 50,
         width: 220,
         // Index-card look

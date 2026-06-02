@@ -7,6 +7,10 @@ import { useAuth } from "@/lib/auth";
 import RansomLogo from "@/components/RansomLogo";
 
 const GREEN = "#00693E";
+const PROJECT_INK = "#1a1008";
+// PLACEHOLDER paper texture for the projects-page menu chips — swap for the real one later.
+const PROJECTS_PAPER = "/textures/paper-yellow.jpg";
+const PROJECT_FONT = 'var(--font-special-elite), "Courier New", monospace';
 
 const NAV_ITEMS = [
   { href: "/projects", label: "Projects", Icon: Briefcase },
@@ -24,11 +28,13 @@ export function DesktopNav() {
 
   if (pathname === "/") return null;
   const onEvents = isActive(pathname, "/events");
+  const onProjects = isActive(pathname, "/projects");
+  const bare = onEvents || onProjects;
 
   return (
     <nav
       className="hidden md:block sticky top-0 z-40"
-      style={onEvents ? { backgroundColor: "transparent" } : { backgroundColor: "#0a1f14", borderBottom: "1px solid #1e4430" }}
+      style={bare ? { backgroundColor: "transparent" } : { backgroundColor: "#0a1f14", borderBottom: "1px solid #1e4430" }}
       aria-label="Primary"
     >
       <div className="max-w-5xl mx-auto flex h-14 items-center justify-between px-4">
@@ -48,12 +54,28 @@ export function DesktopNav() {
                     href={href}
                     aria-current={active ? "page" : undefined}
                     className={
-                      onEvents
+                      onProjects
+                        ? "px-3 py-1.5 transition-transform hover:-translate-y-0.5"
+                        : onEvents
                         ? `px-3 py-1 transition-opacity ${active ? "opacity-100" : "opacity-70 hover:opacity-100"}`
                         : `rounded-md px-3 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${active ? "text-white" : "text-gray-500 hover:text-white"}`
                     }
                     style={
-                      onEvents
+                      onProjects
+                        ? {
+                            fontFamily: PROJECT_FONT,
+                            fontSize: "0.8rem",
+                            fontWeight: 700,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            color: PROJECT_INK,
+                            backgroundImage: `url(${PROJECTS_PAPER})`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                            boxShadow: "1px 2px 5px rgba(0,0,0,0.35)",
+                            textDecoration: active ? "underline" : "none",
+                          }
+                        : onEvents
                         ? { fontFamily: "var(--font-caveat), cursive", fontSize: "1.6rem", lineHeight: 1, color: "#fff", textDecoration: active ? "underline" : "none" }
                         : active ? { backgroundColor: GREEN } : undefined
                     }
@@ -70,9 +92,9 @@ export function DesktopNav() {
                 href="/inbox"
                 aria-label="Inbox"
                 className={`ml-2 rounded-md p-2 transition-colors ${
-                  onEvents ? "text-white hover:opacity-80" : isActive(pathname, "/inbox") ? "text-white" : "text-gray-500 hover:text-white"
+                  onProjects ? "hover:opacity-70" : onEvents ? "text-white hover:opacity-80" : isActive(pathname, "/inbox") ? "text-white" : "text-gray-500 hover:text-white"
                 }`}
-                style={!onEvents && isActive(pathname, "/inbox") ? { backgroundColor: GREEN } : undefined}
+                style={onProjects ? { color: PROJECT_INK } : !onEvents && isActive(pathname, "/inbox") ? { backgroundColor: GREEN } : undefined}
               >
                 <Inbox className="h-5 w-5" aria-hidden="true" />
               </Link>
@@ -80,9 +102,9 @@ export function DesktopNav() {
                 href={`/profile/${user.uid}`}
                 aria-label="My profile"
                 className={`ml-1 rounded-md p-2 transition-colors ${
-                  onEvents ? "text-white hover:opacity-80" : isActive(pathname, "/profile") ? "text-white" : "text-gray-500 hover:text-white"
+                  onProjects ? "hover:opacity-70" : onEvents ? "text-white hover:opacity-80" : isActive(pathname, "/profile") ? "text-white" : "text-gray-500 hover:text-white"
                 }`}
-                style={!onEvents && isActive(pathname, "/profile") ? { backgroundColor: GREEN } : undefined}
+                style={onProjects ? { color: PROJECT_INK } : !onEvents && isActive(pathname, "/profile") ? { backgroundColor: GREEN } : undefined}
               >
                 <UserCircle className="h-5 w-5" aria-hidden="true" />
               </Link>
@@ -110,11 +132,13 @@ export function MobileNav() {
 
   if (pathname === "/") return null;
   const onEvents = isActive(pathname, "/events");
+  const onProjects = isActive(pathname, "/projects");
+  const bare = onEvents || onProjects;
 
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-50 md:hidden"
-      style={onEvents ? { backgroundColor: "transparent" } : { backgroundColor: "#0a1f14", borderTop: "1px solid #1e4430" }}
+      style={bare ? { backgroundColor: "transparent" } : { backgroundColor: "#0a1f14", borderTop: "1px solid #1e4430" }}
       aria-label="Primary"
     >
       <ul className="flex">
@@ -126,12 +150,28 @@ export function MobileNav() {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={
-                  onEvents
+                  onProjects
+                    ? "flex flex-col items-center gap-0.5 py-2.5 m-1 transition-transform hover:-translate-y-0.5"
+                    : onEvents
                     ? "flex flex-col items-center gap-0.5 py-2.5 transition-opacity"
                     : `flex flex-col items-center gap-0.5 py-2.5 text-[9px] font-bold uppercase tracking-widest transition-colors ${active ? "" : "text-gray-500 hover:text-white"}`
                 }
                 style={
-                  onEvents
+                  onProjects
+                    ? {
+                        fontFamily: PROJECT_FONT,
+                        fontSize: "0.6rem",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        color: PROJECT_INK,
+                        backgroundImage: `url(${PROJECTS_PAPER})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        boxShadow: "1px 2px 5px rgba(0,0,0,0.35)",
+                        textDecoration: active ? "underline" : "none",
+                      }
+                    : onEvents
                     ? { fontFamily: "var(--font-caveat), cursive", fontSize: "1.05rem", lineHeight: 1, color: "#fff", opacity: active ? 1 : 0.75 }
                     : active ? { color: GREEN } : undefined
                 }
