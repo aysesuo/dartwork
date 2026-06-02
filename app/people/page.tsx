@@ -57,19 +57,26 @@ function GazetteContent() {
     return () => { cancelled = true; };
   }, [user]);
 
-  const filtered = useMemo(() => {
-    if (!search.trim()) return people;
+  // When a search is active, compute which ids match.
+  // null means no search — no stamps shown.
+  const matchSet = useMemo<Set<string> | null>(() => {
+    if (!search.trim()) return null;
     const q = search.toLowerCase();
-    return people.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.skills.some((s) => s.toLowerCase().includes(q)) ||
-        p.disciplines.some((d) => d.toLowerCase().includes(q)),
+    return new Set(
+      people
+        .filter(
+          (p) =>
+            p.name.toLowerCase().includes(q) ||
+            p.skills.some((s) => s.toLowerCase().includes(q)) ||
+            p.disciplines.some((d) => d.toLowerCase().includes(q)),
+        )
+        .map((p) => p.id),
     );
   }, [people, search]);
 
+  // Always show every person — non-matches get the LOCATED stamp, not hidden.
   const cols: [Person[], Person[], Person[]] = [[], [], []];
-  filtered.forEach((p, i) => cols[i % 3].push(p));
+  people.forEach((p, i) => cols[i % 3].push(p));
 
   return (
     <main
@@ -168,19 +175,17 @@ function GazetteContent() {
 
         {loading && <StatusLine>Composing the type…</StatusLine>}
         {!loading && error && <StatusLine>The presses jammed. Please refresh.</StatusLine>}
-        {!loading && !error && filtered.length === 0 && (
-          <StatusLine>
-            {people.length === 0 ? "No public profiles yet." : "No one matches your search."}
-          </StatusLine>
+        {!loading && !error && people.length === 0 && (
+          <StatusLine>No public profiles yet.</StatusLine>
         )}
 
-        {!loading && !error && filtered.length > 0 && (
+        {!loading && !error && people.length > 0 && (
           <>
-            <Column people={cols[0]} />
+            <Column people={cols[0]} matchSet={matchSet} />
             <ColumnRule />
-            <Column people={cols[1]} />
+            <Column people={cols[1]} matchSet={matchSet} />
             <ColumnRule />
-            <Column people={cols[2]} />
+            <Column people={cols[2]} matchSet={matchSet} />
           </>
         )}
       </div>
@@ -189,53 +194,62 @@ function GazetteContent() {
 }
 
 // ── Column ────────────────────────────────────────────────────────────────────
-function Column({ people }: { people: Person[] }) {
+function Column({ people, matchSet }: { people: Person[]; matchSet: Set<string> | null }) {
   return (
     <div style={{ flex: 1, minWidth: 0 }}>
-      {people.map((person) => <Poster key={person.id} person={person} />)}
+      {people.map((person) => (
+        <Poster
+          key={person.id}
+          person={person}
+          located={matchSet !== null && !matchSet.has(person.id)}
+        />
+      ))}
     </div>
   );
 }
 
 // ── Poster ────────────────────────────────────────────────────────────────────
-function Poster({ person }: { person: Person }) {
+function Poster({ person, located = false }: { person: Person; located?: boolean }) {
   const safeName = sanitize(person.name);
   const safeBio  = sanitize(person.bio ?? "");
   const initials = safeName.split(" ").map((n) => n[0] ?? "").join("").slice(0, 2).toUpperCase();
 
   // Seeded stamp rotation so each card has a consistent but unique angle
-  const stampRot = -7 - (person.id.charCodeAt(0) % 13); // –7° to –20°
+  const stampRot = -6 - (person.id.charCodeAt(0) % 10); // –6° to –16°
 
   return (
     <Link href={`/profile/${person.id}`} style={{ display: "block", textDecoration: "none", color: INK }}>
       <article style={{ padding: "1.6rem 2rem 0", position: "relative", cursor: "pointer" }}>
 
-        {/* ── LOCATED stamp ───────────────────────────────────────────────── */}
-        <div
-          aria-hidden="true"
-          style={{
-            position:      "absolute",
-            top:           "3.5rem",
-            right:         "1.5rem",
-            transform:     `rotate(${stampRot}deg)`,
-            border:        `2.5px solid ${STAMP_RED}`,
-            color:         STAMP_RED,
-            padding:       "3px 10px 4px",
-            fontFamily:    "var(--font-barlow)",
-            fontSize:      "0.9rem",
-            fontWeight:    900,
-            letterSpacing: "0.22em",
-            textTransform: "uppercase",
-            pointerEvents: "none",
-            userSelect:    "none",
-            lineHeight:    1,
-            // Worn stamp texture via box-shadow
-            boxShadow:     `inset 0 0 0 1px ${STAMP_RED}`,
-            opacity:       0.85,
-          }}
-        >
-          LOCATED
-        </div>
+        {/* ── LOCATED stamp — only when search active + no match ──────────── */}
+        {located && (
+          <div
+            aria-hidden="true"
+            style={{
+              position:       "absolute",
+              top:            "50%",
+              left:           "50%",
+              transform:      `translate(-50%, -50%) rotate(${stampRot}deg)`,
+              zIndex:         10,
+              border:         `4px solid ${STAMP_RED}`,
+              color:          STAMP_RED,
+              padding:        "6px 20px 8px",
+              fontFamily:     "var(--font-barlow)",
+              fontSize:       "2rem",
+              fontWeight:     900,
+              letterSpacing:  "0.3em",
+              textTransform:  "uppercase",
+              pointerEvents:  "none",
+              userSelect:     "none",
+              lineHeight:     1,
+              boxShadow:      `inset 0 0 0 2px ${STAMP_RED}`,
+              opacity:        0.82,
+              whiteSpace:     "nowrap",
+            }}
+          >
+            LOCATED
+          </div>
+        )}
 
         {/* ── WANTED banner ───────────────────────────────────────────────── */}
         <div
