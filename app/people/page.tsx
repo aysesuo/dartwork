@@ -93,22 +93,14 @@ function GazetteContent() {
   });
 
   return (
-    <main style={{ minHeight: "100vh", color: INK, position: "relative" }}>
-      {/* Full-bleed paper texture — sits behind all content */}
-      <div
-        aria-hidden="true"
-        style={{
-          position:           "absolute",
-          inset:              0,
-          zIndex:             0,
-          backgroundImage:    "url(/textures/grunge-paper-background.jpg)",
-          backgroundSize:     "cover",
-          backgroundPosition: "center",
-          backgroundRepeat:   "no-repeat",
-        }}
-      />
-      {/* All content above the texture */}
-      <div style={{ position: "relative", zIndex: 1 }}>
+    <main style={{
+      minHeight:          "100vh",
+      color:              INK,
+      backgroundImage:    "url(/textures/grunge-paper-background.jpg)",
+      backgroundSize:     "cover",
+      backgroundPosition: "center",
+      backgroundRepeat:   "no-repeat",
+    }}>
       {/* ══ MASTHEAD ══════════════════════════════════════════════════════════ */}
       <header style={{ padding: "2rem 2.5rem 0", textAlign: "center" }}>
         <DoubleRule />
@@ -209,7 +201,6 @@ function GazetteContent() {
           </>
         )}
       </div>
-      </div>{/* end content layer */}
     </main>
   );
 }
@@ -351,7 +342,9 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
                 height:       "100%",
                 objectFit:    "cover",
                 display:      "block",
-                filter:       "grayscale(1) contrast(5) brightness(0.85)",
+                // grayscale → crush contrast so only near-black survives
+                // multiply blends white→transparent, black→ink against the paper
+                filter:       "grayscale(1) contrast(8) brightness(0.7)",
                 mixBlendMode: "multiply",
               }}
             />
