@@ -74,16 +74,30 @@ function GazetteContent() {
     );
   }, [people, search]);
 
-  // Always show every person — non-matches get the LOCATED stamp, not hidden.
+  // When searching: matches float to the top, non-matches sink below.
+  // Fill columns right-to-left so the first match lands in the top-right column.
+  const sorted = useMemo(() => {
+    if (!matchSet) return people;
+    return [
+      ...people.filter((p) =>  matchSet.has(p.id)),  // matches first
+      ...people.filter((p) => !matchSet.has(p.id)),  // non-matches after
+    ];
+  }, [people, matchSet]);
+
   const cols: [Person[], Person[], Person[]] = [[], [], []];
-  people.forEach((p, i) => cols[i % 3].push(p));
+  sorted.forEach((p, i) => {
+    // When search active: fill right → middle → left so matches appear top-right.
+    // When idle: normal left → right order.
+    const col = matchSet ? (2 - (i % 3)) : (i % 3);
+    cols[col].push(p);
+  });
 
   return (
     <main
       style={{
         minHeight:            "100vh",
         color:                INK,
-        backgroundImage:      "url(/textures/vintage-grunge.jpg)",
+        backgroundImage:      "url(/textures/grunge-paper-background.jpg)",
         backgroundSize:       "cover",
         backgroundPosition:   "center",
         backgroundAttachment: "fixed",
