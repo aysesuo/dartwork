@@ -311,9 +311,10 @@ html::after {
 }
 
 /* ── MASTHEAD ─────────────────────────────────────────────────────────── */
+/* masthead: vintage paper bg behind the DARTWORK ransom logo */
 .masthead {
   width: 320px;
-  background: linear-gradient(135deg, var(--kraft) 0%, var(--kraft-2) 100%);
+  background: var(--kraft) url("/textures/grunge-vintage-old-paper-background.jpg") center / cover;
   padding: 20px 16px;
   border-radius: 2px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.1);
@@ -363,6 +364,28 @@ html::after {
   font-style: italic;
   font-weight: 900;
   border: 2px solid rgba(0,0,0,0.2);
+}
+
+/* nav-bar sized ransom logo */
+/* nav logo: compact ransom wordmark for non-landing pages */
+.logo--nav {
+  font-size: 0.72rem;
+  margin-bottom: 0;
+  display: inline-block;
+}
+.logo--nav .rl {
+  padding: 1px 3px;
+  border-width: 1px;
+}
+
+/* login-card sized ransom logo */
+.logo--login {
+  font-size: 1.7rem;
+  margin-bottom: 0;
+  display: inline-block;
+}
+.logo--login .rl {
+  padding: 2px 6px;
 }
 
 .tagline {
@@ -468,39 +491,41 @@ html::after {
 
 .peel__flap {
   position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 140px;
-  height: 140px;
+  inset: 0;
   background: linear-gradient(135deg, #e8dcc8 0%, #f0e8d8 100%);
-  border-left: 1px solid rgba(0,0,0,0.1);
-  border-bottom: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid rgba(0,0,0,0.08);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  transform-origin: top right;
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  gap: 6px;
+  transform-origin: top center;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  backface-visibility: hidden;
+  z-index: 4;
 }
 
 .peel.open .peel__flap {
-  transform: rotateX(90deg);
+  transform: rotateX(-92deg);
+  pointer-events: none;
 }
 
 .corner {
-  font-size: 0.65rem;
-  opacity: 0.5;
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 0.6rem;
+  opacity: 0.45;
   font-weight: 600;
-  transform: rotate(-45deg);
 }
 
 .peel__flap .big {
-  font-size: 1rem;
+  font-size: 1.15rem;
   font-weight: 700;
   text-align: center;
   line-height: 1.2;
+  font-family: var(--font-special-elite), monospace;
 }
 
 .peel__flap .sm {
@@ -533,12 +558,11 @@ html::after {
 
 /* ── JOURNAL ───────────────────────────────────────────────────────────── */
 .journal {
-  width: 120px;
-  height: 160px;
-  background: linear-gradient(90deg, #8b4513 0%, #a0522d 100%);
+  width: 204px;
+  height: 270px;
+  background: url("/textures/notebook_closed.png") center / 135% no-repeat;
   border-radius: 3px;
   overflow: hidden;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
 }
 
 .journal__cover {
@@ -549,43 +573,34 @@ html::after {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  color: #f3ead4;
+  justify-content: center;
+  color: #20180f;
   position: relative;
-  background: linear-gradient(135deg, rgba(0,0,0,0.1), transparent);
-}
-
-.journal__edge {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 4px;
-  height: 100%;
-  background: linear-gradient(90deg, rgba(0,0,0,0.3), transparent);
-}
-
-.journal__band {
-  width: 100%;
-  height: 20px;
-  background: rgba(0,0,0,0.2);
-  position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  border-top: 1px solid rgba(255,255,255,0.1);
-  border-bottom: 1px solid rgba(0,0,0,0.2);
+  background: transparent;
 }
 
 .journal__label {
-  font-size: 1.5rem;
+  font-size: 2.5rem;
   font-weight: 700;
   text-align: center;
-  line-height: 1.05;
+  line-height: 1;
   letter-spacing: 0.01em;
   font-family: var(--font-caveat), cursive;
+  color: #20180f;
+  transform: rotate(-2deg);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.55' intercept='0.5'/%3E%3CfeFuncG type='linear' slope='0.55' intercept='0.5'/%3E%3CfeFuncB type='linear' slope='0.55' intercept='0.5'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23g)'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.55' intercept='0.5'/%3E%3CfeFuncG type='linear' slope='0.55' intercept='0.5'/%3E%3CfeFuncB type='linear' slope='0.55' intercept='0.5'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23g)'/%3E%3C/svg%3E");
+  -webkit-mask-size: 70px 70px;
+  mask-size: 70px 70px;
+  mask-mode: luminance;
 }
 
 .journal__tag {
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  text-align: center;
   font-size: 0.6rem;
   opacity: 0.7;
   font-weight: 600;
@@ -595,7 +610,7 @@ html::after {
 
 /* ── DESK CALENDAR ────────────────────────────────────────────────────── */
 .deskcal {
-  width: 240px;
+  width: 340px;
   background: #f5f5f0;
   border: 1px solid rgba(0,0,0,0.1);
   border-radius: 2px;
@@ -622,7 +637,7 @@ html::after {
 }
 
 .deskcal__sheet {
-  padding: 12px;
+  padding: 16px;
 }
 
 .deskcal__head {
@@ -658,7 +673,7 @@ html::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   border-radius: 2px;
   position: relative;
   background: #fff;
@@ -688,42 +703,44 @@ html::after {
 }
 
 .deskcal__next {
-  margin-top: 8px;
-  padding-top: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid rgba(0,0,0,0.1);
-  font-size: 0.75rem;
-  line-height: 1.5;
+  font-size: 0.78rem;
+  line-height: 1.45;
 }
 
 .deskcal__next p {
-  margin: 4px 0;
+  margin: 5px 0;
   display: flex;
   gap: 6px;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .deskcal__next .dot {
   width: 6px;
   height: 6px;
   background: var(--dot, #d4632a);
+  border-radius: 50%;
   flex-shrink: 0;
+  margin-top: 5px;
 }
 
-/* ── NEWSPAPER ────────────────────────────────────────────────────────── */
+/* ── NEWSPAPER ── (people gazette: vintage paper bg) ─────────────────────── */
 .news {
-  width: 220px;
-  background: #f3ead4;
-  padding: 12px;
+  width: 300px;
+  background: #f3ead4 url("/textures/grunge-vintage-old-paper-background.jpg") center / cover;
+  padding: 16px;
   border-radius: 1px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .news__paper {
-  background: #f3ead4;
+  background: transparent;
 }
 
 .news__mast {
-  font-size: 1.2rem;
+  font-size: 1.55rem;
   font-weight: 900;
   text-align: center;
   font-family: var(--font-playfair), serif;
@@ -732,7 +749,7 @@ html::after {
 }
 
 .news__sub {
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   text-align: center;
   font-style: italic;
   opacity: 0.7;
@@ -747,15 +764,23 @@ html::after {
 
 .news__cols {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  gap: 0;
 }
 
 .news__col {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   font-size: 0.7rem;
   line-height: 1.3;
+  padding: 0 8px;
+}
+
+.news__col + .news__col {
+  border-left: 1px solid rgba(0,0,0,0.18);
 }
 
 .news__col b {
@@ -776,6 +801,36 @@ html::after {
 .news__col span {
   opacity: 0.7;
   font-size: 0.65rem;
+}
+
+.news__role {
+  font-style: italic;
+  margin-bottom: 4px;
+}
+
+.news__wanted {
+  opacity: 1 !important;
+  color: rgba(160, 28, 20, 0.85);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.58rem !important;
+  margin: 2px 0 4px;
+  line-height: 1.2;
+}
+
+.news__field {
+  font-size: 0.58rem !important;
+  line-height: 1.25;
+  margin-top: 2px;
+}
+
+.news__field b {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.52rem;
+  opacity: 0.85;
 }
 
 /* ── COFFEE RING ───────────────────────────────────────────────────────── */

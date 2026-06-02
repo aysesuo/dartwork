@@ -12,6 +12,7 @@ import {
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { requireDartmouth } from "@/lib/auth";
+import RansomLogo from "@/components/RansomLogo";
 
 type Mode = "signin" | "signup";
 
@@ -111,11 +112,8 @@ export default function LoginPage() {
         style={{ backgroundColor: "#132d1c", border: "1px solid #1e4430" }}
       >
         <div className="text-center">
-          <h1
-            className="text-4xl font-extrabold uppercase tracking-tight font-[family-name:var(--font-barlow)]"
-            style={{ color: "#f5f5f0" }}
-          >
-            d<span style={{ color: "#FF6B35" }}>Art</span>work
+          <h1 className="flex justify-center">
+            <RansomLogo className="logo--login" />
           </h1>
           <p className="mt-1 text-xs uppercase tracking-widest" style={{ color: "#7fa88a" }}>
             Dartmouth creative community

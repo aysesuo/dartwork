@@ -96,7 +96,7 @@ function GazetteContent() {
     <div style={{
       minHeight:          "100vh",
       color:              INK,
-      backgroundImage:    "url(/textures/grunge-paper-background.jpg)",
+      backgroundImage:    "url(/textures/grunge-vintage-old-paper-background.jpg)",
       backgroundSize:     "cover",
       backgroundPosition: "center",
       backgroundRepeat:   "no-repeat",

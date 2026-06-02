@@ -334,7 +334,7 @@ export default function ProjectsPage() {
           boxShadow:           "inset 0 0 80px rgba(0,0,0,0.45), inset 0 0 24px rgba(0,0,0,0.3), 0 0 0 3px #a8956a",
           minHeight:           "100vh",
           overflow:            "hidden",
-          backgroundImage:     "url(/textures/cork_board.jpg)",
+          backgroundImage:     "url(/textures/corkboard_final.png)",
           backgroundSize:      "cover",
           backgroundPosition:  "center",
         }}

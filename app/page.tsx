@@ -3,9 +3,57 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import eventsData from "@/data/events.json";
 
 const INK = "#20180f";
 const KRAFT = "#d8c19a";
+
+// Map a discipline to one of the desk-calendar colour classes
+const DISCIPLINE_TO_CAL: Record<string, string> = {
+  Music: "d-music",
+  Film: "d-film",
+  "Visual Art": "d-art",
+  Photography: "d-photo",
+  Writing: "d-writing",
+  Theater: "d-theater",
+  "UX Design": "d-art",
+};
+
+// Colour swatch (hex) used in the "next up" dots, keyed by cal class
+const CAL_HEX: Record<string, string> = {
+  "d-music": "#d4a574",
+  "d-film": "#5a8fd4",
+  "d-art": "#d4632a",
+  "d-photo": "#5f9f8a",
+  "d-writing": "#8b7355",
+  "d-theater": "#a85a5a",
+};
+
+// The desk calendar shows April 2025 — derive its data from the real events
+const CAL_YEAR = 2025;
+const CAL_MONTH = 3; // April (0-indexed)
+
+const monthEvents = [...eventsData]
+  .map((e) => ({ ...e, _date: new Date(e.dateTime) }))
+  .sort((a, b) => a._date.getTime() - b._date.getTime());
+
+// day-of-month → cal colour class, for events that fall in April 2025
+const calEventMap: Record<number, string> = {};
+for (const e of monthEvents) {
+  if (e._date.getFullYear() === CAL_YEAR && e._date.getMonth() === CAL_MONTH) {
+    calEventMap[e._date.getDate()] = DISCIPLINE_TO_CAL[e.disciplines[0]] ?? "d-art";
+  }
+}
+
+// First few upcoming events for the "next up" footer
+const nextUpEvents = monthEvents.slice(0, 3).map((e) => ({
+  label: `${e._date.toLocaleDateString("en-US", { month: "short", day: "numeric" })} · ${e.title}`,
+  hex: CAL_HEX[DISCIPLINE_TO_CAL[e.disciplines[0]] ?? "d-art"] ?? "#d4632a",
+}));
+
+// Leading blank cells before April 1, 2025 (a Tuesday)
+const CAL_LEAD = new Date(CAL_YEAR, CAL_MONTH, 1).getDay();
+const CAL_DAYS = new Date(CAL_YEAR, CAL_MONTH + 1, 0).getDate();
 
 export default function LandingPage() {
   const router = useRouter();
@@ -101,6 +149,13 @@ export default function LandingPage() {
     <div className="desk" style={{ position: "fixed", inset: 0, overflow: "hidden" }}>
       <div className="ruler"></div>
 
+      {/* DECOR — scattered desk objects, behind the clickable props */}
+      <div className="decor" aria-hidden style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none" }}>
+        <img src="/textures/ruler.png" alt="" style={{ position: "absolute", left: "30%", top: "4%", width: "230px", transform: "rotate(7deg)", opacity: 0.95 }} />
+        <img src="/textures/pen.png" alt="" style={{ position: "absolute", left: "5%", top: "78%", width: "190px", transform: "rotate(-28deg)", opacity: 0.95 }} />
+        <img src="/textures/fookie.png" alt="" style={{ position: "absolute", left: "43%", top: "80%", width: "120px", transform: "rotate(14deg)", opacity: 0.97 }} />
+      </div>
+
       <div
         className="stage"
         ref={stageRef}
@@ -109,7 +164,7 @@ export default function LandingPage() {
         onPointerUp={handlePointerUp}
       >
         {/* MASTHEAD */}
-        <div className="prop masthead lift" style={{ left: "3%", top: "7.5%", transform: "rotate(-1.4deg)" }}>
+        <div className="prop masthead lift" style={{ left: "2.5%", top: "11%", transform: "rotate(-3deg) scale(1.52)", transformOrigin: "top left" }}>
           <div className="tape tape--washi" style={{ position: "absolute", left: "-26px", top: "-14px", transform: "rotate(-24deg)" }}></div>
           <p className="masthead__eyebrow">Dartmouth's creative desk</p>
           <h1 className="logo logo--ransom" id="logo">
@@ -125,28 +180,11 @@ export default function LandingPage() {
             </span>
           </h1>
           <p className="tagline">{tagline}<span className="cursor">&nbsp;</span></p>
-          <button className="stamp" onClick={(e) => { e.currentTarget.classList.add("stamped"); setTimeout(() => e.currentTarget.classList.remove("stamped"), 320); }}>Post a project</button>
-        </div>
-
-        {/* PEEL CARD */}
-        <div className="prop peel lift" style={{ left: "3.5%", top: "44%", transform: "rotate(2deg)" }}>
-          <span className="pin pin-red"></span>
-          <div className="peel__base">
-            <p className="peel__hint">The fine print</p>
-            <p className="peel__msg">A student-run home where d<em>Art</em>ists find collaborators, show work, and turn loose ideas into real projects.</p>
-          </div>
-          <div className="peel__flap" onClick={(e) => e.currentTarget.parentElement?.classList.toggle("open")}>
-            <span className="corner">peel ↑</span>
-            <div className="big">What is dartwork?</div>
-            <div className="sm">peel to read</div>
-          </div>
         </div>
 
         {/* JOURNAL → PROFILE */}
-        <div className="prop journal door lift" onClick={(e) => handleDoorClick(e, "profile.html", "Profile")} style={{ left: "8%", top: "71%", "--j-rot": "5deg" } as any}>
+        <div className="prop journal door lift" onClick={(e) => handleDoorClick(e, "profile.html", "Profile")} style={{ left: "76%", top: "60%", transform: "rotate(-9deg) scale(1.02)" } as any}>
           <div className="journal__cover">
-            <span className="journal__edge"></span>
-            <span className="journal__band"></span>
             <span className="journal__label">My<br />Profile</span>
             <span className="journal__tag">tap to open</span>
           </div>
@@ -154,17 +192,16 @@ export default function LandingPage() {
         </div>
 
         {/* DESK CALENDAR → EVENTS */}
-        <div className="prop deskcal door lift" onClick={(e) => handleDoorClick(e, "events.html", "Events")} style={{ left: "24%", top: "40%", "--cal-rot": "-2.5deg" } as any}>
+        <div className="prop deskcal door lift" onClick={(e) => handleDoorClick(e, "events.html", "Events")} style={{ left: "11%", top: "44%", transform: "rotate(-2.5deg) scale(1.15)" } as any}>
           <span className="deskcal__spiral"><i></i><i></i><i></i><i></i><i></i><i></i></span>
           <div className="deskcal__sheet">
             <div className="deskcal__head"><span className="m">April</span><span className="y">'25</span></div>
             <div className="deskcal__dow"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
             <div className="deskcal__grid" style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)" }}>
-              {[...Array(2)].map((_, i) => <div key={`empty-${i}`} className="deskcal__cell out"></div>)}
-              {[...Array(30)].map((_, d) => {
+              {[...Array(CAL_LEAD)].map((_, i) => <div key={`empty-${i}`} className="deskcal__cell out"></div>)}
+              {[...Array(CAL_DAYS)].map((_, d) => {
                 const dayNum = d + 1;
-                const eventMap: Record<number, string> = { 4: "d-music", 10: "d-film", 12: "d-art", 17: "d-writing", 19: "d-theater", 24: "d-art", 26: "d-photo" };
-                const c = eventMap[dayNum];
+                const c = calEventMap[dayNum];
                 return (
                   <div key={dayNum} className={`deskcal__cell${c ? " " + c : ""}`}>
                     {dayNum}
@@ -174,23 +211,34 @@ export default function LandingPage() {
               })}
             </div>
             <div className="deskcal__next">
-              <p><span className="dot" style={{ "--dot": "#d4632a" } as any}></span>Apr 12 · Riso Print Fair</p>
-              <p><span className="dot" style={{ "--dot": "#5fb38a" } as any}></span>Apr 17 · Open Mic & Zine</p>
+              {nextUpEvents.map((e, i) => (
+                <p key={i}><span className="dot" style={{ "--dot": e.hex } as any}></span>{e.label}</p>
+              ))}
             </div>
           </div>
           <span className="door__go">Events ↗</span>
         </div>
 
         {/* NEWSPAPER → PEOPLE */}
-        <div className="prop news door lift" onClick={(e) => handleDoorClick(e, "people.html", "People")} style={{ left: "42%", top: "50%", "--news-rot": "-2deg" } as any}>
+        <div className="prop news door lift" onClick={(e) => handleDoorClick(e, "people.html", "People")} style={{ left: "39%", top: "53%", transform: "rotate(2.5deg) scale(1.15)" } as any}>
           <div className="news__paper">
-            <div className="news__mast">The Wanted Gazette</div>
+            <div className="news__mast">People</div>
             <div className="news__sub">"All the talent that's fit to print"</div>
             <div className="news__rule"></div>
             <div className="news__cols">
-              <div className="news__col"><b className="news__name">Aysesu</b><span>Visual Art</span></div>
-              <div className="news__col"><b className="news__name">Theo K.</b><span>Film · Editor</span></div>
-              <div className="news__col"><b className="news__name">Michelle</b><span>Writing</span></div>
+              {[
+                { name: "Aysesu", role: "Visual Art", wanted: "Mural collaborator", skills: "Painting · Risograph", interests: "Printmaking · Zines" },
+                { name: "Theo K.", role: "Film · Editor", wanted: "Doc shooter", skills: "Premiere · Color", interests: "Vérité · Sound" },
+                { name: "Michelle", role: "Writing", wanted: "Co-writer", skills: "Poetry · Essays", interests: "Lit mags · Slam" },
+              ].map((p) => (
+                <div className="news__col" key={p.name}>
+                  <b className="news__name">{p.name}</b>
+                  <span className="news__role">{p.role}</span>
+                  <span className="news__wanted">Wanted for: {p.wanted}</span>
+                  <span className="news__field"><b>Skills</b> {p.skills}</span>
+                  <span className="news__field"><b>Interests</b> {p.interests}</span>
+                </div>
+              ))}
             </div>
           </div>
           <span className="door__go">People ↗</span>
@@ -203,7 +251,7 @@ export default function LandingPage() {
         <div
           className="prop cork door"
           onClick={(e) => handleDoorClick(e, "projects.html", "Projects")}
-          style={{ left: "63%", top: "5%", width: "34%", height: "400px" }}
+          style={{ left: "59%", top: "9%", width: "34%", height: "400px", transform: "scale(1.12)" }}
         >
           <span className="door__go" style={{ left: "18px", right: "auto", top: "18px", bottom: "auto" }}>Projects ↗</span>
         </div>
@@ -224,9 +272,9 @@ export default function LandingPage() {
             }}
             onPointerDown={(e) => handlePointerDown(e, `n${i}`)}
             style={{
-              left: i === 0 ? "64.5%" : i === 1 ? "81%" : "71%",
-              top: i === 0 ? "8%" : i === 1 ? "9%" : "28%",
-              transform: `rotate(${note.rot})`,
+              left: i === 0 ? "60.5%" : i === 1 ? "77%" : "67%",
+              top: i === 0 ? "12%" : i === 1 ? "13%" : "32%",
+              transform: `rotate(${note.rot}) scale(1.12)`,
               "--rot": note.rot,
             } as any}
           >

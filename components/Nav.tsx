@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Briefcase, Users, Calendar, UserCircle, Inbox } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import RansomLogo from "@/components/RansomLogo";
 
 const GREEN = "#00693E";
 
@@ -21,6 +22,8 @@ export function DesktopNav() {
   const pathname = usePathname();
   const { user } = useAuth();
 
+  if (pathname === "/") return null;
+
   return (
     <nav
       className="hidden md:block sticky top-0 z-40"
@@ -29,11 +32,8 @@ export function DesktopNav() {
     >
       <div className="max-w-5xl mx-auto flex h-14 items-center justify-between px-4">
         {pathname !== "/" && (
-          <Link
-            href="/"
-            className="text-xl font-black tracking-tight font-[family-name:var(--font-barlow)] uppercase"
-          >
-            <span style={{ color: "#AAFF47" }}>d</span><span style={{ color: "#FF6B35" }} className="italic font-[family-name:var(--font-playfair)]">Art</span><span style={{ color: "#AAFF47" }}>work</span>
+          <Link href="/" aria-label="dArtwork home">
+            <RansomLogo className="logo--nav" />
           </Link>
         )}
 
@@ -100,6 +100,8 @@ export function MobileNav() {
         ]
       : []),
   ];
+
+  if (pathname === "/") return null;
 
   return (
     <nav

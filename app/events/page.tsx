@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { List, CalendarDays } from "lucide-react";
 import EventCard from "@/components/events/EventCard";
 import CalendarView from "@/components/events/CalendarView";
 import DisciplineFilterBar from "@/components/shared/DisciplineFilterBar";
@@ -19,7 +18,6 @@ interface LiveEvent extends DartworkEvent {
 
 export default function EventsPage() {
   const { user } = useAuth();
-  const [view,          setView]          = useState<"list" | "calendar">("list");
   const [activeFilters, setActiveFilters] = useState<string[]>([...DISCIPLINES]);
   const [selectedEvent, setSelectedEvent] = useState<LiveEvent | null>(null);
 
@@ -176,6 +174,12 @@ export default function EventsPage() {
   );
   const canEdit = !!selectedEvent && selectedEvent.creatorUid === user?.uid;
 
+  // Index of the selected event among the filtered set — keeps the popped-up
+  // card's texture/rotation consistent with how it would render in a grid.
+  const cardIndex = selectedEvent
+    ? Math.max(0, filteredEvents.findIndex((e) => e.id === selectedEvent.id))
+    : 0;
+
   // ── Input style for modal edit form ───────────────────────────────────────
   const modalInput: React.CSSProperties = {
     width: "100%", padding: "0.4rem 0.6rem",
@@ -197,28 +201,6 @@ export default function EventsPage() {
             Events
           </h1>
           <div className="flex items-center gap-2">
-            {/* List / Calendar toggle */}
-            <div className="flex border border-gray-200 rounded-lg overflow-hidden text-sm">
-              <button
-                onClick={() => setView("list")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 transition-colors ${
-                  view === "list" ? "bg-green-700 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                <List className="h-4 w-4" aria-hidden="true" />
-                List
-              </button>
-              <button
-                onClick={() => setView("calendar")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 transition-colors ${
-                  view === "calendar" ? "bg-green-700 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                <CalendarDays className="h-4 w-4" aria-hidden="true" />
-                Calendar
-              </button>
-            </div>
-
             {/* Post an Event — logged-in users only */}
             {user && (
               <Link
@@ -261,31 +243,8 @@ export default function EventsPage() {
           </p>
         )}
 
-        {/* ── List view ── */}
-        {!loading && !fetchErr && view === "list" && (
-          filteredEvents.length === 0 ? (
-            <p className="text-gray-400 text-sm text-center py-16">
-              No upcoming events match your filters.
-            </p>
-          ) : (
-            <div className="columns-1 sm:columns-2 lg:columns-3 gap-x-5">
-              {filteredEvents.map((event, i) => (
-                <button
-                  key={event.id}
-                  type="button"
-                  onClick={() => { setSelectedEvent(event); setEditMode(false); }}
-                  className="block w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]"
-                  aria-label={`Open details for ${event.title}`}
-                >
-                  <EventCard event={event} index={i} />
-                </button>
-              ))}
-            </div>
-          )
-        )}
-
-        {/* ── Calendar view ── */}
-        {!loading && !fetchErr && view === "calendar" && (
+        {/* ── Calendar ── */}
+        {!loading && !fetchErr && (
           <CalendarView events={filteredEvents as DartworkEvent[]} onEventSelect={(e) => { setSelectedEvent(e as LiveEvent); setEditMode(false); }} />
         )}
 
@@ -304,13 +263,9 @@ export default function EventsPage() {
 
                 {/* ── Header row ── */}
                 <div className="flex items-start justify-between gap-2">
-                  {editMode ? (
-                    <span className="text-[10px] uppercase tracking-widest opacity-60">Editing event</span>
-                  ) : (
-                    <span className="text-[10px] uppercase tracking-widest opacity-60">
-                      {selectedEvent.disciplines.join(" · ")}
-                    </span>
-                  )}
+                  <span className="text-[10px] uppercase tracking-widest opacity-60">
+                    {editMode ? "Editing event" : ""}
+                  </span>
                   <button
                     onClick={closeModal}
                     className="text-[#1a1a1a] hover:opacity-60 text-2xl leading-none shrink-0"
@@ -320,63 +275,36 @@ export default function EventsPage() {
                   </button>
                 </div>
 
-                {/* ── Display mode ── */}
+                {/* ── Display mode — the event card pops up ── */}
                 {!editMode && (
                   <>
-                    <h2 className="font-bold uppercase text-xl text-center border-y-2 border-[#2a2a2a] py-2 leading-tight tracking-wide">
-                      {selectedEvent.title}
-                    </h2>
-                    <div className="text-[11px] uppercase tracking-widest opacity-70 space-y-0.5">
-                      <p>
-                        {(() => {
-                          const d = new Date(selectedEvent.dateTime);
-                          const s = ["th","st","nd","rd"];
-                          const v = d.getDate() % 100;
-                          const ord = d.getDate() + (s[(v-20)%10] ?? s[v] ?? s[0]);
-                          return `${d.toLocaleDateString("en-US",{weekday:"long"})}, ${d.toLocaleDateString("en-US",{month:"long"})} ${ord}`;
-                        })()}
-                        {" · "}
-                        {new Date(selectedEvent.dateTime).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}
-                        {selectedEvent.endDateTime
-                          ? ` – ${new Date(selectedEvent.endDateTime).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}`
-                          : ""}
-                      </p>
-                      <p>{selectedEvent.location}</p>
-                    </div>
-                    <p className="text-sm leading-relaxed" style={{ textAlign: "justify" }}>
-                      {selectedEvent.description}
-                    </p>
-                    <div className="flex items-center justify-between pt-3 border-t border-[#2a2a2a]">
-                      <p className="text-[10px] uppercase tracking-widest opacity-60 italic normal-case">
-                        {selectedEvent.organizer}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        {/* Creator-only Edit */}
-                        {canEdit && (
-                          <button
-                            onClick={() => openEdit(selectedEvent)}
-                            className="px-3 py-1.5 text-[11px] uppercase tracking-widest font-bold border border-[#2a2a2a] bg-transparent hover:bg-[#e0d9c6] transition-colors"
-                          >
-                            Edit
-                          </button>
-                        )}
-                        {/* Creator or admin Delete */}
-                        {canControl && (
-                          <button
-                            onClick={() => handleDelete(selectedEvent.id)}
-                            disabled={deletingId === selectedEvent.id}
-                            className="px-3 py-1.5 text-[11px] uppercase tracking-widest font-bold border border-red-700 text-red-700 bg-transparent hover:bg-red-50 transition-colors disabled:opacity-50"
-                          >
-                            {deletingId === selectedEvent.id ? "Deleting…" : "Delete"}
-                          </button>
-                        )}
+                    <EventCard event={selectedEvent} index={cardIndex} />
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#2a2a2a]">
+                      {/* Creator-only Edit */}
+                      {canEdit && (
                         <button
-                          onClick={() => downloadIcs(selectedEvent)}
-                          className="px-4 py-1.5 text-[#f0ead8] text-[11px] uppercase tracking-widest font-bold border border-[#2a2a2a] bg-[#2a2a2a] hover:bg-[#1a1a1a] transition-colors"
+                          onClick={() => openEdit(selectedEvent)}
+                          className="px-3 py-1.5 text-[11px] uppercase tracking-widest font-bold border border-[#2a2a2a] bg-transparent hover:bg-[#e0d9c6] transition-colors"
                         >
-                          Add to Calendar
+                          Edit
                         </button>
-                      </div>
+                      )}
+                      {/* Creator or admin Delete */}
+                      {canControl && (
+                        <button
+                          onClick={() => handleDelete(selectedEvent.id)}
+                          disabled={deletingId === selectedEvent.id}
+                          className="px-3 py-1.5 text-[11px] uppercase tracking-widest font-bold border border-red-700 text-red-700 bg-transparent hover:bg-red-50 transition-colors disabled:opacity-50"
+                        >
+                          {deletingId === selectedEvent.id ? "Deleting…" : "Delete"}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => downloadIcs(selectedEvent)}
+                        className="px-4 py-1.5 text-[#f0ead8] text-[11px] uppercase tracking-widest font-bold border border-[#2a2a2a] bg-[#2a2a2a] hover:bg-[#1a1a1a] transition-colors"
+                      >
+                        Add to Calendar
+                      </button>
                     </div>
                   </>
                 )}
