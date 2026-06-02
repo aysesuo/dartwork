@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Briefcase, Users, Calendar, UserCircle } from "lucide-react";
@@ -8,9 +9,16 @@ import RansomLogo from "@/components/RansomLogo";
 
 const GREEN = "#00693E";
 const PROJECT_INK = "#1a1008";
-// PLACEHOLDER paper texture for the projects-page menu chips — swap for the real one later.
+// Yellow paper chip behind the projects-page menu items + inbox/profile icons.
 const PROJECTS_PAPER = "/textures/paper-yellow.jpg";
 const PROJECT_FONT = 'var(--font-special-elite), "Courier New", monospace';
+const PROJECT_ICON_CHIP: CSSProperties = {
+  color: PROJECT_INK,
+  backgroundImage: `url(${PROJECTS_PAPER})`,
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  boxShadow: "1px 2px 5px rgba(0,0,0,0.35)",
+};
 const EVENTS_WOOD = "/textures/wood_sign.png";
 const WOOD_INK = "#3a2412";
 // People (gazette) menu — printed-ink type on the bare paper background
@@ -142,20 +150,40 @@ export function DesktopNav() {
               <Link
                 href="/inbox"
                 aria-label="Inbox"
-                className={`ml-2 rounded-md p-2 transition-colors ${
-                  onProjects || onEvents || onPeople ? "hover:opacity-70" : isActive(pathname, "/inbox") ? "text-white" : "text-gray-500 hover:text-white"
+                className={`ml-2 p-2 transition-colors ${bare ? "" : "rounded-md"} ${
+                  bare ? "hover:opacity-70" : isActive(pathname, "/inbox") ? "text-white" : "text-gray-500 hover:text-white"
                 }`}
-                style={onProjects || onEvents || onPeople ? { color: onEvents ? WOOD_INK : onPeople ? PEOPLE_INK : PROJECT_INK } : isActive(pathname, "/inbox") ? { backgroundColor: GREEN } : undefined}
+                style={
+                  onProjects
+                    ? PROJECT_ICON_CHIP
+                    : onEvents
+                    ? { color: WOOD_INK }
+                    : onPeople
+                    ? { color: PEOPLE_INK }
+                    : isActive(pathname, "/inbox")
+                    ? { backgroundColor: GREEN }
+                    : undefined
+                }
               >
                 <MailboxIcon open={isActive(pathname, "/inbox")} className="h-5 w-5" />
               </Link>
               <Link
                 href={`/profile/${user.uid}`}
                 aria-label="My profile"
-                className={`ml-1 rounded-md p-2 transition-colors ${
-                  onProjects || onEvents || onPeople ? "hover:opacity-70" : isActive(pathname, "/profile") ? "text-white" : "text-gray-500 hover:text-white"
+                className={`ml-1 p-2 transition-colors ${bare ? "" : "rounded-md"} ${
+                  bare ? "hover:opacity-70" : isActive(pathname, "/profile") ? "text-white" : "text-gray-500 hover:text-white"
                 }`}
-                style={onProjects || onEvents || onPeople ? { color: onEvents ? WOOD_INK : onPeople ? PEOPLE_INK : PROJECT_INK } : isActive(pathname, "/profile") ? { backgroundColor: GREEN } : undefined}
+                style={
+                  onProjects
+                    ? PROJECT_ICON_CHIP
+                    : onEvents
+                    ? { color: WOOD_INK }
+                    : onPeople
+                    ? { color: PEOPLE_INK }
+                    : isActive(pathname, "/profile")
+                    ? { backgroundColor: GREEN }
+                    : undefined
+                }
               >
                 <UserCircle className="h-5 w-5" aria-hidden="true" />
               </Link>

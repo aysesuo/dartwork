@@ -8,6 +8,8 @@ import { sanitize } from "@/lib/sanitize";
 import { getDisciplineColor } from "@/lib/disciplines";
 import AuthGuard from "@/components/auth/AuthGuard";
 import ProjectCard from "@/components/project/ProjectCard";
+import ProjectDetailSheet, { type SheetProject } from "@/components/project/ProjectDetailSheet";
+import { elementBackground } from "@/lib/elements";
 
 interface ProfileData {
   uid: string;
@@ -17,6 +19,7 @@ interface ProfileData {
   skills: string[];
   interests: string[];
   bio: string;
+  element?: string | null;
   isPrivate: boolean;
   onboardingComplete: boolean;
 }
@@ -26,10 +29,13 @@ interface Project {
   title: string;
   description: string;
   discipline: string;
+  commitment?: string | null;
   positionsNeeded: string[];
   tags: string[];
   creatorName: string;
+  creatorEmail?: string | null;
   mediaUrl?: string | null;
+  teamSize?: number | null;
   datePosted: string;
   // owner-only fields
   showOnProfile?: boolean;
@@ -54,6 +60,8 @@ function ProfileContent() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [error,    setError]    = useState<string | null>(null);
   const [loading,  setLoading]  = useState(true);
+  const [selectedProject, setSelectedProject] = useState<SheetProject | null>(null);
+  const [selectedIndex,   setSelectedIndex]   = useState(0);
 
   const isOwner = user?.uid === uid;
 
@@ -121,9 +129,28 @@ function ProfileContent() {
 
   const safeName          = sanitize(profile.displayName ?? "");
   const safeBio           = sanitize(profile.bio ?? "");
+  const elementBg         = elementBackground(profile.element);
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-10">
+    <>
+      {/* Element background — fixed behind the content */}
+      {elementBg && (
+        <div
+          aria-hidden="true"
+          style={{
+            position:           "fixed",
+            inset:              0,
+            zIndex:             0,
+            backgroundImage:    `url(${elementBg})`,
+            backgroundSize:     "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(10,15,12,0.62)" }} />
+        </div>
+      )}
+
+    <main className="max-w-2xl mx-auto px-4 py-10" style={{ position: "relative", zIndex: 1 }}>
 
       {/* ── Header ── */}
       <div className="flex items-start gap-5 mb-8">
@@ -231,8 +258,22 @@ function ProfileContent() {
           <div style={{ display: "flex", flexWrap: "wrap", gap: "2.5rem", justifyContent: "flex-start" }}>
             {projects.map((project, i) => (
               <div key={project.id} style={{ width: 270, flexShrink: 0 }}>
-                {/* Card */}
-                <ProjectCard project={project} index={i} decorated />
+                {/* Card — opens the detail side-sheet */}
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => { setSelectedProject(project); setSelectedIndex(i); }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelectedProject(project);
+                      setSelectedIndex(i);
+                    }
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  <ProjectCard project={project} index={i} decorated />
+                </div>
 
                 {/* Owner controls */}
                 {isOwner && (
@@ -271,6 +312,14 @@ function ProfileContent() {
         </p>
       )}
     </main>
+
+    {/* Project detail side-sheet — same popup as the projects board */}
+    <ProjectDetailSheet
+      project={selectedProject}
+      index={selectedIndex}
+      onClose={() => setSelectedProject(null)}
+    />
+    </>
   );
 }
 

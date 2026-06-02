@@ -35,6 +35,7 @@ export async function GET(
     positionsNeeded: d.positionsNeeded ?? [],
     tags:            d.tags ?? [],
     mediaUrl:        d.mediaUrl ?? null,
+    teamSize:        d.teamSize ?? null,
     showOnProfile:   d.showOnProfile ?? true,
     status:          d.status ?? "active",
     creatorUid:      d.creatorUid,
@@ -141,6 +142,17 @@ export async function PATCH(
       .slice(0, 20);
     safe.positionsNeeded = positions;
     safe.tags            = positions;
+  }
+
+  if ("teamSize" in body) {
+    if (body.teamSize === null || body.teamSize === "") {
+      safe.teamSize = null;
+    } else {
+      const n = Number(body.teamSize);
+      if (!Number.isInteger(n) || n < 0 || n > 1000)
+        return Response.json({ error: "Team size must be a whole number between 0 and 1000" }, { status: 400 });
+      safe.teamSize = n;
+    }
   }
 
   if ("mediaUrl" in body) {

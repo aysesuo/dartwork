@@ -30,20 +30,25 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const filterUid = searchParams.get("uid");
 
-  let query: FirebaseFirestore.Query = adminDb
-    .collection("projects")
-    .orderBy("createdAt", "desc");
+  let docs: FirebaseFirestore.QueryDocumentSnapshot[];
 
   if (filterUid) {
-    // where-only query — no orderBy so no composite index needed
-    query = adminDb
+    // Profile view: projects the user created OR was approved onto (member).
+    // Two where-only queries (no orderBy → no composite index), merged + deduped.
+    const [ownedSnap, memberSnap] = await Promise.all([
+      adminDb.collection("projects").where("creatorUid", "==", filterUid).get(),
+      adminDb.collection("projects").where("memberUids", "array-contains", filterUid).get(),
+    ]);
+    const byId = new Map<string, FirebaseFirestore.QueryDocumentSnapshot>();
+    for (const doc of [...ownedSnap.docs, ...memberSnap.docs]) byId.set(doc.id, doc);
+    docs = [...byId.values()];
+  } else {
+    const snap = await adminDb
       .collection("projects")
-      .where("creatorUid", "==", filterUid);
+      .orderBy("createdAt", "desc")
+      .get();
+    docs = snap.docs;
   }
-
-  const snap = await query.get();
-
-  let docs = snap.docs;
 
   if (filterUid) {
     const isOwner = filterUid === auth.callerUid;
@@ -63,8 +68,10 @@ export async function GET(request: NextRequest) {
         .sort((a, b) => (b.data().createdAt ?? "").localeCompare(a.data().createdAt ?? ""));
     }
   } else {
-    // Global board: hide closed projects (no composite index needed — filter in JS)
-    docs = docs.filter((doc) => doc.data().status !== "closed");
+    // Global board: hide closed projects and past-work entries (filter in JS)
+    docs = docs.filter(
+      (doc) => doc.data().status !== "closed" && doc.data().isPast !== true,
+    );
   }
 
   const projects = docs.map((doc) => {
@@ -79,8 +86,12 @@ export async function GET(request: NextRequest) {
       positionsNeeded: d.positionsNeeded ?? [],
       tags:            d.tags ?? [],
       mediaUrl:        d.mediaUrl ?? null,
+      teamSize:        d.teamSize ?? null,
+      isPast:          d.isPast === true,
+      memberUids:      d.memberUids ?? [],
       creatorUid:      d.creatorUid,
       creatorName:     d.creatorName,
+      creatorEmail:    d.creatorEmail ?? null,
       datePosted:      d.datePosted,
       status:          d.status ?? "active",
       // showOnProfile only exposed to the owner
@@ -164,6 +175,18 @@ export async function POST(request: NextRequest) {
   // Strict boolean check — body.showOnProfile must be explicitly false to opt out (MED-7)
   const showOnProfile = body.showOnProfile !== false && body.showOnProfile !== 0;
 
+  // Past-work entry (added from a profile) — never shown on the global board
+  const isPast = body.isPast === true;
+
+  // Team size — optional non-negative integer, "how many people are working on this currently"
+  let teamSize: number | null = null;
+  if (body.teamSize !== undefined && body.teamSize !== null && body.teamSize !== "") {
+    const n = Number(body.teamSize);
+    if (!Number.isInteger(n) || n < 0 || n > 1000)
+      return Response.json({ error: "Team size must be a whole number between 0 and 1000" }, { status: 400 });
+    teamSize = n;
+  }
+
   const now = new Date();
 
   const doc = {
@@ -174,9 +197,12 @@ export async function POST(request: NextRequest) {
     positionsNeeded,
     tags:         positionsNeeded,
     mediaUrl,
+    teamSize,
+    isPast,
+    memberUids:   [] as string[],
     showOnProfile,
     creatorUid:   auth.callerUid,
-    creatorEmail: auth.callerEmail, // stored server-side only, never returned in GET
+    creatorEmail: auth.callerEmail, // shown as creator contact to authenticated Dartmouth viewers
     creatorName:  auth.displayName,
     datePosted:   now.toISOString().slice(0, 10),
     createdAt:    now.toISOString(),

@@ -18,12 +18,14 @@ interface Project {
   title: string;
   creatorName: string;
   creatorUid?: string;
+  creatorEmail?: string | null;
   discipline: string;
   commitment?: string | null;
   tags: string[];
   positionsNeeded: string[];
   description: string;
   mediaUrl?: string | null;
+  teamSize?: number | null;
   datePosted: string;
   status?: string;
 }
@@ -351,7 +353,10 @@ export default function ProjectsPage() {
           border:              "16px solid #8b6f47",
           borderRadius:        "3px",
           boxShadow:           "0 12px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.15)",
-          minHeight:           "100vh",
+          // Pull the board up under the transparent sticky nav so the menu sits
+          // on the corkboard (no dark body-background strip behind it).
+          marginTop:           "-3.5rem",
+          minHeight:           "calc(100vh + 3.5rem)",
           overflow:            "hidden",
           backgroundColor:     "#b8956a",
           backgroundImage:     "url(/textures/corkboard_final.png)",
@@ -373,8 +378,8 @@ export default function ProjectsPage() {
 
         {/* ── Content layer ── */}
         <main
-          className="relative w-full px-6 py-8"
-          style={{ zIndex: 10 }}
+          className="relative w-full px-6 pb-8"
+          style={{ zIndex: 10, paddingTop: "calc(3.5rem + 2rem)" }}
         >
           {/* Header */}
           <div className="flex items-center justify-end mb-6">

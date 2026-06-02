@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import eventsData from "@/data/events.json";
+import { useAuth } from "@/lib/auth";
+import SignInCard from "@/components/SignInCard";
 
 const INK = "#20180f";
 const KRAFT = "#d8c19a";
@@ -57,6 +59,9 @@ const CAL_DAYS = new Date(CAL_YEAR, CAL_MONTH + 1, 0).getDate();
 
 export default function LandingPage() {
   const router = useRouter();
+  const { user, loading } = useAuth();
+  // Non-signed-in visitors get a blurred, text-free desk with a sign-in popup.
+  const locked = !loading && !user;
   const stageRef = useRef<HTMLDivElement>(null);
   const dragRefN0 = useRef<HTMLDivElement>(null);
   const dragRefN1 = useRef<HTMLDivElement>(null);
@@ -118,6 +123,15 @@ export default function LandingPage() {
 
   return (
     <div className="desk" style={{ position: "fixed", inset: 0, overflow: "hidden" }}>
+      <div
+        style={{
+          position:      "absolute",
+          inset:         0,
+          filter:        locked ? "blur(7px)" : "none",
+          pointerEvents: locked ? "none" : "auto",
+          userSelect:    locked ? "none" : "auto",
+        }}
+      >
       <div className="ruler"></div>
 
       {/* DECOR — scattered desk objects, behind the clickable props */}
@@ -135,6 +149,7 @@ export default function LandingPage() {
         onPointerUp={handlePointerUp}
       >
         {/* MASTHEAD */}
+        {!locked && (
         <div className="prop masthead lift" style={{ left: "2.5%", top: "11%", transform: "rotate(-3deg) scale(1.52)", transformOrigin: "top left" }}>
           <div className="tape tape--washi" style={{ position: "absolute", left: "-26px", top: "-14px", transform: "rotate(-24deg)" }}></div>
           <p className="masthead__eyebrow">Dartmouth's creative network</p>
@@ -152,6 +167,7 @@ export default function LandingPage() {
           </h1>
           <p className="tagline">{tagline}<span className="cursor">&nbsp;</span></p>
         </div>
+        )}
 
         {/* JOURNAL → PROFILE */}
         <div className="prop journal door lift" onClick={(e) => handleDoorClick(e, "profile.html", "Profile")} style={{ left: "76%", top: "60%", transform: "rotate(-9deg) scale(1.02)" } as any}>
@@ -267,7 +283,39 @@ export default function LandingPage() {
       </div>
 
       {/* HINT */}
-      <div className="hint">✦ <span>tap an object to open its page · drag the notes · peel the flap</span></div>
+      {!locked && (
+        <div className="hint">✦ <span>tap an object to open its page · drag the notes · peel the flap</span></div>
+      )}
+      </div>
+
+      {/* LOCKED — blurry scrim + sign-in popup for non-signed-in visitors */}
+      {locked && (
+        <>
+          <div
+            aria-hidden
+            style={{
+              position:       "absolute",
+              inset:          0,
+              zIndex:         50,
+              backdropFilter: "blur(2px)",
+              backgroundColor: "rgba(20,16,10,0.45)",
+            }}
+          />
+          <div
+            style={{
+              position:       "absolute",
+              inset:          0,
+              zIndex:         51,
+              display:        "flex",
+              alignItems:     "center",
+              justifyContent: "center",
+              padding:        "1rem",
+            }}
+          >
+            <SignInCard theme="paper" />
+          </div>
+        </>
+      )}
     </div>
   );
 }

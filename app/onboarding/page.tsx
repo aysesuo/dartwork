@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { auth, storage } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth";
 import { DISCIPLINES } from "@/lib/disciplines";
 import { SKILLS } from "@/lib/skills";
 import { INTERESTS } from "@/lib/interests";
+import ElementPicker from "@/components/ElementPicker";
+import PastProjectsManager from "@/components/PastProjectsManager";
 
 const GRAD_YEARS = [2025, 2026, 2027, 2028, 2029];
 
@@ -22,21 +23,14 @@ export default function OnboardingPage() {
   const [skills,       setSkills]       = useState<string[]>([]);
   const [interests,    setInterests]    = useState<string[]>([]);
   const [bio,          setBio]          = useState("");
+  const [element,      setElement]      = useState<string | null>(null);
   const [isPrivate,    setIsPrivate]    = useState(false);
-
-  // Photo state
-  const [photoFile,    setPhotoFile]    = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [uploading,    setUploading]    = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [error,  setError]  = useState<string | null>(null);
   const [busy,   setBusy]   = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
-    // Pre-fill photo from Google account if available
-    if (user?.photoURL) setPhotoPreview(user.photoURL);
   }, [user, loading, router]);
 
   function toggleDiscipline(d: string) {
@@ -57,38 +51,16 @@ export default function OnboardingPage() {
     );
   }
 
-  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setPhotoFile(file);
-    const reader = new FileReader();
-    reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
-    reader.readAsDataURL(file);
-  }
-
-  async function uploadPhoto(uid: string): Promise<string | null> {
-    if (!photoFile) return user?.photoURL ?? null;
-    setUploading(true);
-    try {
-      const compressed = await compressImage(photoFile, 480);
-      const storageRef  = ref(storage, `profile-photos/${uid}`);
-      await uploadBytes(storageRef, compressed, { contentType: "image/jpeg" });
-      return await getDownloadURL(storageRef);
-    } finally {
-      setUploading(false);
-    }
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
     if (!displayName.trim()) { setError("Display name is required"); return; }
     if (disciplines.length === 0) { setError("Select at least one discipline"); return; }
+    if (!element) { setError("Choose your element"); return; }
 
     setBusy(true);
     try {
-      const photoURL = await uploadPhoto(user!.uid);
       const idToken  = await user!.getIdToken();
       const res = await fetch(`/api/users/${user!.uid}`, {
         method:  "POST",
@@ -100,8 +72,8 @@ export default function OnboardingPage() {
           skills,
           interests,
           bio:                bio.trim(),
+          element,
           isPrivate,
-          photoURL,
           authorizedViewers:  [],
           onboardingComplete: true,
           createdAt:          new Date().toISOString(),
@@ -124,10 +96,6 @@ export default function OnboardingPage() {
 
   if (loading || !user) return null;
 
-  const initials = displayName.trim()
-    ? displayName.trim().split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
-    : user.email?.[0]?.toUpperCase() ?? "?";
-
   return (
     <main className="max-w-lg mx-auto px-4 py-10">
       <h1
@@ -141,56 +109,6 @@ export default function OnboardingPage() {
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-
-        {/* ── Profile photo ── */}
-        <Field label="Profile photo (optional)">
-          <div className="flex items-center gap-5">
-            {/* Preview */}
-            <div
-              style={{
-                width: 80, height: 80, borderRadius: "50%",
-                overflow: "hidden", flexShrink: 0,
-                backgroundColor: "#1e4430", border: "2px solid #1e4430",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}
-            >
-              {photoPreview ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={photoPreview} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              ) : (
-                <span style={{ color: "#7fa88a", fontWeight: 700, fontSize: "1.4rem" }}>{initials}</span>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-80"
-                style={{ border: "1px solid #1e4430", color: "#7fa88a" }}
-              >
-                {photoPreview ? "Change photo" : "Add photo"}
-              </button>
-              {photoPreview && (
-                <button
-                  type="button"
-                  onClick={() => { setPhotoFile(null); setPhotoPreview(null); }}
-                  className="text-xs hover:opacity-70 transition-opacity text-left"
-                  style={{ color: "#7fa88a" }}
-                >
-                  Remove
-                </button>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoChange}
-                style={{ display: "none" }}
-              />
-            </div>
-          </div>
-        </Field>
 
         {/* Display name */}
         <Field label="Display name">
@@ -292,6 +210,11 @@ export default function OnboardingPage() {
           </div>
         </Field>
 
+        {/* Element */}
+        <Field label="Your element (sets your profile background)">
+          <ElementPicker value={element} onChange={setElement} />
+        </Field>
+
         {/* Bio */}
         <Field label="Bio (optional)">
           <textarea
@@ -300,9 +223,14 @@ export default function OnboardingPage() {
             placeholder="A few words about your work..."
             maxLength={400}
             rows={4}
-            className={`${inputCls} rounded-2xl resize-none`}
+            className={`${inputCls} resize-none`}
             style={inputStyle}
           />
+        </Field>
+
+        {/* Past projects */}
+        <Field label="Past projects (optional)">
+          <PastProjectsManager theme="light" />
         </Field>
 
         {/* Privacy */}
@@ -332,11 +260,11 @@ export default function OnboardingPage() {
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            disabled={busy || uploading}
+            disabled={busy}
             className="flex-1 py-3 rounded-full text-xs font-bold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             style={{ backgroundColor: "#00693E" }}
           >
-            {uploading ? "Uploading photo…" : busy ? "Saving…" : "Save & continue"}
+            {busy ? "Saving…" : "Save & continue"}
           </button>
           <button
             type="button"
@@ -353,29 +281,6 @@ export default function OnboardingPage() {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-async function compressImage(file: File, maxDim = 480): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      const scale  = Math.min(1, maxDim / Math.max(img.width, img.height));
-      const canvas = document.createElement("canvas");
-      canvas.width  = Math.round(img.width  * scale);
-      canvas.height = Math.round(img.height * scale);
-      const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      URL.revokeObjectURL(url);
-      canvas.toBlob(
-        (blob) => (blob ? resolve(blob) : reject(new Error("Compression failed"))),
-        "image/jpeg",
-        0.85,
-      );
-    };
-    img.onerror = reject;
-    img.src = url;
-  });
-}
-
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
@@ -388,9 +293,9 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const inputCls =
-  "w-full rounded-full px-5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-700";
+  "w-full rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-700";
 const inputStyle = {
-  backgroundColor: "#132d1c",
-  border: "1px solid #1e4430",
-  color: "#f5f5f0",
+  backgroundColor: "#ffffff",
+  border: "1px solid #cfd8d2",
+  color: "#1a1008",
 } as const;

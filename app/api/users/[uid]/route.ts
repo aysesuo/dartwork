@@ -4,6 +4,7 @@ import { verifyDartmouth } from "@/lib/verify-dartmouth";
 import { DISCIPLINES } from "@/lib/disciplines";
 import { SKILLS } from "@/lib/skills";
 import { INTERESTS } from "@/lib/interests";
+import { isElement } from "@/lib/elements";
 
 const ADMIN_UID = process.env.ADMIN_UID;
 
@@ -42,6 +43,7 @@ export async function GET(
     skills:             data.skills ?? [],
     interests:          data.interests ?? [],
     bio:                data.bio,
+    element:            data.element ?? null,
     isPrivate:          data.isPrivate,
     onboardingComplete: data.onboardingComplete,
     photoURL:           data.photoURL ?? null,
@@ -87,6 +89,7 @@ export async function POST(
     "skills",
     "interests",
     "bio",
+    "element",
     "isPrivate",
     "authorizedViewers",
     "photoURL",
@@ -109,6 +112,14 @@ export async function POST(
     if (typeof safe.bio !== "string")
       return Response.json({ error: "Bio must be a string" }, { status: 400 });
     safe.bio = safe.bio.trim().slice(0, 400);
+  }
+
+  if ("element" in safe) {
+    if (safe.element === null || safe.element === "") {
+      safe.element = null;
+    } else if (!isElement(safe.element)) {
+      return Response.json({ error: "Invalid element" }, { status: 400 });
+    }
   }
 
   if ("gradYear" in safe) {

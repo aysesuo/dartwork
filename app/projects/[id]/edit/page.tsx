@@ -120,6 +120,7 @@ function EditProjectContent() {
   const [description,   setDescription]   = useState("");
   const [discipline,    setDiscipline]    = useState("");
   const [rolesNeeded,   setRolesNeeded]   = useState("");
+  const [teamSize,      setTeamSize]      = useState("");
   const [showOnProfile, setShowOnProfile] = useState(true);
   const [status,        setStatus]        = useState<"active" | "closed">("active");
 
@@ -152,6 +153,7 @@ function EditProjectContent() {
         setDescription(data.description ?? "");
         setDiscipline(data.discipline ?? "");
         setRolesNeeded((data.positionsNeeded ?? []).join(", "));
+        setTeamSize(data.teamSize == null ? "" : String(data.teamSize));
         setCurrentImageUrl(data.mediaUrl ?? null);
         setShowOnProfile(data.showOnProfile !== false);
         setStatus(data.status === "closed" ? "closed" : "active");
@@ -210,6 +212,7 @@ function EditProjectContent() {
           description:   description.trim(),
           discipline,
           rolesNeeded,
+          teamSize:      teamSize === "" ? null : Number(teamSize),
           mediaUrl:      mediaUrl ?? "",
           showOnProfile,
           status,
@@ -370,6 +373,23 @@ function EditProjectContent() {
               rows={3}
               maxLength={400}
               style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }}
+              disabled={submitting}
+            />
+          </Field>
+
+          {/* Team size */}
+          <Field
+            label="Team size"
+            hint="How many people are working on this currently? Shown on your project page."
+          >
+            <input
+              type="number"
+              min={0}
+              max={1000}
+              value={teamSize}
+              onChange={(e) => setTeamSize(e.target.value)}
+              placeholder="e.g. 3"
+              style={inputStyle}
               disabled={submitting}
             />
           </Field>

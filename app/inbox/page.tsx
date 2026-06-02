@@ -26,7 +26,22 @@ interface Application {
 export default function InboxPage() {
   return (
     <AuthGuard>
-      <InboxContent />
+      {/* Fixed cardboard backdrop behind the inbox content */}
+      <div
+        aria-hidden="true"
+        style={{
+          position:           "fixed",
+          inset:              0,
+          zIndex:             0,
+          backgroundImage:    "url(/textures/cardboard.jpg)",
+          backgroundSize:     "cover",
+          backgroundPosition: "center",
+          backgroundRepeat:   "no-repeat",
+        }}
+      />
+      <div style={{ position: "relative", zIndex: 1, minHeight: "100vh" }}>
+        <InboxContent />
+      </div>
     </AuthGuard>
   );
 }
@@ -39,6 +54,20 @@ function InboxContent() {
   const [loading,      setLoading]      = useState(true);
   const [error,        setError]        = useState<string | null>(null);
   const [expanded,     setExpanded]     = useState<string | null>(null); // expanded app id
+
+  async function decide(appId: string, status: "accepted" | "rejected") {
+    if (!user) return;
+    const idToken = await user.getIdToken();
+    const res = await fetch(`/api/applications/${appId}`, {
+      method:  "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+      body:    JSON.stringify({ status }),
+    });
+    if (!res.ok) throw new Error("Failed to update application");
+    setApplications((prev) =>
+      prev.map((a) => (a.id === appId ? { ...a, status } : a)),
+    );
+  }
 
   useEffect(() => {
     if (!user) return;
@@ -153,6 +182,7 @@ function InboxContent() {
                   app={app}
                   isExpanded={expanded === app.id}
                   onToggle={() => setExpanded(expanded === app.id ? null : app.id)}
+                  onDecide={decide}
                 />
               ))}
             </div>
@@ -168,12 +198,28 @@ function ApplicationCard({
   app,
   isExpanded,
   onToggle,
+  onDecide,
 }: {
   app:        Application;
   isExpanded: boolean;
   onToggle:   () => void;
+  onDecide:   (appId: string, status: "accepted" | "rejected") => Promise<void>;
 }) {
   const dateStr = formatDate(app.createdAt);
+  const [busy,    setBusy]    = useState(false);
+  const [decideErr, setDecideErr] = useState<string | null>(null);
+
+  async function handleDecide(status: "accepted" | "rejected") {
+    setDecideErr(null);
+    setBusy(true);
+    try {
+      await onDecide(app.id, status);
+    } catch {
+      setDecideErr("Could not update — please try again");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div
@@ -274,8 +320,30 @@ function ApplicationCard({
             </div>
           )}
 
-          {/* Reply button */}
-          <div className="pt-1">
+          {/* Decision + reply actions */}
+          <div className="pt-1 flex flex-wrap items-center gap-2">
+            {app.status === "pending" && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleDecide("accepted")}
+                  disabled={busy}
+                  className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                  style={{ backgroundColor: "#00693E" }}
+                >
+                  {busy ? "…" : "Approve"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDecide("rejected")}
+                  disabled={busy}
+                  className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-80 disabled:opacity-50"
+                  style={{ border: "1px solid #3a1e1e", color: "#c88a8a" }}
+                >
+                  Decline
+                </button>
+              </>
+            )}
             <a
               href={`mailto:${app.applicantEmail}?subject=Re: Your application for ${encodeURIComponent(app.roleAppliedFor)} — ${encodeURIComponent(app.projectTitle)}`}
               className="inline-block px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-80"
@@ -284,6 +352,9 @@ function ApplicationCard({
               Reply by email ↗
             </a>
           </div>
+          {decideErr && (
+            <p className="text-xs" style={{ color: "#c8524a" }}>{decideErr}</p>
+          )}
         </div>
       )}
     </div>

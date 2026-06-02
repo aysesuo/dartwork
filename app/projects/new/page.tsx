@@ -117,6 +117,7 @@ export default function NewProjectPage() {
   const [description,   setDescription]   = useState("");
   const [discipline,    setDiscipline]    = useState("");
   const [commitment,    setCommitment]    = useState("");
+  const [teamSize,      setTeamSize]      = useState("");
   const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set());
   const [roleOptions,   setRoleOptions]   = useState<string[]>(DEFAULT_ROLES);
   const [addingRole,    setAddingRole]    = useState(false);
@@ -203,7 +204,7 @@ export default function NewProjectPage() {
       const res = await fetch("/api/projects", {
         method:  "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body:    JSON.stringify({ title, description, discipline, commitment, rolesNeeded: [...selectedRoles].join(", "), mediaUrl, showOnProfile }),
+        body:    JSON.stringify({ title, description, discipline, commitment, teamSize: teamSize === "" ? null : Number(teamSize), rolesNeeded: [...selectedRoles].join(", "), mediaUrl, showOnProfile }),
       });
 
       if (!res.ok) {
@@ -335,6 +336,23 @@ export default function NewProjectPage() {
                   );
                 })}
               </div>
+            </Field>
+
+            {/* Team size */}
+            <Field
+              label="Team size"
+              hint="How many people are working on this currently? Shown on your project page."
+            >
+              <input
+                type="number"
+                min={0}
+                max={1000}
+                value={teamSize}
+                onChange={(e) => setTeamSize(e.target.value)}
+                placeholder="e.g. 3"
+                style={inputStyle}
+                disabled={submitting}
+              />
             </Field>
 
             {/* Description */}

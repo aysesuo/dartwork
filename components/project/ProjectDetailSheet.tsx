@@ -26,11 +26,13 @@ export interface SheetProject {
   title: string;
   creatorName: string;
   creatorUid?: string;
+  creatorEmail?: string | null;
   discipline: string;
   commitment?: string | null;
   positionsNeeded: string[];
   description: string;
   mediaUrl?: string | null;
+  teamSize?: number | null;
   datePosted: string;
 }
 
@@ -316,6 +318,57 @@ export default function ProjectDetailSheet({ project, index = 0, onClose }: Prop
                 <p style={{ fontSize: "0.88rem", lineHeight: 1.8, color: "rgba(26,16,8,0.85)" }}>
                   {project.description}
                 </p>
+
+                {/* Team size */}
+                {project.teamSize != null && (
+                  <div>
+                    <p
+                      style={{
+                        fontSize:      "0.6rem",
+                        fontWeight:    700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.12em",
+                        color:         "rgba(26,16,8,0.6)",
+                        marginBottom:  "0.35rem",
+                      }}
+                    >
+                      Team size
+                    </p>
+                    <p style={{ fontSize: "0.9rem", fontWeight: 600, color: "#1a1008" }}>
+                      {project.teamSize} {project.teamSize === 1 ? "person" : "people"}
+                    </p>
+                  </div>
+                )}
+
+                {/* Creator contact */}
+                {project.creatorEmail && (
+                  <div>
+                    <p
+                      style={{
+                        fontSize:      "0.6rem",
+                        fontWeight:    700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.12em",
+                        color:         "rgba(26,16,8,0.6)",
+                        marginBottom:  "0.35rem",
+                      }}
+                    >
+                      Creator contact
+                    </p>
+                    <a
+                      href={`mailto:${project.creatorEmail}`}
+                      style={{
+                        fontSize:           "0.85rem",
+                        color:              "#1a1008",
+                        textDecoration:     "underline",
+                        textUnderlineOffset: 3,
+                        wordBreak:          "break-all",
+                      }}
+                    >
+                      {project.creatorEmail}
+                    </a>
+                  </div>
+                )}
 
                 {/* Looking for */}
                 {project.positionsNeeded.length > 0 && (

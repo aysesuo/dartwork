@@ -14,16 +14,20 @@ function lcg(seed: number) {
   };
 }
 
+// The Filter index-card occupies the top-left corner of the canvas (left 16,
+// width 220, top -65, ~500 px tall). Column-0 cards overlap it horizontally, so
+// they start below its bottom edge instead of at the top.
+const FILTER_CLEARANCE = 500;
+
 export function seededInitialPos(index: number): { left: number; top: number } {
   const rng     = lcg(index * 31337 + 7);
   const col     = index % 5;
   const row     = Math.floor(index / 5);
   const COL_W   = 260;
   const ROW_H   = 320;
-  // X_START keeps col-0 cards clear of the filter card (right edge ≈ 122px)
   const X_START = 150;
   const baseLeft = X_START + col * COL_W;
-  const baseTop  = row * ROW_H + 30;
+  const baseTop  = (col === 0 ? FILTER_CLEARANCE : 30) + row * ROW_H;
   return {
     left: baseLeft + (rng() - 0.5) * 28,              // ±14 px scatter
     top:  Math.max(20, baseTop + (rng() - 0.5) * 36), // ±18 px, never above 20
@@ -51,6 +55,7 @@ interface Project {
   title: string;
   creatorName: string;
   creatorUid?: string;
+  creatorEmail?: string | null;
   discipline: string;
   commitment?: string | null;
   tags: string[];
