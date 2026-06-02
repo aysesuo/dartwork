@@ -206,7 +206,7 @@ export default function EventsPage() {
         }}
       >
         {!loading && !fetchErr && (
-          <div className="absolute" style={{ left: "24.5%", right: "24.5%", top: "24%", bottom: "13%" }}>
+          <div className="absolute" style={{ left: "26%", right: "26%", top: "26%", bottom: "18%" }}>
             <CalendarView
               events={filteredEvents as DartworkEvent[]}
               onEventSelect={(e) => { setSelectedEvent(e as LiveEvent); setEditMode(false); }}
@@ -219,8 +219,8 @@ export default function EventsPage() {
         {/* ── Header ── */}
         <div className="flex items-center justify-between mb-6">
           <h1
-            className="text-5xl font-extrabold uppercase tracking-tight font-[family-name:var(--font-barlow)]"
-            style={{ color: "#f5f5f0" }}
+            className="leading-none"
+            style={{ fontFamily: "var(--font-caveat), cursive", fontSize: "3.75rem", color: "#f5f5f0" }}
           >
             Events
           </h1>
