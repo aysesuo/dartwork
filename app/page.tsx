@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import eventsData from "@/data/events.json";
@@ -11,38 +11,77 @@ import SignInCard from "@/components/SignInCard";
 const INK = "#20180f";
 const KRAFT = "#d8c19a";
 
-// The desk calendar shows April 2025 — derive its data from the real events
-const CAL_YEAR = 2025;
-const CAL_MONTH = 3; // April (0-indexed)
+// Minimal shape the desk calendar needs from an event. The live /api/events
+// payload and the seed file both satisfy this.
+interface CalEvent { dateTime: string; disciplines: string[]; title: string }
 
-const monthEvents = [...eventsData]
-  .map((e) => ({ ...e, _date: new Date(e.dateTime) }))
-  .sort((a, b) => a._date.getTime() - b._date.getTime());
+// Seed events act as the fallback before the live fetch resolves (and for the
+// brief locked-landing flash). Once signed in, the real events replace these so
+// the desk calendar shows exactly what the Events page shows.
+const SEED_EVENTS = eventsData as CalEvent[];
 
-// day-of-month → discipline hex, for events that fall in April 2025. Uses the
-// SAME discipline→colour map as the Events page calendar so the two stay in sync.
-const calEventHex: Record<number, string> = {};
-for (const e of monthEvents) {
-  if (e._date.getFullYear() === CAL_YEAR && e._date.getMonth() === CAL_MONTH) {
-    calEventHex[e._date.getDate()] = getDisciplineColor(e.disciplines[0] ?? "Other").hex;
+// Build the desk-calendar model from a set of events: pick the earliest event's
+// month (mirroring the Events page calendar, which auto-jumps there), then map
+// that month's event-days to discipline colours using the SAME palette.
+function buildCalModel(events: CalEvent[]) {
+  const parsed = events
+    .map((e) => ({ ...e, _date: new Date(e.dateTime) }))
+    .filter((e) => !Number.isNaN(e._date.getTime()))
+    .sort((a, b) => a._date.getTime() - b._date.getTime());
+
+  const ref   = parsed[0]?._date ?? new Date(); // earliest event, else today
+  const year  = ref.getFullYear();
+  const month = ref.getMonth();
+
+  const hexByDay: Record<number, string> = {};
+  for (const e of parsed) {
+    if (e._date.getFullYear() === year && e._date.getMonth() === month) {
+      hexByDay[e._date.getDate()] = getDisciplineColor(e.disciplines[0] ?? "Other").hex;
+    }
   }
+
+  const nextUp = parsed.slice(0, 3).map((e) => ({
+    label: `${e._date.toLocaleDateString("en-US", { month: "short", day: "numeric" })} · ${e.title}`,
+    hex:   getDisciplineColor(e.disciplines[0] ?? "Other").hex,
+  }));
+
+  return {
+    monthName: ref.toLocaleDateString("en-US", { month: "long" }),
+    yy:        String(year).slice(2),
+    lead:      new Date(year, month, 1).getDay(),     // leading blank cells
+    days:      new Date(year, month + 1, 0).getDate(), // days in month
+    hexByDay,
+    nextUp,
+  };
 }
-
-// First few upcoming events for the "next up" footer
-const nextUpEvents = monthEvents.slice(0, 3).map((e) => ({
-  label: `${e._date.toLocaleDateString("en-US", { month: "short", day: "numeric" })} · ${e.title}`,
-  hex: getDisciplineColor(e.disciplines[0] ?? "Other").hex,
-}));
-
-// Leading blank cells before April 1, 2025 (a Tuesday)
-const CAL_LEAD = new Date(CAL_YEAR, CAL_MONTH, 1).getDay();
-const CAL_DAYS = new Date(CAL_YEAR, CAL_MONTH + 1, 0).getDate();
 
 export default function LandingPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
   // Non-signed-in visitors get a blurred, text-free desk with a sign-in popup.
   const locked = !loading && !user;
+
+  // ── Desk calendar: same live events as the Events page ──────────────────────
+  // Start from the seed set, then swap in real events once the signed-in user's
+  // token lets us hit /api/events. The model picks the earliest event's month —
+  // exactly what the Events page calendar auto-jumps to — so the two are in sync.
+  const [calEvents, setCalEvents] = useState<CalEvent[]>(SEED_EVENTS);
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const token = await user.getIdToken(true);
+        const res   = await fetch("/api/events", { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) return;
+        const data: CalEvent[] = await res.json();
+        if (!cancelled && Array.isArray(data) && data.length) setCalEvents(data);
+      } catch { /* keep seed fallback */ }
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
+  const cal = useMemo(() => buildCalModel(calEvents), [calEvents]);
+
   const stageRef = useRef<HTMLDivElement>(null);
   const dragRefN0 = useRef<HTMLDivElement>(null);
   const dragRefN1 = useRef<HTMLDivElement>(null);
@@ -120,6 +159,7 @@ export default function LandingPage() {
         <img src="/textures/ruler.png" alt="" style={{ position: "absolute", left: "28%", top: "3%", width: "330px", transform: "rotate(7deg)", opacity: 0.95 }} />
         <img src="/textures/pen.png" alt="" style={{ position: "absolute", left: "62%", top: "70%", width: "320px", transform: "rotate(-22deg)", opacity: 0.95 }} />
         <img src="/textures/fookie.png" alt="" style={{ position: "absolute", left: "41%", top: "74%", width: "180px", transform: "rotate(14deg)", opacity: 0.97 }} />
+        <img src="/textures/scissors.png" alt="" style={{ position: "absolute", left: "84%", top: "14%", width: "210px", transform: "rotate(-18deg)", opacity: 0.95 }} />
       </div>
 
       <div
@@ -161,13 +201,13 @@ export default function LandingPage() {
         {/* DESK CALENDAR → EVENTS */}
         <div className="prop deskcal door lift" onClick={(e) => handleDoorClick(e, "events.html", "Events")} style={{ left: "-5%", top: "40%", transform: "rotate(-2.5deg) scale(1.15)" } as any}>
           <div className="deskcal__sheet">
-            <div className="deskcal__head"><span className="m">April</span><span className="y">'25</span></div>
+            <div className="deskcal__head"><span className="m">{cal.monthName}</span><span className="y">'{cal.yy}</span></div>
             <div className="deskcal__dow"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
             <div className="deskcal__grid" style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)" }}>
-              {[...Array(CAL_LEAD)].map((_, i) => <div key={`empty-${i}`} className="deskcal__cell out"></div>)}
-              {[...Array(CAL_DAYS)].map((_, d) => {
+              {[...Array(cal.lead)].map((_, i) => <div key={`empty-${i}`} className="deskcal__cell out"></div>)}
+              {[...Array(cal.days)].map((_, d) => {
                 const dayNum = d + 1;
-                const hex = calEventHex[dayNum];
+                const hex = cal.hexByDay[dayNum];
                 return (
                   <div
                     key={dayNum}
@@ -181,7 +221,7 @@ export default function LandingPage() {
               })}
             </div>
             <div className="deskcal__next">
-              {nextUpEvents.map((e, i) => (
+              {cal.nextUp.map((e, i) => (
                 <p key={i}><span className="dot" style={{ "--dot": e.hex } as any}></span>{e.label}</p>
               ))}
             </div>

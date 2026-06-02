@@ -215,7 +215,7 @@ export default function EventsPage() {
                 fontFamily: "var(--font-caveat), cursive",
                 fontSize: "2.6rem",
                 fontWeight: 700,
-                color: "#3a342b",
+                color: "#000",
                 lineHeight: 1,
                 transform: "rotate(-3deg)",
                 pointerEvents: "none",
