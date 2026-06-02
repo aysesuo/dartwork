@@ -159,7 +159,7 @@ export default function LandingPage() {
         <img src="/textures/ruler.png" alt="" style={{ position: "absolute", left: "28%", top: "3%", width: "330px", transform: "rotate(7deg)", opacity: 0.95 }} />
         <img src="/textures/pen.png" alt="" style={{ position: "absolute", left: "62%", top: "70%", width: "320px", transform: "rotate(-22deg)", opacity: 0.95 }} />
         <img src="/textures/fookie.png" alt="" style={{ position: "absolute", left: "41%", top: "74%", width: "180px", transform: "rotate(14deg)", opacity: 0.97 }} />
-        <img src="/textures/scissors.png" alt="" style={{ position: "absolute", left: "84%", top: "14%", width: "210px", transform: "rotate(-18deg)", opacity: 0.95 }} />
+        <img src="/textures/scissors.png" alt="" style={{ position: "absolute", left: "41%", top: "22%", width: "220px", transform: "rotate(8deg)", opacity: 0.97 }} />
       </div>
 
       <div
@@ -200,6 +200,23 @@ export default function LandingPage() {
 
         {/* DESK CALENDAR → EVENTS */}
         <div className="prop deskcal door lift" onClick={(e) => handleDoorClick(e, "events.html", "Events")} style={{ left: "-5%", top: "40%", transform: "rotate(-2.5deg) scale(1.15)" } as any}>
+          <span
+            style={{
+              position: "absolute",
+              left: "24%",
+              top: "8%",
+              fontFamily: "var(--font-caveat), cursive",
+              fontSize: "1.7rem",
+              fontWeight: 700,
+              color: "#000",
+              lineHeight: 1,
+              transform: "rotate(-4deg)",
+              pointerEvents: "none",
+              zIndex: 6,
+            }}
+          >
+            Events
+          </span>
           <div className="deskcal__sheet">
             <div className="deskcal__head"><span className="m">{cal.monthName}</span><span className="y">'{cal.yy}</span></div>
             <div className="deskcal__dow"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>

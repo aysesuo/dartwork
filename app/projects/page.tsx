@@ -399,8 +399,19 @@ export default function ProjectsPage() {
             {user && (
               <Link
                 href="/projects/new"
-                className="px-4 py-2 text-white rounded-full text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-90"
-                style={{ backgroundColor: "#FF6B35" }}
+                className="px-5 py-2 transition-opacity hover:opacity-90"
+                style={{
+                  backgroundImage: "url(/textures/crumpled_page.png)",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  color: "#000",
+                  fontFamily: "var(--font-caveat), cursive",
+                  fontSize: "1.35rem",
+                  fontWeight: 700,
+                  lineHeight: 1,
+                  border: "1px solid rgba(0,0,0,0.45)",
+                  boxShadow: "2px 3px 6px rgba(0,0,0,0.28)",
+                }}
               >
                 Post a Project
               </Link>

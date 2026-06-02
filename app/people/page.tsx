@@ -138,7 +138,7 @@ function GazetteContent() {
             textTransform: "uppercase",
             color:         INK,
             opacity:       0.65,
-            margin:        "0 0 0.5rem",
+            margin:        "0.55rem 0 0.5rem",
           }}
         >
           &ldquo;Find dArtist to create with.&rdquo;

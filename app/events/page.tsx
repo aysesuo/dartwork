@@ -207,22 +207,6 @@ export default function EventsPage() {
       >
         {!loading && !fetchErr && (
           <div className="absolute" style={{ left: "26%", right: "26%", top: "26%", bottom: "21%" }}>
-            <span
-              style={{
-                position: "absolute",
-                left: 0,
-                top: "-2.8rem",
-                fontFamily: "var(--font-caveat), cursive",
-                fontSize: "2.6rem",
-                fontWeight: 700,
-                color: "#000",
-                lineHeight: 1,
-                transform: "rotate(-3deg)",
-                pointerEvents: "none",
-              }}
-            >
-              Events
-            </span>
             <CalendarView
               events={filteredEvents as DartworkEvent[]}
               onEventSelect={(e) => { setSelectedEvent(e as LiveEvent); setEditMode(false); }}
@@ -232,15 +216,32 @@ export default function EventsPage() {
       </div>
       <main className="events-bg max-w-5xl mx-auto px-4 py-8 font-[family-name:var(--font-special-elite)]" style={{ position: "relative", zIndex: 2 }}>
 
-        {/* ── Header ── (the "Events" title now lives on the calendar itself) */}
-        <div className="flex items-center justify-end mb-2">
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between mb-2">
+          <h1
+            className="leading-none"
+            style={{ fontFamily: "var(--font-caveat), cursive", fontSize: "3rem", color: "#f5f5f0" }}
+          >
+            Events
+          </h1>
           <div className="flex items-center gap-2">
             {/* Post an Event — logged-in users only */}
             {user && (
               <Link
                 href="/events/new"
-                className="px-4 py-2 text-white rounded-full text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-90"
-                style={{ backgroundColor: "#FF6B35" }}
+                className="px-5 py-2 transition-opacity hover:opacity-90"
+                style={{
+                  backgroundImage: "url(/textures/crumpled_page.png)",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  color: "#000",
+                  fontFamily: "var(--font-caveat), cursive",
+                  fontSize: "1.35rem",
+                  fontWeight: 700,
+                  lineHeight: 1,
+                  border: "1px solid rgba(0,0,0,0.45)",
+                  boxShadow: "2px 3px 6px rgba(0,0,0,0.28)",
+                }}
               >
                 Post an Event
               </Link>

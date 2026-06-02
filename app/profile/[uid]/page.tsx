@@ -5,11 +5,23 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { sanitize } from "@/lib/sanitize";
-import { getDisciplineColor } from "@/lib/disciplines";
 import AuthGuard from "@/components/auth/AuthGuard";
 import ProjectCard from "@/components/project/ProjectCard";
 import ProjectDetailSheet, { type SheetProject } from "@/components/project/ProjectDetailSheet";
 import { elementBackground } from "@/lib/elements";
+
+// Lighter, per-discipline text colours for the un-boxed interest-area tags.
+const DISCIPLINE_LIGHT: Record<string, string> = {
+  "Visual Art":  "#6ee7b7",
+  "Film":        "#fda4af",
+  "Music":       "#c4b5fd",
+  "Writing":     "#7dd3fc",
+  "Theater":     "#fdba74",
+  "Dance":       "#f9a8d4",
+  "Photography": "#fcd34d",
+  "UX Design":   "#93c5fd",
+  "Other":       "#d1d5db",
+};
 
 interface ProfileData {
   uid: string;
@@ -176,20 +188,18 @@ function ProfileContent() {
         )}
       </div>
 
-      {/* ── Disciplines ── */}
+      {/* ── Disciplines (interest areas — no box, light colours) ── */}
       {profile.disciplines?.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-6">
-          {profile.disciplines.map((d) => {
-            const colors = getDisciplineColor(d);
-            return (
-              <span
-                key={d}
-                className={`${colors.tailwindBg} ${colors.tailwindText} px-3 py-1 rounded-full text-xs font-semibold`}
-              >
-                {d}
-              </span>
-            );
-          })}
+        <div className="flex flex-wrap gap-x-5 gap-y-1 mb-6">
+          {profile.disciplines.map((d) => (
+            <span
+              key={d}
+              className="text-sm font-semibold tracking-wide"
+              style={{ color: DISCIPLINE_LIGHT[d] ?? DISCIPLINE_LIGHT["Other"] }}
+            >
+              {d}
+            </span>
+          ))}
         </div>
       )}
 
@@ -199,12 +209,12 @@ function ProfileContent() {
           <h2 className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#7fa88a" }}>
             Skills
           </h2>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-x-5 gap-y-1">
             {profile.skills.map((s) => (
               <span
                 key={s}
-                className="px-3 py-1 rounded-full text-xs font-semibold"
-                style={{ backgroundColor: "#132d1c", border: "1px solid #1e4430", color: "#c8ddd1" }}
+                className="text-sm font-semibold tracking-wide"
+                style={{ color: "#e3ddcb" }}
               >
                 {s}
               </span>
@@ -219,12 +229,12 @@ function ProfileContent() {
           <h2 className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#7fa88a" }}>
             Interests
           </h2>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-x-5 gap-y-1">
             {profile.interests.map((i) => (
               <span
                 key={i}
-                className="px-3 py-1 rounded-full text-xs font-semibold"
-                style={{ backgroundColor: "#132d1c", border: "1px solid #1e4430", color: "#c8ddd1" }}
+                className="text-sm font-semibold tracking-wide"
+                style={{ color: "#e3ddcb" }}
               >
                 {i}
               </span>
@@ -237,9 +247,15 @@ function ProfileContent() {
       {safeBio && (
         <div
           className="rounded-2xl p-5 mb-6"
-          style={{ backgroundColor: "#132d1c", border: "1px solid #1e4430" }}
+          style={{
+            backgroundImage:    "url(/textures/crumpled_page.png)",
+            backgroundSize:     "cover",
+            backgroundPosition: "center",
+            border:             "1px solid rgba(0,0,0,0.25)",
+            boxShadow:          "2px 3px 8px rgba(0,0,0,0.3)",
+          }}
         >
-          <p className="text-sm leading-relaxed" style={{ color: "#c8ddd1" }}>
+          <p className="text-sm leading-relaxed" style={{ color: "#241c12" }}>
             {safeBio}
           </p>
         </div>
