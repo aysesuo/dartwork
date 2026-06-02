@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Playfair_Display, Barlow_Condensed, Barlow, Special_Elite } from "next/font/google";
+import { Geist_Mono, Playfair_Display, Barlow_Condensed, Barlow, Special_Elite, Anton, Rye, Alfa_Slab_One, Stardos_Stencil, Caveat } from "next/font/google";
 import { DesktopNav, MobileNav } from "@/components/Nav";
 import "./globals.css";
 
@@ -32,6 +32,36 @@ const specialElite = Special_Elite({
   weight: "400",
 });
 
+const anton = Anton({
+  variable: "--font-anton",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const rye = Rye({
+  variable: "--font-rye",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const alfaSlab = Alfa_Slab_One({
+  variable: "--font-alfa",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const stardos = Stardos_Stencil({
+  variable: "--font-stardos",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
 export const metadata: Metadata = {
   title: {
     default: "dArtwork",
@@ -49,7 +79,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${barlow.variable} ${geistMono.variable} ${playfair.variable} ${barlowCondensed.variable} ${specialElite.variable} h-full antialiased`}
+      className={`${barlow.variable} ${geistMono.variable} ${playfair.variable} ${barlowCondensed.variable} ${specialElite.variable} ${anton.variable} ${rye.variable} ${alfaSlab.variable} ${stardos.variable} ${caveat.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col" style={{ backgroundColor: "#0a1f14", color: "#f5f5f0" }}>
         <DesktopNav />

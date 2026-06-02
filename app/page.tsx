@@ -114,14 +114,14 @@ export default function LandingPage() {
           <p className="masthead__eyebrow">Dartmouth's creative desk</p>
           <h1 className="logo logo--ransom" id="logo">
             <span className="logo__line">
-              <span className="rl" style={{ "--r": "3.5deg", "--bg": "#f3ead4", "--fg": "#20180f", fontFamily: "'Anton'" } as any}>D</span>
-              <span className="rl" style={{ "--r": "-5.8deg", "--bg": "#f0a6ad", "--fg": "#20180f", fontFamily: "'Rye'" } as any}>A</span>
-              <span className="rl" style={{ "--r": "2.8deg", "--bg": "#e7cd5e", "--fg": "#20180f", fontFamily: "'Special Elite'" } as any}>R</span>
-              <span className="rl" style={{ "--r": "-1.1deg", "--bg": "#a0d3e7", "--fg": "#20180f", fontFamily: "'Alfa Slab One'" } as any}>T</span>
-              <span className="rl" style={{ "--r": "-2.5deg", "--bg": "#20180f", "--fg": "#f3ead4", fontFamily: "'Stardos Stencil'" } as any}>W</span>
-              <span className="rl" style={{ "--r": "-5.0deg", "--bg": "#f3ead4", "--fg": "#20180f", fontFamily: "'Anton'" } as any}>O</span>
-              <span className="rl" style={{ "--r": "-1.9deg", "--bg": "#e7cd5e", "--fg": "#20180f", fontFamily: "'Rye'" } as any}>R</span>
-              <span className="rl" style={{ "--r": "-4.9deg", "--bg": "#f0a6ad", "--fg": "#20180f", fontFamily: "'Special Elite'" } as any}>K</span>
+              <span className="rl" style={{ "--r": "3.5deg", "--bg": "#f3ead4", "--fg": "#20180f", fontFamily: "var(--font-anton)" } as any}>D</span>
+              <span className="rl" style={{ "--r": "-5.8deg", "--bg": "#f0a6ad", "--fg": "#20180f", fontFamily: "var(--font-rye)" } as any}>A</span>
+              <span className="rl" style={{ "--r": "2.8deg", "--bg": "#e7cd5e", "--fg": "#20180f", fontFamily: "var(--font-special-elite)" } as any}>R</span>
+              <span className="rl" style={{ "--r": "-1.1deg", "--bg": "#a0d3e7", "--fg": "#20180f", fontFamily: "var(--font-alfa)" } as any}>T</span>
+              <span className="rl" style={{ "--r": "-2.5deg", "--bg": "#20180f", "--fg": "#f3ead4", fontFamily: "var(--font-stardos)" } as any}>W</span>
+              <span className="rl" style={{ "--r": "-5.0deg", "--bg": "#f3ead4", "--fg": "#20180f", fontFamily: "var(--font-anton)" } as any}>O</span>
+              <span className="rl" style={{ "--r": "-1.9deg", "--bg": "#e7cd5e", "--fg": "#20180f", fontFamily: "var(--font-rye)" } as any}>R</span>
+              <span className="rl" style={{ "--r": "-4.9deg", "--bg": "#f0a6ad", "--fg": "#20180f", fontFamily: "var(--font-special-elite)" } as any}>K</span>
             </span>
           </h1>
           <p className="tagline">{tagline}<span className="cursor">&nbsp;</span></p>
