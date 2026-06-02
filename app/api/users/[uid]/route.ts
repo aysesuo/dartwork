@@ -41,6 +41,7 @@ export async function GET(
     bio:                data.bio,
     isPrivate:          data.isPrivate,
     onboardingComplete: data.onboardingComplete,
+    photoURL:           data.photoURL ?? null,
   };
 
   // Only the owner receives their email, viewer list, and admin flag
@@ -84,6 +85,7 @@ export async function POST(
     "bio",
     "isPrivate",
     "authorizedViewers",
+    "photoURL",
   ]);
 
   const safe: Record<string, unknown> = {};
@@ -140,6 +142,24 @@ export async function POST(
   // isPrivate must be boolean
   if ("isPrivate" in safe && typeof safe.isPrivate !== "boolean") {
     return Response.json({ error: "isPrivate must be a boolean" }, { status: 400 });
+  }
+
+  // photoURL must be a valid https URL or null
+  if ("photoURL" in safe) {
+    if (safe.photoURL === null || safe.photoURL === "") {
+      safe.photoURL = null;
+    } else {
+      if (typeof safe.photoURL !== "string")
+        return Response.json({ error: "photoURL must be a string" }, { status: 400 });
+      try {
+        const u = new URL(safe.photoURL as string);
+        if (u.protocol !== "https:")
+          return Response.json({ error: "photoURL must use https" }, { status: 400 });
+        safe.photoURL = (safe.photoURL as string).slice(0, 1000);
+      } catch {
+        return Response.json({ error: "photoURL is not a valid URL" }, { status: 400 });
+      }
+    }
   }
 
   // Always stamp email from the verified token (not from body)

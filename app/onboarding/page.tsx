@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { auth, storage } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth";
 import { DISCIPLINES } from "@/lib/disciplines";
 
@@ -13,23 +14,54 @@ export default function OnboardingPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
 
-  const [displayName, setDisplayName] = useState("");
-  const [gradYear, setGradYear] = useState<number>(2028);
-  const [concentration, setConcentration] = useState("");
-  const [disciplines, setDisciplines] = useState<string[]>([]);
-  const [bio, setBio] = useState("");
-  const [isPrivate, setIsPrivate] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [displayName,  setDisplayName]  = useState("");
+  const [gradYear,     setGradYear]     = useState<number>(2028);
+  const [concentration,setConcentration]= useState("");
+  const [disciplines,  setDisciplines]  = useState<string[]>([]);
+  const [bio,          setBio]          = useState("");
+  const [isPrivate,    setIsPrivate]    = useState(false);
+
+  // Photo state
+  const [photoFile,    setPhotoFile]    = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [uploading,    setUploading]    = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [error,  setError]  = useState<string | null>(null);
+  const [busy,   setBusy]   = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
+    // Pre-fill photo from Google account if available
+    if (user?.photoURL) setPhotoPreview(user.photoURL);
   }, [user, loading, router]);
 
   function toggleDiscipline(d: string) {
     setDisciplines((prev) =>
       prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]
     );
+  }
+
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  async function uploadPhoto(uid: string): Promise<string | null> {
+    if (!photoFile) return user?.photoURL ?? null;
+    setUploading(true);
+    try {
+      const compressed = await compressImage(photoFile, 480);
+      const storageRef  = ref(storage, `profile-photos/${uid}`);
+      await uploadBytes(storageRef, compressed, { contentType: "image/jpeg" });
+      return await getDownloadURL(storageRef);
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -41,23 +73,22 @@ export default function OnboardingPage() {
 
     setBusy(true);
     try {
-      const idToken = await user!.getIdToken();
+      const photoURL = await uploadPhoto(user!.uid);
+      const idToken  = await user!.getIdToken();
       const res = await fetch(`/api/users/${user!.uid}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`,
-        },
+        method:  "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
         body: JSON.stringify({
-          displayName: displayName.trim(),
+          displayName:        displayName.trim(),
           gradYear,
-          concentration: concentration.trim(),
+          concentration:      concentration.trim(),
           disciplines,
-          bio: bio.trim(),
+          bio:                bio.trim(),
           isPrivate,
-          authorizedViewers: [],
+          photoURL,
+          authorizedViewers:  [],
           onboardingComplete: true,
-          createdAt: new Date().toISOString(),
+          createdAt:          new Date().toISOString(),
         }),
       });
 
@@ -77,6 +108,10 @@ export default function OnboardingPage() {
 
   if (loading || !user) return null;
 
+  const initials = displayName.trim()
+    ? displayName.trim().split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+    : user.email?.[0]?.toUpperCase() ?? "?";
+
   return (
     <main className="max-w-lg mx-auto px-4 py-10">
       <h1
@@ -90,6 +125,57 @@ export default function OnboardingPage() {
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+
+        {/* ── Profile photo ── */}
+        <Field label="Profile photo (optional)">
+          <div className="flex items-center gap-5">
+            {/* Preview */}
+            <div
+              style={{
+                width: 80, height: 80, borderRadius: "50%",
+                overflow: "hidden", flexShrink: 0,
+                backgroundColor: "#1e4430", border: "2px solid #1e4430",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >
+              {photoPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={photoPreview} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <span style={{ color: "#7fa88a", fontWeight: 700, fontSize: "1.4rem" }}>{initials}</span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-80"
+                style={{ border: "1px solid #1e4430", color: "#7fa88a" }}
+              >
+                {photoPreview ? "Change photo" : "Add photo"}
+              </button>
+              {photoPreview && (
+                <button
+                  type="button"
+                  onClick={() => { setPhotoFile(null); setPhotoPreview(null); }}
+                  className="text-xs hover:opacity-70 transition-opacity text-left"
+                  style={{ color: "#7fa88a" }}
+                >
+                  Remove
+                </button>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                style={{ display: "none" }}
+              />
+            </div>
+          </div>
+        </Field>
+
         {/* Display name */}
         <Field label="Display name">
           <input
@@ -144,7 +230,7 @@ export default function OnboardingPage() {
                   className="px-3 py-1 rounded-full text-xs font-semibold transition-colors"
                   style={{
                     backgroundColor: active ? "#00693E" : "#132d1c",
-                    color: active ? "#fff" : "#7fa88a",
+                    color:  active ? "#fff" : "#7fa88a",
                     border: `1px solid ${active ? "#00693E" : "#1e4430"}`,
                   }}
                 >
@@ -180,19 +266,14 @@ export default function OnboardingPage() {
               style={{ transform: isPrivate ? "translateX(16px)" : "translateX(0)" }}
             />
           </div>
-          <span className="text-sm" style={{ color: "#f5f5f0" }}>
-            Private profile
-          </span>
+          <span className="text-sm" style={{ color: "#f5f5f0" }}>Private profile</span>
           <span className="text-xs" style={{ color: "#7fa88a" }}>
             (only people you approve can see your full profile)
           </span>
         </label>
 
         {error && (
-          <p
-            className="text-sm rounded-xl px-4 py-2"
-            style={{ backgroundColor: "#3b0f0f", color: "#ff8a80" }}
-          >
+          <p className="text-sm rounded-xl px-4 py-2" style={{ backgroundColor: "#3b0f0f", color: "#ff8a80" }}>
             {error}
           </p>
         )}
@@ -200,11 +281,11 @@ export default function OnboardingPage() {
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            disabled={busy}
+            disabled={busy || uploading}
             className="flex-1 py-3 rounded-full text-xs font-bold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             style={{ backgroundColor: "#00693E" }}
           >
-            {busy ? "Saving…" : "Save & continue"}
+            {uploading ? "Uploading photo…" : busy ? "Saving…" : "Save & continue"}
           </button>
           <button
             type="button"
@@ -218,6 +299,30 @@ export default function OnboardingPage() {
       </form>
     </main>
   );
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+async function compressImage(file: File, maxDim = 480): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale  = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width  = Math.round(img.width  * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("Compression failed"))),
+        "image/jpeg",
+        0.85,
+      );
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {

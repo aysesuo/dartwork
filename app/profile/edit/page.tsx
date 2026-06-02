@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { auth, storage } from "@/lib/firebase";
 import { useAuth, requireDartmouth } from "@/lib/auth";
 import { sanitize } from "@/lib/sanitize";
 import { DISCIPLINES } from "@/lib/disciplines";
@@ -11,31 +12,39 @@ import { DISCIPLINES } from "@/lib/disciplines";
 const GRAD_YEARS = [2025, 2026, 2027, 2028, 2029];
 
 interface ProfileData {
-  displayName: string;
-  gradYear: number;
-  concentration: string;
-  disciplines: string[];
-  bio: string;
-  isPrivate: boolean;
-  authorizedViewers: string[];
+  displayName:        string;
+  gradYear:           number;
+  concentration:      string;
+  disciplines:        string[];
+  bio:                string;
+  isPrivate:          boolean;
+  authorizedViewers:  string[];
   onboardingComplete: boolean;
+  photoURL?:          string | null;
 }
 
 export default function EditProfilePage() {
   const router = useRouter();
   const { user, loading } = useAuth();
 
-  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [profile,    setProfile]    = useState<ProfileData | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  const [displayName, setDisplayName] = useState("");
-  const [gradYear, setGradYear] = useState<number>(2028);
+  const [displayName,   setDisplayName]   = useState("");
+  const [gradYear,      setGradYear]      = useState<number>(2028);
   const [concentration, setConcentration] = useState("");
-  const [disciplines, setDisciplines] = useState<string[]>([]);
-  const [bio, setBio] = useState("");
-  const [isPrivate, setIsPrivate] = useState(false);
+  const [disciplines,   setDisciplines]   = useState<string[]>([]);
+  const [bio,           setBio]           = useState("");
+  const [isPrivate,     setIsPrivate]     = useState(false);
   const [authorizedViewers, setAuthorizedViewers] = useState<string[]>([]);
-  const [newViewer, setNewViewer] = useState("");
+  const [newViewer,     setNewViewer]     = useState("");
+
+  // Photo state
+  const [currentPhotoURL, setCurrentPhotoURL] = useState<string | null>(null);
+  const [photoFile,       setPhotoFile]       = useState<File | null>(null);
+  const [photoPreview,    setPhotoPreview]     = useState<string | null>(null);
+  const [uploading,       setUploading]        = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [error, setError] = useState<string | null>(null);
   const [busy,  setBusy]  = useState(false);
@@ -55,7 +64,6 @@ export default function EditProfilePage() {
         if (res.status === 404) { router.replace("/onboarding"); return; }
         if (!res.ok) { setFetchError("Could not load your profile"); return; }
         const data: ProfileData = await res.json();
-        // Sanitize before populating form fields
         setDisplayName(sanitize(data.displayName ?? ""));
         setGradYear(data.gradYear ?? 2028);
         setConcentration(sanitize(data.concentration ?? ""));
@@ -63,6 +71,7 @@ export default function EditProfilePage() {
         setBio(sanitize(data.bio ?? ""));
         setIsPrivate(data.isPrivate ?? false);
         setAuthorizedViewers(data.authorizedViewers ?? []);
+        setCurrentPhotoURL(data.photoURL ?? null);
         setProfile(data);
       } catch {
         setFetchError("Network error — please refresh");
@@ -79,14 +88,8 @@ export default function EditProfilePage() {
   function addViewer() {
     const v = newViewer.trim().toLowerCase();
     if (!v) return;
-    if (!requireDartmouth(v)) {
-      setError("Viewer must have a @dartmouth.edu address");
-      return;
-    }
-    if (authorizedViewers.includes(v)) {
-      setError("Already added");
-      return;
-    }
+    if (!requireDartmouth(v)) { setError("Viewer must have a @dartmouth.edu address"); return; }
+    if (authorizedViewers.includes(v)) { setError("Already added"); return; }
     setAuthorizedViewers((prev) => [...prev, v]);
     setNewViewer("");
     setError(null);
@@ -94,6 +97,32 @@ export default function EditProfilePage() {
 
   function removeViewer(v: string) {
     setAuthorizedViewers((prev) => prev.filter((x) => x !== v));
+  }
+
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  async function uploadPhoto(): Promise<string | null> {
+    if (!photoFile) return currentPhotoURL;
+    setUploading(true);
+    try {
+      const compressed = await compressImage(photoFile, 480);
+      const storageRef  = ref(storage, `profile-photos/${user!.uid}`);
+      await uploadBytes(storageRef, compressed, { contentType: "image/jpeg" });
+      const url = await getDownloadURL(storageRef);
+      setCurrentPhotoURL(url);
+      setPhotoFile(null);
+      setPhotoPreview(null);
+      return url;
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -105,21 +134,20 @@ export default function EditProfilePage() {
 
     setBusy(true);
     try {
-      const idToken = await user!.getIdToken(true);
+      const photoURL = await uploadPhoto();
+      const idToken  = await user!.getIdToken(true);
       const res = await fetch(`/api/users/${user!.uid}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`,
-        },
+        method:  "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
         body: JSON.stringify({
-          displayName: displayName.trim(),
+          displayName:       displayName.trim(),
           gradYear,
-          concentration: concentration.trim(),
+          concentration:     concentration.trim(),
           disciplines,
-          bio: bio.trim(),
+          bio:               bio.trim(),
           isPrivate,
           authorizedViewers,
+          photoURL,
         }),
       });
 
@@ -155,6 +183,11 @@ export default function EditProfilePage() {
     );
   }
 
+  const displayedPhoto = photoPreview ?? currentPhotoURL;
+  const initials = displayName.trim()
+    ? displayName.trim().split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+    : user.email?.[0]?.toUpperCase() ?? "?";
+
   return (
     <main className="max-w-lg mx-auto px-4 py-10">
       <div className="flex items-center justify-between mb-8">
@@ -174,6 +207,56 @@ export default function EditProfilePage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+
+        {/* ── Profile photo ── */}
+        <Field label="Profile photo">
+          <div className="flex items-center gap-5">
+            <div
+              style={{
+                width: 80, height: 80, borderRadius: "50%",
+                overflow: "hidden", flexShrink: 0,
+                backgroundColor: "#1e4430", border: "2px solid #1e4430",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >
+              {displayedPhoto ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={displayedPhoto} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <span style={{ color: "#7fa88a", fontWeight: 700, fontSize: "1.4rem" }}>{initials}</span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-80"
+                style={{ border: "1px solid #1e4430", color: "#7fa88a" }}
+              >
+                {displayedPhoto ? "Change photo" : "Add photo"}
+              </button>
+              {displayedPhoto && (
+                <button
+                  type="button"
+                  onClick={() => { setPhotoFile(null); setPhotoPreview(null); setCurrentPhotoURL(null); }}
+                  className="text-xs hover:opacity-70 transition-opacity text-left"
+                  style={{ color: "#7fa88a" }}
+                >
+                  Remove photo
+                </button>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                style={{ display: "none" }}
+              />
+            </div>
+          </div>
+        </Field>
+
         <Field label="Display name">
           <input
             type="text"
@@ -222,7 +305,7 @@ export default function EditProfilePage() {
                   className="px-3 py-1 rounded-full text-xs font-semibold transition-colors"
                   style={{
                     backgroundColor: active ? "#00693E" : "#132d1c",
-                    color: active ? "#fff" : "#7fa88a",
+                    color:  active ? "#fff" : "#7fa88a",
                     border: `1px solid ${active ? "#00693E" : "#1e4430"}`,
                   }}
                 >
@@ -312,17 +395,42 @@ export default function EditProfilePage() {
             {error}
           </p>
         )}
+
         <button
           type="submit"
-          disabled={busy}
+          disabled={busy || uploading}
           className="w-full py-3 rounded-full text-xs font-bold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50"
           style={{ backgroundColor: "#00693E" }}
         >
-          {busy ? "Saving…" : "Save changes"}
+          {uploading ? "Uploading photo…" : busy ? "Saving…" : "Save changes"}
         </button>
       </form>
     </main>
   );
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+async function compressImage(file: File, maxDim = 480): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale  = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width  = Math.round(img.width  * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("Compression failed"))),
+        "image/jpeg",
+        0.85,
+      );
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {

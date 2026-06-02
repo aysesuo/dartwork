@@ -276,51 +276,30 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
         </div>
 
         {/* ── Photo (newspaper-ink) or initials box ───────────────────────── */}
-        {person.photoURL ? (
-          <div
+        {/* Photo (or Dr. Seuss default) — newspaper ink filter */}
+        <div
+          style={{
+            width:      80,
+            height:     80,
+            margin:     "0 auto 1rem",
+            border:     `2px solid ${INK}`,
+            overflow:   "hidden",
+            flexShrink: 0,
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={person.photoURL ?? "/images/dr_seuss.webp"}
+            alt={safeName}
             style={{
-              width:        80,
-              height:       80,
-              margin:       "0 auto 1rem",
-              border:       `2px solid ${INK}`,
-              overflow:     "hidden",
-              flexShrink:   0,
+              width:     "100%",
+              height:    "100%",
+              objectFit: "cover",
+              filter:    "grayscale(1) contrast(2.4) brightness(0.55) sepia(0.15)",
+              display:   "block",
             }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={person.photoURL}
-              alt={safeName}
-              style={{
-                width:      "100%",
-                height:     "100%",
-                objectFit:  "cover",
-                // High-contrast B&W → old newsprint ink effect
-                filter:     "grayscale(1) contrast(2.4) brightness(0.55) sepia(0.15)",
-                display:    "block",
-              }}
-            />
-          </div>
-        ) : (
-          <div
-            style={{
-              width:          80,
-              height:         80,
-              border:         `2px solid ${INK}`,
-              display:        "flex",
-              alignItems:     "center",
-              justifyContent: "center",
-              margin:         "0 auto 1rem",
-              fontFamily:     "var(--font-barlow)",
-              fontSize:       "1.8rem",
-              fontWeight:     800,
-              color:          INK,
-              opacity:        0.8,
-            }}
-          >
-            {initials}
-          </div>
-        )}
+          />
+        </div>
 
         {/* ── Name ──────────────────────────────────────────────────────────── */}
         <h2
