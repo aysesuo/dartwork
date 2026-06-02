@@ -209,35 +209,6 @@ export default function ProjectCard({
 
         {/* ── Body ── */}
         <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-          {/* Project image — snapshot pinned to the note */}
-          {project.mediaUrl && (
-            <div
-              style={{
-                position: "relative",
-                width: "100%",
-                height: 130,
-                overflow: "hidden",
-                border: "1px solid rgba(26,16,8,0.35)",
-                backgroundColor: "rgba(26,16,8,0.06)",
-                marginBottom: "0.15rem",
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={project.mediaUrl}
-                alt=""
-                draggable={false}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  display: "block",
-                  filter: "sepia(0.12) contrast(1.02)",
-                }}
-              />
-            </div>
-          )}
-
           {/* Title */}
           <h3
             style={{

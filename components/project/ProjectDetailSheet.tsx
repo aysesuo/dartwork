@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { getDisciplineColor } from "@/lib/disciplines";
+import { COMMITMENT_TEXTURES } from "@/lib/commitment";
 import {
   Sheet,
   SheetContent,
@@ -210,6 +211,16 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
 
   const disciplineColors = project ? getDisciplineColor(project.discipline) : null;
 
+  // Paper texture matching the project's commitment colour (falls back to the
+  // plain crumpled page when no commitment is set), so the side-page matches
+  // the board card.
+  const commitmentTextures = project?.commitment
+    ? COMMITMENT_TEXTURES[project.commitment]
+    : null;
+  const paperTexture = commitmentTextures
+    ? commitmentTextures[0]
+    : "/textures/crumpled_page.png";
+
   // Pre-fill display values
   const prefillName  = profile?.displayName ?? user?.displayName ?? "";
   const prefillEmail = user?.email ?? "";
@@ -226,11 +237,13 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
           side={side}
           className="overflow-y-auto p-0"
           style={{
-            backgroundColor: "#0f2318",
-            borderColor:     "#1e4430",
-            color:           "#f5f5f0",
-            maxWidth:        side === "right" ? 480 : undefined,
-            maxHeight:       side === "bottom" ? "85vh" : undefined,
+            backgroundImage:    `url(${paperTexture})`,
+            backgroundSize:     "cover",
+            backgroundPosition: "center",
+            borderColor:        "rgba(26,16,8,0.25)",
+            color:              "#1a1008",
+            maxWidth:           side === "right" ? 480 : undefined,
+            maxHeight:          side === "bottom" ? "85vh" : undefined,
           }}
         >
           {project && (
@@ -238,7 +251,7 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
               {/* Header */}
               <SheetHeader
                 className="p-6 pb-5"
-                style={{ borderBottom: "1px solid #1e4430" }}
+                style={{ borderBottom: "1px solid rgba(26,16,8,0.2)" }}
               >
                 {/* Accessibility description (visually hidden) */}
                 <SheetDescription className="sr-only">
@@ -258,7 +271,7 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
                     {project.commitment && (
                       <span
                         className="px-3 py-1 rounded-full text-xs font-semibold"
-                        style={{ border: "1px solid #1e4430", color: "#7fa88a" }}
+                        style={{ border: "1px solid rgba(26,16,8,0.4)", color: "#1a1008" }}
                       >
                         {project.commitment}
                       </span>
@@ -269,18 +282,18 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
                 {/* Title */}
                 <SheetTitle
                   className="font-[family-name:var(--font-barlow)] uppercase tracking-tight leading-tight"
-                  style={{ fontSize: "1.65rem", fontWeight: 800, color: "#f5f5f0" }}
+                  style={{ fontSize: "1.65rem", fontWeight: 800, color: "#1a1008" }}
                 >
                   {project.title}
                 </SheetTitle>
 
                 {/* Creator + date */}
-                <p style={{ fontSize: "0.8rem", color: "#7fa88a", marginTop: "0.3rem" }}>
+                <p style={{ fontSize: "0.8rem", color: "rgba(26,16,8,0.7)", marginTop: "0.3rem" }}>
                   {project.creatorUid ? (
                     <Link
                       href={`/profile/${project.creatorUid}`}
                       onClick={onClose}
-                      style={{ color: "#7fa88a", textDecoration: "underline", textUnderlineOffset: 3 }}
+                      style={{ color: "rgba(26,16,8,0.85)", textDecoration: "underline", textUnderlineOffset: 3 }}
                     >
                       {project.creatorName}
                     </Link>
@@ -302,28 +315,8 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
                   gap:           "1.75rem",
                 }}
               >
-                {/* Project image */}
-                {project.mediaUrl && (
-                  <div
-                    style={{
-                      width: "100%",
-                      borderRadius: 8,
-                      overflow: "hidden",
-                      border: "1px solid #1e4430",
-                      backgroundColor: "rgba(255,255,255,0.03)",
-                    }}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={project.mediaUrl}
-                      alt={project.title}
-                      style={{ width: "100%", display: "block", maxHeight: 320, objectFit: "cover" }}
-                    />
-                  </div>
-                )}
-
                 {/* Description */}
-                <p style={{ fontSize: "0.88rem", lineHeight: 1.8, color: "#c8ddd1" }}>
+                <p style={{ fontSize: "0.88rem", lineHeight: 1.8, color: "rgba(26,16,8,0.85)" }}>
                   {project.description}
                 </p>
 
@@ -336,7 +329,7 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
                         fontWeight:    700,
                         textTransform: "uppercase",
                         letterSpacing: "0.12em",
-                        color:         "#7fa88a",
+                        color:         "rgba(26,16,8,0.6)",
                         marginBottom:  "0.75rem",
                       }}
                     >
@@ -356,24 +349,26 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
                           style={{
                             padding:         "0.4rem 1rem",
                             borderRadius:    "999px",
-                            border:          "1.5px solid #1e4430",
-                            backgroundColor: canApply ? "#132d1c" : "transparent",
-                            color:           canApply ? "#f5f5f0" : "#7fa88a",
+                            border:          "1.5px solid rgba(26,16,8,0.45)",
+                            backgroundColor: canApply ? "rgba(26,16,8,0.1)" : "transparent",
+                            color:           "#1a1008",
                             fontSize:        "0.8rem",
                             fontWeight:      600,
                             cursor:          canApply ? "pointer" : "default",
-                            transition:      "background-color 0.15s, border-color 0.15s",
+                            transition:      "background-color 0.15s, border-color 0.15s, color 0.15s",
                           }}
                           onMouseEnter={(e) => {
                             if (canApply) {
                               (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#00693E";
                               (e.currentTarget as HTMLButtonElement).style.borderColor     = "#00693E";
+                              (e.currentTarget as HTMLButtonElement).style.color           = "#fff";
                             }
                           }}
                           onMouseLeave={(e) => {
                             if (canApply) {
-                              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#132d1c";
-                              (e.currentTarget as HTMLButtonElement).style.borderColor     = "#1e4430";
+                              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(26,16,8,0.1)";
+                              (e.currentTarget as HTMLButtonElement).style.borderColor     = "rgba(26,16,8,0.45)";
+                              (e.currentTarget as HTMLButtonElement).style.color           = "#1a1008";
                             }
                           }}
                         >
@@ -382,15 +377,56 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
                       ))}
                     </div>
                     {canApply && (
-                      <p style={{ fontSize: "0.68rem", color: "#7fa88a", marginTop: "0.5rem", opacity: 0.65 }}>
+                      <p style={{ fontSize: "0.68rem", color: "rgba(26,16,8,0.6)", marginTop: "0.5rem" }}>
                         Click a role to apply
                       </p>
                     )}
                     {isOwner && (
-                      <p style={{ fontSize: "0.68rem", color: "#7fa88a", marginTop: "0.5rem", opacity: 0.65 }}>
+                      <p style={{ fontSize: "0.68rem", color: "rgba(26,16,8,0.6)", marginTop: "0.5rem" }}>
                         This is your project.
                       </p>
                     )}
+                  </div>
+                )}
+
+                {/* Project image — taped snapshot, below the text */}
+                {project.mediaUrl && (
+                  <div style={{ position: "relative", marginTop: "0.25rem" }}>
+                    <div
+                      style={{
+                        position: "relative",
+                        width: "100%",
+                        overflow: "hidden",
+                        border: "1px solid rgba(26,16,8,0.3)",
+                        backgroundColor: "rgba(26,16,8,0.05)",
+                        boxShadow: "2px 4px 10px rgba(0,0,0,0.25)",
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={project.mediaUrl}
+                        alt={project.title}
+                        draggable={false}
+                        style={{ width: "100%", display: "block", maxHeight: 320, objectFit: "cover", filter: "sepia(0.1) contrast(1.02)" }}
+                      />
+                    </div>
+                    {/* Tape strip — top-left corner */}
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        top: -12,
+                        left: -14,
+                        width: 96,
+                        height: 30,
+                        transform: "rotate(-32deg)",
+                        backgroundColor: "rgba(228,222,200,0.55)",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+                        backgroundImage:
+                          "repeating-linear-gradient(90deg, rgba(255,255,255,0.18) 0 6px, rgba(255,255,255,0) 6px 12px)",
+                        pointerEvents: "none",
+                      }}
+                    />
                   </div>
                 )}
 
