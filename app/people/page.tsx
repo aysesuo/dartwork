@@ -93,16 +93,22 @@ function GazetteContent() {
   });
 
   return (
-    <main
-      style={{
-        minHeight:            "100vh",
-        color:                INK,
-        backgroundImage:      "url(/textures/grunge-paper-background.jpg)",
-        backgroundSize:       "cover",
-        backgroundPosition:   "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
+    <main style={{ minHeight: "100vh", color: INK, position: "relative" }}>
+      {/* Full-bleed paper texture — sits behind all content */}
+      <div
+        aria-hidden="true"
+        style={{
+          position:           "absolute",
+          inset:              0,
+          zIndex:             0,
+          backgroundImage:    "url(/textures/grunge-paper-background.jpg)",
+          backgroundSize:     "cover",
+          backgroundPosition: "center",
+          backgroundRepeat:   "no-repeat",
+        }}
+      />
+      {/* All content above the texture */}
+      <div style={{ position: "relative", zIndex: 1 }}>
       {/* ══ MASTHEAD ══════════════════════════════════════════════════════════ */}
       <header style={{ padding: "2rem 2.5rem 0", textAlign: "center" }}>
         <DoubleRule />
@@ -203,6 +209,7 @@ function GazetteContent() {
           </>
         )}
       </div>
+      </div>{/* end content layer */}
     </main>
   );
 }
@@ -293,12 +300,13 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
         {/* Photo (or Dr. Seuss default) — newspaper ink filter */}
         <div
           style={{
-            width:      80,
-            height:     80,
-            margin:     "0 auto 1rem",
-            border:     `2px solid ${INK}`,
-            overflow:   "hidden",
-            flexShrink: 0,
+            width:           80,
+            height:          80,
+            margin:          "0 auto 1rem",
+            border:          `2px solid ${INK}`,
+            overflow:        "hidden",
+            flexShrink:      0,
+            backgroundColor: "transparent", // must be transparent for multiply to reach paper
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -306,11 +314,14 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
             src={person.photoURL ?? "/images/dr_seuss.webp"}
             alt={safeName}
             style={{
-              width:     "100%",
-              height:    "100%",
-              objectFit: "cover",
-              filter:    "grayscale(1) contrast(2.4) brightness(0.55) sepia(0.15)",
-              display:   "block",
+              width:        "100%",
+              height:       "100%",
+              objectFit:    "cover",
+              display:      "block",
+              // Strip colour → push contrast to near-B&W → multiply blends
+              // white areas with the paper beneath, leaving ink-black darks
+              filter:       "grayscale(1) contrast(5) brightness(0.85)",
+              mixBlendMode: "multiply",
             }}
           />
         </div>
