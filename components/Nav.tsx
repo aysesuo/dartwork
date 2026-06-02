@@ -21,6 +21,13 @@ const PROJECT_ICON_CHIP: CSSProperties = {
 };
 const EVENTS_WOOD = "/textures/wood_sign.png";
 const WOOD_INK = "#3a2412";
+// Inbox menu — black typewriter type on white "mailbox label" chips
+const INBOX_INK = "#1a1008";
+const INBOX_CHIP: CSSProperties = {
+  color: INBOX_INK,
+  backgroundColor: "#ffffff",
+  boxShadow: "1px 2px 5px rgba(0,0,0,0.35)",
+};
 // People (gazette) menu — printed-ink type on the bare paper background
 const PEOPLE_INK = "#211910";
 const PEOPLE_FONT = "var(--font-playfair), serif";
@@ -56,7 +63,8 @@ export function DesktopNav() {
   const onEvents = isActive(pathname, "/events");
   const onProjects = isActive(pathname, "/projects");
   const onPeople = isActive(pathname, "/people");
-  const bare = onEvents || onProjects || onPeople;
+  const onInbox = isActive(pathname, "/inbox");
+  const bare = onEvents || onProjects || onPeople || onInbox;
 
   return (
     <nav
@@ -96,6 +104,8 @@ export function DesktopNav() {
                     className={
                       onProjects
                         ? "px-3 py-1.5 transition-transform hover:-translate-y-0.5"
+                        : onInbox
+                        ? "px-3 py-1.5 transition-transform hover:-translate-y-0.5"
                         : onEvents
                         ? `px-3 py-1 transition-opacity ${active ? "opacity-100" : "opacity-80 hover:opacity-100"}`
                         : onPeople
@@ -115,6 +125,16 @@ export function DesktopNav() {
                             backgroundSize: "cover",
                             backgroundPosition: "center",
                             boxShadow: "1px 2px 5px rgba(0,0,0,0.35)",
+                            textDecoration: active ? "underline" : "none",
+                          }
+                        : onInbox
+                        ? {
+                            ...INBOX_CHIP,
+                            fontFamily: PROJECT_FONT,
+                            fontSize: "0.8rem",
+                            fontWeight: 700,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
                             textDecoration: active ? "underline" : "none",
                           }
                         : onEvents
@@ -156,6 +176,8 @@ export function DesktopNav() {
                 style={
                   onProjects
                     ? PROJECT_ICON_CHIP
+                    : onInbox
+                    ? INBOX_CHIP
                     : onEvents
                     ? { color: WOOD_INK }
                     : onPeople
@@ -176,6 +198,8 @@ export function DesktopNav() {
                 style={
                   onProjects
                     ? PROJECT_ICON_CHIP
+                    : onInbox
+                    ? INBOX_CHIP
                     : onEvents
                     ? { color: WOOD_INK }
                     : onPeople
@@ -213,7 +237,8 @@ export function MobileNav() {
   const onEvents = isActive(pathname, "/events");
   const onProjects = isActive(pathname, "/projects");
   const onPeople = isActive(pathname, "/people");
-  const bare = onEvents || onProjects || onPeople;
+  const onInbox = isActive(pathname, "/inbox");
+  const bare = onEvents || onProjects || onPeople || onInbox;
 
   return (
     <nav
@@ -244,6 +269,8 @@ export function MobileNav() {
                 className={
                   onProjects
                     ? "flex flex-col items-center gap-0.5 py-2.5 m-1 transition-transform hover:-translate-y-0.5"
+                    : onInbox
+                    ? "flex flex-col items-center gap-0.5 py-2.5 m-1 transition-transform hover:-translate-y-0.5"
                     : onEvents
                     ? "flex flex-col items-center gap-0.5 py-2.5 transition-opacity"
                     : onPeople
@@ -263,6 +290,16 @@ export function MobileNav() {
                         backgroundSize: "cover",
                         backgroundPosition: "center",
                         boxShadow: "1px 2px 5px rgba(0,0,0,0.35)",
+                        textDecoration: active ? "underline" : "none",
+                      }
+                    : onInbox
+                    ? {
+                        ...INBOX_CHIP,
+                        fontFamily: PROJECT_FONT,
+                        fontSize: "0.6rem",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
                         textDecoration: active ? "underline" : "none",
                       }
                     : onEvents

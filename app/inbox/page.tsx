@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import AuthGuard from "@/components/auth/AuthGuard";
 
+const TYPEWRITER = 'var(--font-special-elite), "Courier New", monospace';
+const INK        = "#1a1008";
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Application {
   id:                     string;
@@ -115,14 +118,14 @@ function InboxContent() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between mb-8">
         <h1
-          className="text-3xl font-extrabold uppercase tracking-tight font-[family-name:var(--font-barlow)]"
-          style={{ color: "#f5f5f0" }}
+          className="text-3xl font-extrabold uppercase tracking-tight"
+          style={{ color: INK, fontFamily: TYPEWRITER }}
         >
           Inbox
         </h1>
         <span
-          className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full"
-          style={{ backgroundColor: "#1e4430", color: "#7fa88a" }}
+          className="text-xs font-bold uppercase tracking-widest px-3 py-1"
+          style={{ backgroundColor: "#ffffff", color: INK, fontFamily: TYPEWRITER, boxShadow: "1px 2px 5px rgba(0,0,0,0.35)" }}
         >
           {applications.length} {applications.length === 1 ? "application" : "applications"}
         </span>
@@ -161,14 +164,14 @@ function InboxContent() {
             <div className="flex items-center justify-between mb-3">
               <h2
                 className="text-xs font-bold uppercase tracking-widest"
-                style={{ color: "#7fa88a" }}
+                style={{ color: INK, fontFamily: TYPEWRITER }}
               >
                 {projectTitle}
               </h2>
               <Link
                 href={`/projects/${projectId}/edit`}
                 className="text-xs font-bold uppercase tracking-widest hover:opacity-70 transition-opacity"
-                style={{ color: "#4a8c5e" }}
+                style={{ color: INK, fontFamily: TYPEWRITER }}
               >
                 Edit project →
               </Link>
@@ -223,31 +226,31 @@ function ApplicationCard({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden transition-all"
-      style={{ backgroundColor: "#132d1c", border: "1px solid #1e4430" }}
+      className="overflow-hidden transition-all"
+      style={{ backgroundColor: "#ffffff", border: `1px solid ${INK}`, fontFamily: TYPEWRITER, boxShadow: "1px 2px 6px rgba(0,0,0,0.3)" }}
     >
       {/* ── Summary row (always visible) ── */}
       <button
         onClick={onToggle}
-        className="w-full text-left px-5 py-4 flex items-start justify-between gap-4 hover:bg-[#1a3826] transition-colors"
+        className="w-full text-left px-5 py-4 flex items-start justify-between gap-4 hover:bg-[#f2efe9] transition-colors"
       >
         <div className="flex-1 min-w-0">
 
           {/* Role pill + name */}
           <div className="flex items-center gap-2 flex-wrap">
             <span
-              className="text-xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full shrink-0"
-              style={{ backgroundColor: "#1e4430", color: "#7fa88a" }}
+              className="text-xs font-bold uppercase tracking-widest px-2 py-0.5 shrink-0"
+              style={{ border: `1px solid ${INK}`, color: INK }}
             >
               {app.roleAppliedFor}
             </span>
-            <span className="font-bold text-sm truncate" style={{ color: "#f5f5f0" }}>
+            <span className="font-bold text-sm truncate" style={{ color: INK }}>
               {app.applicantName}
             </span>
           </div>
 
           {/* Meta line */}
-          <p className="text-xs mt-1" style={{ color: "#4a8c5e" }}>
+          <p className="text-xs mt-1" style={{ color: "#5a4a32" }}>
             {app.applicantEmail}
             {app.applicantYear ? ` · Class of ${app.applicantYear}` : ""}
             {app.applicantConcentration ? ` · ${app.applicantConcentration}` : ""}
@@ -256,9 +259,9 @@ function ApplicationCard({
 
         {/* Date + status + chevron */}
         <div className="flex flex-col items-end gap-1 shrink-0">
-          <span className="text-xs" style={{ color: "#4a8c5e" }}>{dateStr}</span>
+          <span className="text-xs" style={{ color: "#5a4a32" }}>{dateStr}</span>
           <StatusPill status={app.status} />
-          <span className="text-xs" style={{ color: "#4a8c5e" }}>
+          <span className="text-xs" style={{ color: INK }}>
             {isExpanded ? "▲" : "▼"}
           </span>
         </div>
@@ -268,18 +271,18 @@ function ApplicationCard({
       {isExpanded && (
         <div
           className="px-5 pb-5 flex flex-col gap-4"
-          style={{ borderTop: "1px solid #1e4430" }}
+          style={{ borderTop: "1px solid #d8d2c6" }}
         >
 
           {/* Why this role */}
           <div className="pt-4">
             <p
               className="text-xs font-bold uppercase tracking-widest mb-2"
-              style={{ color: "#7fa88a" }}
+              style={{ color: INK }}
             >
               Why this role
             </p>
-            <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "#c8ddd1" }}>
+            <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: INK }}>
               {app.whyThisRole}
             </p>
           </div>
@@ -289,11 +292,11 @@ function ApplicationCard({
             <div>
               <p
                 className="text-xs font-bold uppercase tracking-widest mb-2"
-                style={{ color: "#7fa88a" }}
+                style={{ color: INK }}
               >
                 Experience
               </p>
-              <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "#c8ddd1" }}>
+              <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: INK }}>
                 {app.experience}
               </p>
             </div>
@@ -304,7 +307,7 @@ function ApplicationCard({
             <div>
               <p
                 className="text-xs font-bold uppercase tracking-widest mb-1"
-                style={{ color: "#7fa88a" }}
+                style={{ color: INK }}
               >
                 Portfolio / work sample
               </p>
@@ -313,7 +316,7 @@ function ApplicationCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm underline underline-offset-2 hover:opacity-70 transition-opacity break-all"
-                style={{ color: "#7fa88a" }}
+                style={{ color: INK }}
               >
                 {app.portfolioLink}
               </a>
@@ -337,8 +340,8 @@ function ApplicationCard({
                   type="button"
                   onClick={() => handleDecide("rejected")}
                   disabled={busy}
-                  className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-80 disabled:opacity-50"
-                  style={{ border: "1px solid #3a1e1e", color: "#c88a8a" }}
+                  className="px-4 py-2 text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-80 disabled:opacity-50"
+                  style={{ border: "1px solid #9a2d2d", color: "#9a2d2d" }}
                 >
                   Decline
                 </button>
@@ -346,14 +349,14 @@ function ApplicationCard({
             )}
             <a
               href={`mailto:${app.applicantEmail}?subject=Re: Your application for ${encodeURIComponent(app.roleAppliedFor)} — ${encodeURIComponent(app.projectTitle)}`}
-              className="inline-block px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-80"
-              style={{ backgroundColor: "#1e4430", color: "#f5f5f0" }}
+              className="inline-block px-4 py-2 text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-80"
+              style={{ border: `1px solid ${INK}`, color: INK }}
             >
               Reply by email ↗
             </a>
           </div>
           {decideErr && (
-            <p className="text-xs" style={{ color: "#c8524a" }}>{decideErr}</p>
+            <p className="text-xs" style={{ color: "#9a2d2d" }}>{decideErr}</p>
           )}
         </div>
       )}
@@ -364,15 +367,15 @@ function ApplicationCard({
 // ── Status pill ───────────────────────────────────────────────────────────────
 function StatusPill({ status }: { status: string }) {
   const styles: Record<string, { bg: string; text: string }> = {
-    pending:  { bg: "#2a3a1e", text: "#a8c890" },
-    accepted: { bg: "#1a3a2e", text: "#5cb88a" },
-    rejected: { bg: "#3a1e1e", text: "#c88a8a" },
+    pending:  { bg: "#efe9d8", text: "#6b5d2e" },
+    accepted: { bg: "#dff0e4", text: "#1a6b3e" },
+    rejected: { bg: "#f3dede", text: "#9a2d2d" },
   };
   const s = styles[status] ?? styles.pending;
 
   return (
     <span
-      className="text-xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
+      className="text-xs font-bold uppercase tracking-widest px-2 py-0.5"
       style={{ backgroundColor: s.bg, color: s.text }}
     >
       {status}
