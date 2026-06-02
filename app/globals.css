@@ -248,6 +248,7 @@ html::after {
 
 :root {
   --kraft: #d8c19a;
+  --kraft-2: #c9ad81;
   --ink: #20180f;
 }
 
@@ -300,7 +301,6 @@ html::after {
 
 .door {
   cursor: pointer;
-  position: relative;
 }
 
 .door__go {
@@ -316,10 +316,20 @@ html::after {
 /* ── MASTHEAD ─────────────────────────────────────────────────────────── */
 .masthead {
   width: 320px;
-  background: var(--kraft);
+  background: linear-gradient(135deg, var(--kraft) 0%, var(--kraft-2) 100%);
   padding: 20px 16px;
   border-radius: 2px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+
+.masthead::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: 2px;
+  mix-blend-mode: multiply;
 }
 
 .masthead__eyebrow {
@@ -428,7 +438,6 @@ html::after {
   padding: 16px;
   border-radius: 2px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  position: relative;
   overflow: hidden;
 }
 
@@ -531,7 +540,6 @@ html::after {
   background: linear-gradient(90deg, #8b4513 0%, #a0522d 100%);
   border-radius: 3px;
   overflow: hidden;
-  position: relative;
   box-shadow: 0 6px 16px rgba(0,0,0,0.2);
 }
 
@@ -759,6 +767,14 @@ html::after {
   font-size: 0.65rem;
 }
 
+.news__name {
+  font-family: "var(--font-playfair)", serif;
+  font-size: 0.85rem;
+  font-weight: 900;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .news__col span {
   opacity: 0.7;
   font-size: 0.65rem;
@@ -788,7 +804,6 @@ html::after {
     0 12px 32px rgba(0,0,0,0.25),
     inset 0 1px 0 rgba(255,255,255,0.1),
     inset 0 -2px 4px rgba(0,0,0,0.15);
-  position: relative;
 }
 
 .cork::before {
@@ -812,7 +827,6 @@ html::after {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   padding: 12px;
   cursor: grab;
-  position: relative;
   transition: box-shadow 0.2s;
 }
 

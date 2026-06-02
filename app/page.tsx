@@ -114,14 +114,14 @@ export default function LandingPage() {
           <p className="masthead__eyebrow">Dartmouth's creative desk</p>
           <h1 className="logo logo--ransom" id="logo">
             <span className="logo__line">
-              <span className="rl" style={{ "--r": "-3deg", "--bg": "#f3ead4", "--fg": "#20180f", fontFamily: "'Anton'" } as any}>D</span>
-              <span className="rl" style={{ "--r": "4deg", "--bg": "#f0a6ad", "--fg": "#20180f", fontFamily: "'Rye'" } as any}>A</span>
-              <span className="rl" style={{ "--r": "2deg", "--bg": "#e7cd5e", "--fg": "#20180f", fontFamily: "'Special Elite'" } as any}>R</span>
-              <span className="rl" style={{ "--r": "-1deg", "--bg": "#a0d3e7", "--fg": "#20180f", fontFamily: "'Alfa Slab One'" } as any}>T</span>
-              <span className="rl" style={{ "--r": "3deg", "--bg": "#20180f", "--fg": "#f3ead4", fontFamily: "'Stardos Stencil'" } as any}>W</span>
-              <span className="rl" style={{ "--r": "-2deg", "--bg": "#f3ead4", "--fg": "#20180f", fontFamily: "'Anton'" } as any}>O</span>
-              <span className="rl" style={{ "--r": "1deg", "--bg": "#e7cd5e", "--fg": "#20180f", fontFamily: "'Rye'" } as any}>R</span>
-              <span className="rl" style={{ "--r": "-3deg", "--bg": "#f0a6ad", "--fg": "#20180f", fontFamily: "'Special Elite'" } as any}>K</span>
+              <span className="rl" style={{ "--r": "3.5deg", "--bg": "#f3ead4", "--fg": "#20180f", fontFamily: "'Anton'" } as any}>D</span>
+              <span className="rl" style={{ "--r": "-5.8deg", "--bg": "#f0a6ad", "--fg": "#20180f", fontFamily: "'Rye'" } as any}>A</span>
+              <span className="rl" style={{ "--r": "2.8deg", "--bg": "#e7cd5e", "--fg": "#20180f", fontFamily: "'Special Elite'" } as any}>R</span>
+              <span className="rl" style={{ "--r": "-1.1deg", "--bg": "#a0d3e7", "--fg": "#20180f", fontFamily: "'Alfa Slab One'" } as any}>T</span>
+              <span className="rl" style={{ "--r": "-2.5deg", "--bg": "#20180f", "--fg": "#f3ead4", fontFamily: "'Stardos Stencil'" } as any}>W</span>
+              <span className="rl" style={{ "--r": "-5.0deg", "--bg": "#f3ead4", "--fg": "#20180f", fontFamily: "'Anton'" } as any}>O</span>
+              <span className="rl" style={{ "--r": "-1.9deg", "--bg": "#e7cd5e", "--fg": "#20180f", fontFamily: "'Rye'" } as any}>R</span>
+              <span className="rl" style={{ "--r": "-4.9deg", "--bg": "#f0a6ad", "--fg": "#20180f", fontFamily: "'Special Elite'" } as any}>K</span>
             </span>
           </h1>
           <p className="tagline">{tagline}<span className="cursor">&nbsp;</span></p>
@@ -147,8 +147,8 @@ export default function LandingPage() {
           <div className="journal__cover">
             <span className="journal__edge"></span>
             <span className="journal__band"></span>
-            <span className="journal__label">My<br />Journal</span>
-            <span className="journal__tag">your profile</span>
+            <span className="journal__label">My<br />Profile</span>
+            <span className="journal__tag">tap to open</span>
           </div>
           <span className="door__go">Profile ↗</span>
         </div>
@@ -184,13 +184,13 @@ export default function LandingPage() {
         {/* NEWSPAPER → PEOPLE */}
         <div className="prop news door lift" onClick={(e) => handleDoorClick(e, "people.html", "People")} style={{ left: "42%", top: "50%", "--news-rot": "-2deg" } as any}>
           <div className="news__paper">
-            <div className="news__mast">The Dartwork Gazette</div>
+            <div className="news__mast">The Wanted Gazette</div>
             <div className="news__sub">"All the talent that's fit to print"</div>
             <div className="news__rule"></div>
             <div className="news__cols">
-              <div className="news__col"><b>Wanted</b><span>Cellist · Music</span></div>
-              <div className="news__col"><b>Wanted</b><span>Editor · Film</span></div>
-              <div className="news__col"><b>Wanted</b><span>Poet · Writing</span></div>
+              <div className="news__col"><b className="news__name">Aysesu</b><span>Visual Art</span></div>
+              <div className="news__col"><b className="news__name">Theo K.</b><span>Film · Editor</span></div>
+              <div className="news__col"><b className="news__name">Michelle</b><span>Writing</span></div>
             </div>
           </div>
           <span className="door__go">People ↗</span>
@@ -210,9 +210,9 @@ export default function LandingPage() {
 
         {/* PROJECT NOTES */}
         {[
-          { color: "pink", film: "Film", roles: ["Cinematographer", "Editor"], title: "Ledyard: A Short Film", desc: "A 15-minute documentary...", rot: "-3deg" },
-          { color: "yellow", film: "Theater", roles: ["Music Director", "Stage Manager"], title: "Hop Stop — Original Musical", desc: "An original musical set in...", rot: "2.5deg" },
-          { color: "blue", film: "Photography", roles: ["Co-Photographer"], title: "Unseen Dartmouth", desc: "A photo essay on campus...", rot: "-1.5deg" },
+          { color: "pink", film: "Film", roles: ["Cinematographer", "Editor"], title: "Ledyard: A Short Film", desc: "A 15-minute documentary following the Ledyard Canoe Club through a season on the river.", rot: "-3deg" },
+          { color: "yellow", film: "Theater", roles: ["Music Director", "Stage Manager"], title: "Hop Stop — Original Musical", desc: "An original musical set in a late-night campus diner. Seeking a small band and crew.", rot: "2.5deg" },
+          { color: "blue", film: "Photography", roles: ["Co-Photographer"], title: "Unseen Dartmouth", desc: "A photo essay on the quiet corners of campus most students never notice.", rot: "-1.5deg" },
         ].map((note, i) => (
           <div
             key={i}
@@ -225,7 +225,7 @@ export default function LandingPage() {
             onPointerDown={(e) => handlePointerDown(e, `n${i}`)}
             style={{
               left: i === 0 ? "64.5%" : i === 1 ? "81%" : "71%",
-              top: i === 0 ? "8%" : i === 1 ? "9%" : "46%",
+              top: i === 0 ? "8%" : i === 1 ? "9%" : "28%",
               transform: `rotate(${note.rot})`,
               "--rot": note.rot,
             } as any}
