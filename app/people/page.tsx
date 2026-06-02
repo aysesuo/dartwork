@@ -74,22 +74,16 @@ function GazetteContent() {
   filtered.forEach((p, i) => cols[i % 3].push(p));
 
   return (
-    <>
-      {/* ── Fixed full-bleed background ── */}
-      <div
-        aria-hidden="true"
-        style={{
-          position:           "fixed",
-          inset:              0,
-          zIndex:             -1,
-          backgroundImage:    "url(/textures/vintage-grunge.jpg)",
-          backgroundSize:     "cover",
-          backgroundPosition: "center",
+    <main
+      style={{
+          minHeight:            "100vh",
+          color:                INK,
+          backgroundImage:      "url(/textures/vintage-grunge.jpg)",
+          backgroundSize:       "cover",
+          backgroundPosition:   "center",
           backgroundAttachment: "fixed",
         }}
-      />
-
-      <main style={{ minHeight: "100vh", color: INK }}>
+      >
 
         {/* ══ MASTHEAD ══════════════════════════════════════════════════════ */}
         <header style={{ padding: "2rem 2rem 0", textAlign: "center" }}>
@@ -251,8 +245,7 @@ function GazetteContent() {
             </>
           )}
         </div>
-      </main>
-    </>
+    </main>
   );
 }
 
