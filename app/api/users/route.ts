@@ -36,6 +36,8 @@ export async function GET(request: NextRequest) {
         disciplines:  (d.disciplines as string[]) ?? [],
         skills,
         bio:          (d.bio as string) ?? "",
+        gradYear:     (d.gradYear as number | undefined) ?? null,
+        photoURL:     (d.photoURL as string | undefined) ?? null,
         contactEmail: null,   // never expose — always null in public listing
         portfolioUrl: null,   // not collected in profile yet
       };

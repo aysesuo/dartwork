@@ -15,13 +15,12 @@ interface Person {
   contactEmail:  string | null;
   portfolioUrl?: string | null;
   gradYear?:     number | null;
-  concentration?: string;
+  photoURL?:     string | null;
 }
 
-// ── Ink colour — every text element uses this ─────────────────────────────────
 const INK = "#1a1a1a";
+const STAMP_RED = "rgba(160, 28, 20, 0.82)";
 
-// ── Main page ─────────────────────────────────────────────────────────────────
 export default function PeoplePage() {
   return (
     <AuthGuard>
@@ -69,182 +68,122 @@ function GazetteContent() {
     );
   }, [people, search]);
 
-  // Distribute into 3 columns for the broadsheet layout
   const cols: [Person[], Person[], Person[]] = [[], [], []];
   filtered.forEach((p, i) => cols[i % 3].push(p));
 
   return (
     <main
       style={{
-          minHeight:            "100vh",
-          color:                INK,
-          backgroundImage:      "url(/textures/vintage-grunge.jpg)",
-          backgroundSize:       "cover",
-          backgroundPosition:   "center",
-          backgroundAttachment: "fixed",
-        }}
-      >
+        minHeight:            "100vh",
+        color:                INK,
+        backgroundImage:      "url(/textures/vintage-grunge.jpg)",
+        backgroundSize:       "cover",
+        backgroundPosition:   "center",
+        backgroundAttachment: "fixed",
+      }}
+    >
+      {/* ══ MASTHEAD ══════════════════════════════════════════════════════════ */}
+      <header style={{ padding: "2rem 2.5rem 0", textAlign: "center" }}>
+        <DoubleRule />
 
-        {/* ══ MASTHEAD ══════════════════════════════════════════════════════ */}
-        <header style={{ padding: "2rem 2rem 0", textAlign: "center" }}>
-
-          {/* Top double rule */}
-          <DoubleRule />
-
-          {/* Title */}
-          <h1
-            style={{
-              fontFamily:    "var(--font-playfair)",
-              fontSize:      "clamp(2rem, 6vw, 4.5rem)",
-              fontWeight:    900,
-              letterSpacing: "-0.01em",
-              lineHeight:    1,
-              color:         INK,
-              margin:        "0.5rem 0 0.25rem",
-            }}
-          >
-            The Dartwork Gazette
-          </h1>
-
-          <p
-            style={{
-              fontFamily:    "var(--font-special-elite)",
-              fontSize:      "0.75rem",
-              letterSpacing: "0.18em",
-              textTransform: "uppercase",
-              color:         INK,
-              opacity:       0.7,
-              margin:        "0 0 0.5rem",
-            }}
-          >
-            "All the talent that&rsquo;s fit to print"
-          </p>
-
-          {/* Bottom double rule */}
-          <DoubleRule />
-
-          {/* Dateline row + search */}
-          <div
-            style={{
-              display:        "flex",
-              alignItems:     "center",
-              justifyContent: "space-between",
-              flexWrap:       "wrap",
-              gap:            "0.5rem",
-              padding:        "0.4rem 0",
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "var(--font-special-elite)",
-                fontSize:   "0.65rem",
-                opacity:    0.6,
-                letterSpacing: "0.08em",
-                color: INK,
-              }}
-            >
-              Hanover, N.H. &nbsp;·&nbsp; Est. 2025 &nbsp;·&nbsp; Vol. I
-            </span>
-
-            {/* Search */}
-            <input
-              type="text"
-              placeholder="Search name, skill, discipline…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{
-                fontFamily:      "var(--font-special-elite)",
-                fontSize:        "0.7rem",
-                letterSpacing:   "0.04em",
-                color:           INK,
-                background:      "transparent",
-                border:          "none",
-                borderBottom:    `1px solid ${INK}`,
-                outline:         "none",
-                padding:         "0.2rem 0.4rem",
-                width:           220,
-                opacity:         0.8,
-              }}
-            />
-          </div>
-
-          {/* Section rule */}
-          <div style={{ borderTop: `1px solid ${INK}`, opacity: 0.4 }} />
-        </header>
-
-        {/* ══ BROADSHEET BODY ═══════════════════════════════════════════════ */}
-        <div
+        <h1
           style={{
-            display: "flex",
-            alignItems: "flex-start",
-            padding: "0 1rem 3rem",
+            fontFamily:    "var(--font-playfair)",
+            fontSize:      "clamp(2.2rem, 6vw, 5rem)",
+            fontWeight:    900,
+            letterSpacing: "-0.01em",
+            lineHeight:    1,
+            color:         INK,
+            margin:        "0.5rem 0 0.3rem",
           }}
         >
+          The Dartwork Gazette
+        </h1>
 
-          {/* ── Loading ── */}
-          {loading && (
-            <p
-              style={{
-                width: "100%",
-                textAlign: "center",
-                padding: "4rem",
-                fontFamily: "var(--font-special-elite)",
-                fontSize: "0.85rem",
-                opacity: 0.6,
-                color: INK,
-              }}
-            >
-              Composing the type…
-            </p>
-          )}
+        <p
+          style={{
+            fontFamily:    "var(--font-special-elite)",
+            fontSize:      "0.72rem",
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+            color:         INK,
+            opacity:       0.65,
+            margin:        "0 0 0.5rem",
+          }}
+        >
+          &ldquo;All the talent that&rsquo;s fit to print&rdquo;
+        </p>
 
-          {/* ── Error ── */}
-          {!loading && error && (
-            <p
-              style={{
-                width: "100%",
-                textAlign: "center",
-                padding: "4rem",
-                fontFamily: "var(--font-special-elite)",
-                fontSize: "0.85rem",
-                opacity: 0.6,
-                color: INK,
-              }}
-            >
-              The presses jammed. Please refresh.
-            </p>
-          )}
+        <DoubleRule />
 
-          {/* ── Empty ── */}
-          {!loading && !error && filtered.length === 0 && (
-            <p
-              style={{
-                width: "100%",
-                textAlign: "center",
-                padding: "4rem",
-                fontFamily: "var(--font-special-elite)",
-                fontSize: "0.85rem",
-                opacity: 0.6,
-                color: INK,
-              }}
-            >
-              {people.length === 0
-                ? "No public profiles yet."
-                : "No one matches your search."}
-            </p>
-          )}
+        {/* Dateline + search */}
+        <div
+          style={{
+            display:        "flex",
+            alignItems:     "center",
+            justifyContent: "space-between",
+            flexWrap:       "wrap",
+            gap:            "0.5rem",
+            padding:        "0.45rem 0",
+          }}
+        >
+          <span
+            style={{
+              fontFamily:    "var(--font-special-elite)",
+              fontSize:      "0.7rem",
+              fontWeight:    700,
+              letterSpacing: "0.1em",
+              color:         INK,
+            }}
+          >
+            Hanover, N.H.&nbsp;&nbsp;·&nbsp;&nbsp;Est. 2025&nbsp;&nbsp;·&nbsp;&nbsp;Vol. I
+          </span>
 
-          {/* ── Three-column broadsheet ── */}
-          {!loading && !error && filtered.length > 0 && (
-            <>
-              <Column people={cols[0]} />
-              <ColumnRule />
-              <Column people={cols[1]} />
-              <ColumnRule />
-              <Column people={cols[2]} />
-            </>
-          )}
+          <input
+            type="text"
+            placeholder="Search name, skill, discipline…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              fontFamily:    "var(--font-special-elite)",
+              fontSize:      "0.72rem",
+              fontWeight:    700,
+              letterSpacing: "0.05em",
+              color:         INK,
+              background:    "transparent",
+              border:        "none",
+              borderBottom:  `1.5px solid ${INK}`,
+              outline:       "none",
+              padding:       "0.2rem 0.4rem",
+              width:         230,
+            }}
+          />
         </div>
+
+        <div style={{ borderTop: `1px solid ${INK}`, opacity: 0.35 }} />
+      </header>
+
+      {/* ══ BROADSHEET BODY ═══════════════════════════════════════════════════ */}
+      <div style={{ display: "flex", alignItems: "flex-start", padding: "0 1rem 4rem" }}>
+
+        {loading && <StatusLine>Composing the type…</StatusLine>}
+        {!loading && error && <StatusLine>The presses jammed. Please refresh.</StatusLine>}
+        {!loading && !error && filtered.length === 0 && (
+          <StatusLine>
+            {people.length === 0 ? "No public profiles yet." : "No one matches your search."}
+          </StatusLine>
+        )}
+
+        {!loading && !error && filtered.length > 0 && (
+          <>
+            <Column people={cols[0]} />
+            <ColumnRule />
+            <Column people={cols[1]} />
+            <ColumnRule />
+            <Column people={cols[2]} />
+          </>
+        )}
+      </div>
     </main>
   );
 }
@@ -253,217 +192,229 @@ function GazetteContent() {
 function Column({ people }: { people: Person[] }) {
   return (
     <div style={{ flex: 1, minWidth: 0 }}>
-      {people.map((person) => (
-        <Poster key={person.id} person={person} />
-      ))}
+      {people.map((person) => <Poster key={person.id} person={person} />)}
     </div>
   );
 }
 
-// ── Poster (one person) ───────────────────────────────────────────────────────
+// ── Poster ────────────────────────────────────────────────────────────────────
 function Poster({ person }: { person: Person }) {
   const safeName = sanitize(person.name);
   const safeBio  = sanitize(person.bio ?? "");
-  const initials = safeName
-    .split(" ")
-    .map((n) => n[0] ?? "")
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = safeName.split(" ").map((n) => n[0] ?? "").join("").slice(0, 2).toUpperCase();
+
+  // Seeded stamp rotation so each card has a consistent but unique angle
+  const stampRot = -7 - (person.id.charCodeAt(0) % 13); // –7° to –20°
 
   return (
-    <Link
-      href={`/profile/${person.id}`}
-      style={{ display: "block", textDecoration: "none", color: INK }}
-    >
-      <article
-        style={{
-          padding:    "1.5rem 1.75rem 0",
-          cursor:     "pointer",
-        }}
-      >
-        {/* WANTED header */}
-        <p
-          style={{
-            fontFamily:    "var(--font-barlow)",
-            fontSize:      "0.6rem",
-            fontWeight:    700,
-            letterSpacing: "0.35em",
-            textTransform: "uppercase",
-            textAlign:     "center",
-            color:         INK,
-            marginBottom:  "0.75rem",
-          }}
-        >
-          ✦&nbsp; W A N T E D &nbsp;✦
-        </p>
+    <Link href={`/profile/${person.id}`} style={{ display: "block", textDecoration: "none", color: INK }}>
+      <article style={{ padding: "1.6rem 2rem 0", position: "relative", cursor: "pointer" }}>
 
-        {/* Initials frame */}
+        {/* ── LOCATED stamp ───────────────────────────────────────────────── */}
         <div
+          aria-hidden="true"
           style={{
-            width:          56,
-            height:         56,
-            border:         `2px solid ${INK}`,
-            display:        "flex",
-            alignItems:     "center",
-            justifyContent: "center",
-            margin:         "0 auto 0.75rem",
-            fontFamily:     "var(--font-barlow)",
-            fontSize:       "1.35rem",
-            fontWeight:     800,
-            letterSpacing:  "0.04em",
-            color:          INK,
-            opacity:        0.85,
+            position:      "absolute",
+            top:           "3.5rem",
+            right:         "1.5rem",
+            transform:     `rotate(${stampRot}deg)`,
+            border:        `2.5px solid ${STAMP_RED}`,
+            color:         STAMP_RED,
+            padding:       "3px 10px 4px",
+            fontFamily:    "var(--font-barlow)",
+            fontSize:      "0.9rem",
+            fontWeight:    900,
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+            pointerEvents: "none",
+            userSelect:    "none",
+            lineHeight:    1,
+            // Worn stamp texture via box-shadow
+            boxShadow:     `inset 0 0 0 1px ${STAMP_RED}`,
+            opacity:       0.85,
           }}
         >
-          {initials}
+          LOCATED
         </div>
 
-        {/* Name */}
+        {/* ── WANTED banner ───────────────────────────────────────────────── */}
+        <div
+          style={{
+            textAlign:    "center",
+            borderTop:    `2px solid ${INK}`,
+            borderBottom: `2px solid ${INK}`,
+            padding:      "0.35rem 0",
+            marginBottom: "1.1rem",
+          }}
+        >
+          <span
+            style={{
+              fontFamily:    "var(--font-barlow)",
+              fontSize:      "1.6rem",
+              fontWeight:    900,
+              letterSpacing: "0.45em",
+              textTransform: "uppercase",
+              color:         INK,
+            }}
+          >
+            WANTED
+          </span>
+        </div>
+
+        {/* ── Photo (newspaper-ink) or initials box ───────────────────────── */}
+        {person.photoURL ? (
+          <div
+            style={{
+              width:        80,
+              height:       80,
+              margin:       "0 auto 1rem",
+              border:       `2px solid ${INK}`,
+              overflow:     "hidden",
+              flexShrink:   0,
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={person.photoURL}
+              alt={safeName}
+              style={{
+                width:      "100%",
+                height:     "100%",
+                objectFit:  "cover",
+                // High-contrast B&W → old newsprint ink effect
+                filter:     "grayscale(1) contrast(2.4) brightness(0.55) sepia(0.15)",
+                display:    "block",
+              }}
+            />
+          </div>
+        ) : (
+          <div
+            style={{
+              width:          80,
+              height:         80,
+              border:         `2px solid ${INK}`,
+              display:        "flex",
+              alignItems:     "center",
+              justifyContent: "center",
+              margin:         "0 auto 1rem",
+              fontFamily:     "var(--font-barlow)",
+              fontSize:       "1.8rem",
+              fontWeight:     800,
+              color:          INK,
+              opacity:        0.8,
+            }}
+          >
+            {initials}
+          </div>
+        )}
+
+        {/* ── Name ──────────────────────────────────────────────────────────── */}
         <h2
           style={{
             fontFamily:    "var(--font-barlow)",
-            fontSize:      "1.1rem",
+            fontSize:      "1.2rem",
             fontWeight:    800,
             textTransform: "uppercase",
-            letterSpacing: "0.06em",
+            letterSpacing: "0.07em",
             textAlign:     "center",
-            lineHeight:    1.15,
+            lineHeight:    1.1,
             color:         INK,
-            marginBottom:  "0.4rem",
+            marginBottom:  "0.5rem",
           }}
         >
           {safeName}
         </h2>
 
-        {/* Disciplines */}
+        {/* ── FOR: disciplines (interests) ──────────────────────────────────── */}
         {person.disciplines.length > 0 && (
           <p
             style={{
               fontFamily:    "var(--font-special-elite)",
-              fontSize:      "0.6rem",
-              letterSpacing: "0.14em",
+              fontSize:      "0.63rem",
+              letterSpacing: "0.12em",
               textTransform: "uppercase",
               textAlign:     "center",
               color:         INK,
-              opacity:       0.75,
-              marginBottom:  "0.5rem",
+              marginBottom:  "0.6rem",
             }}
           >
-            {person.disciplines.join("  ·  ")}
+            <strong>FOR:</strong>&nbsp; {person.disciplines.join("  ·  ")}
           </p>
         )}
 
         <InkRule />
 
-        {/* Year / concentration */}
-        {(person.gradYear || person.concentration) && (
-          <p
-            style={{
-              fontFamily:    "var(--font-special-elite)",
-              fontSize:      "0.58rem",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              textAlign:     "center",
-              color:         INK,
-              opacity:       0.6,
-              marginBottom:  "0.5rem",
-            }}
-          >
-            {[
-              person.gradYear ? `Class of ${person.gradYear}` : null,
-              person.concentration ?? null,
-            ]
-              .filter(Boolean)
-              .join("  ·  ")}
-          </p>
-        )}
-
-        {/* Bio */}
+        {/* ── Bio ───────────────────────────────────────────────────────────── */}
         {safeBio && (
           <p
             style={{
-              fontFamily:  "var(--font-special-elite)",
-              fontSize:    "0.72rem",
-              lineHeight:  1.65,
-              color:       INK,
-              opacity:     0.85,
-              marginBottom: "0.6rem",
+              fontFamily:   "var(--font-special-elite)",
+              fontSize:     "0.73rem",
+              lineHeight:   1.7,
+              color:        INK,
+              opacity:      0.88,
+              marginBottom: "0.7rem",
             }}
           >
             {safeBio}
           </p>
         )}
 
-        {/* Skills */}
+        {/* ── REWARD: skills ────────────────────────────────────────────────── */}
         {person.skills.length > 0 && (
           <p
             style={{
-              fontFamily:    "var(--font-geist-mono)",
-              fontSize:      "0.58rem",
-              letterSpacing: "0.06em",
+              fontFamily:    "var(--font-special-elite)",
+              fontSize:      "0.63rem",
+              letterSpacing: "0.12em",
               textTransform: "uppercase",
               color:         INK,
-              opacity:       0.65,
+              opacity:       0.85,
               marginBottom:  "0.5rem",
             }}
           >
-            {person.skills.join("  ·  ")}
+            <strong>REWARD:</strong>&nbsp; {person.skills.join("  ·  ")}
           </p>
         )}
 
-        {/* Portfolio link */}
+        {/* ── Portfolio ─────────────────────────────────────────────────────── */}
         {person.portfolioUrl && (
           <p
             style={{
-              fontFamily:    "var(--font-special-elite)",
-              fontSize:      "0.6rem",
-              letterSpacing: "0.08em",
-              color:         INK,
-              opacity:       0.6,
-              marginBottom:  "0.5rem",
-              overflow:      "hidden",
-              textOverflow:  "ellipsis",
-              whiteSpace:    "nowrap",
+              fontFamily:   "var(--font-special-elite)",
+              fontSize:     "0.6rem",
+              letterSpacing: "0.06em",
+              color:        INK,
+              opacity:      0.55,
+              marginBottom: "0.5rem",
+              overflow:     "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace:   "nowrap",
             }}
           >
             ↗ {person.portfolioUrl}
           </p>
         )}
 
-        {/* Closing rule — separates posters in the same column */}
-        <div
-          style={{
-            borderTop:   `1px solid ${INK}`,
-            opacity:     0.3,
-            marginTop:   "1.25rem",
-          }}
-        />
+        {/* Closing rule */}
+        <div style={{ borderTop: `1px solid ${INK}`, opacity: 0.25, marginTop: "1.5rem" }} />
       </article>
     </Link>
   );
 }
 
-// ── Small reusable pieces ─────────────────────────────────────────────────────
+// ── Reusable atoms ────────────────────────────────────────────────────────────
 function DoubleRule() {
   return (
     <div style={{ margin: "0.3rem 0" }}>
-      <div style={{ borderTop: `3px solid ${INK}`, opacity: 0.8 }} />
+      <div style={{ borderTop: `3px solid ${INK}`, opacity: 0.85 }} />
       <div style={{ borderTop: `1px solid ${INK}`, opacity: 0.5, marginTop: 3 }} />
     </div>
   );
 }
 
 function InkRule() {
-  return (
-    <div
-      style={{
-        borderTop:    `1px solid ${INK}`,
-        opacity:      0.3,
-        margin:       "0.5rem 0",
-      }}
-    />
-  );
+  return <div style={{ borderTop: `1px solid ${INK}`, opacity: 0.25, margin: "0.55rem 0" }} />;
 }
 
 function ColumnRule() {
@@ -474,10 +425,28 @@ function ColumnRule() {
         width:           1,
         alignSelf:       "stretch",
         backgroundColor: INK,
-        opacity:         0.25,
+        opacity:         0.2,
         flexShrink:      0,
-        margin:          "0 0.25rem",
+        margin:          "0 0.5rem",
       }}
     />
+  );
+}
+
+function StatusLine({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      style={{
+        width:      "100%",
+        textAlign:  "center",
+        padding:    "4rem",
+        fontFamily: "var(--font-special-elite)",
+        fontSize:   "0.85rem",
+        opacity:    0.6,
+        color:      INK,
+      }}
+    >
+      {children}
+    </p>
   );
 }
