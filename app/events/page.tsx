@@ -190,8 +190,31 @@ export default function EventsPage() {
 
   return (
     <AuthGuard>
-      <div aria-hidden style={{ position: "fixed", inset: 0, background: "#5e0611", zIndex: 0 }} />
-      <main className="events-bg max-w-5xl mx-auto px-4 py-8 font-[family-name:var(--font-special-elite)]">
+      {/* Full-bleed wall + paper background — aspect kept, covers the viewport with no filler */}
+      <div
+        style={{
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "max(100vw, calc(100vh * 1678 / 937))",
+          height: "max(100vh, calc(100vw * 937 / 1678))",
+          backgroundImage: "url(/textures/calendar_background.png)",
+          backgroundSize: "100% 100%",
+          backgroundPosition: "center",
+          zIndex: 0,
+        }}
+      >
+        {!loading && !fetchErr && (
+          <div className="absolute" style={{ left: "24.5%", right: "24.5%", top: "24%", bottom: "13%" }}>
+            <CalendarView
+              events={filteredEvents as DartworkEvent[]}
+              onEventSelect={(e) => { setSelectedEvent(e as LiveEvent); setEditMode(false); }}
+            />
+          </div>
+        )}
+      </div>
+      <main className="events-bg max-w-5xl mx-auto px-4 py-8 font-[family-name:var(--font-special-elite)]" style={{ position: "relative", zIndex: 2 }}>
 
         {/* ── Header ── */}
         <div className="flex items-center justify-between mb-6">
@@ -242,24 +265,6 @@ export default function EventsPage() {
           <p className="text-gray-400 text-sm text-center py-16">
             Couldn't load events. Please try refreshing.
           </p>
-        )}
-
-        {/* ── Calendar — laid onto the clipped white paper ── */}
-        {!loading && !fetchErr && (
-          <div
-            className="relative w-full mx-auto"
-            style={{
-              maxWidth: 1100,
-              aspectRatio: "1678 / 937",
-              backgroundImage: "url(/textures/calendar_background.png)",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
-            <div className="absolute" style={{ left: "24.5%", right: "24.5%", top: "24%", bottom: "13%" }}>
-              <CalendarView events={filteredEvents as DartworkEvent[]} onEventSelect={(e) => { setSelectedEvent(e as LiveEvent); setEditMode(false); }} />
-            </div>
-          </div>
         )}
 
         {/* ── Event detail / edit modal ── */}
