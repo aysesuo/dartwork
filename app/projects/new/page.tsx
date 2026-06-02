@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import AuthGuard from "@/components/auth/AuthGuard";
 import { useAuth } from "@/lib/auth";
 import { auth, storage } from "@/lib/firebase";
 import { DISCIPLINES } from "@/lib/disciplines";
+import { DEFAULT_ROLES } from "@/lib/roles";
+import { COMMITMENTS } from "@/lib/commitment";
 
 const GREEN  = "#00693E";
 const ORANGE = "#FF6B35";
@@ -113,8 +115,44 @@ export default function NewProjectPage() {
   const [title,         setTitle]         = useState("");
   const [description,   setDescription]   = useState("");
   const [discipline,    setDiscipline]    = useState("");
-  const [rolesNeeded,   setRolesNeeded]   = useState("");
+  const [commitment,    setCommitment]    = useState("");
+  const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set());
+  const [roleOptions,   setRoleOptions]   = useState<string[]>(DEFAULT_ROLES);
+  const [addingRole,    setAddingRole]    = useState(false);
+  const [customRole,    setCustomRole]    = useState("");
   const [showOnProfile, setShowOnProfile] = useState(true);
+
+  // Merge roles already used in posted projects with the default list
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/projects")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((projects: { positionsNeeded?: string[] }[]) => {
+        if (cancelled || !Array.isArray(projects)) return;
+        const live = projects.flatMap((p) => p.positionsNeeded ?? []);
+        setRoleOptions((prev) => [...new Set([...prev, ...live])]);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  function toggleRole(role: string) {
+    setSelectedRoles((prev) => {
+      const next = new Set(prev);
+      if (next.has(role)) next.delete(role);
+      else next.add(role);
+      return next;
+    });
+  }
+
+  function addCustomRole() {
+    const role = customRole.trim().slice(0, 60);
+    if (!role) return;
+    setRoleOptions((prev) => (prev.includes(role) ? prev : [...prev, role]));
+    setSelectedRoles((prev) => new Set(prev).add(role));
+    setCustomRole("");
+    setAddingRole(false);
+  }
 
   // Image upload state
   const [imageFile,    setImageFile]    = useState<File | null>(null);
@@ -164,7 +202,7 @@ export default function NewProjectPage() {
       const res = await fetch("/api/projects", {
         method:  "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body:    JSON.stringify({ title, description, discipline, rolesNeeded, mediaUrl, showOnProfile }),
+        body:    JSON.stringify({ title, description, discipline, commitment, rolesNeeded: [...selectedRoles].join(", "), mediaUrl, showOnProfile }),
       });
 
       if (!res.ok) {
@@ -261,6 +299,40 @@ export default function NewProjectPage() {
               </select>
             </Field>
 
+            {/* Time commitment */}
+            <Field
+              label="Time commitment"
+              hint="How long is this project? Select the one that fits best."
+            >
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                {COMMITMENTS.map((c) => {
+                  const active = commitment === c;
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setCommitment(active ? "" : c)}
+                      disabled={submitting}
+                      aria-pressed={active}
+                      style={{
+                        padding:      "0.4rem 0.9rem",
+                        borderRadius: "999px",
+                        border:       `1px solid ${active ? GREEN : "rgba(255,255,255,0.25)"}`,
+                        background:   active ? GREEN : "transparent",
+                        color:        "#f5f5f0",
+                        fontSize:     "0.8rem",
+                        fontFamily:   "var(--font-sans), sans-serif",
+                        cursor:       submitting ? "not-allowed" : "pointer",
+                        transition:   "background 0.15s, border-color 0.15s",
+                      }}
+                    >
+                      {c}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
+
             {/* Description */}
             <Field label="Description" required hint="Minimum 10 characters. What's the project about, what stage is it at?">
               <textarea
@@ -277,17 +349,87 @@ export default function NewProjectPage() {
             {/* Roles needed */}
             <Field
               label="Roles you're looking for"
-              hint="Separate multiple roles with commas or new lines. e.g. Cinematographer, Sound Designer"
+              hint="Select all that apply, or add your own with “Other”."
             >
-              <textarea
-                value={rolesNeeded}
-                onChange={(e) => setRolesNeeded(e.target.value)}
-                placeholder="e.g. Bassist, Mixing Engineer"
-                rows={3}
-                maxLength={400}
-                style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }}
-                disabled={submitting}
-              />
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                {roleOptions.map((role) => {
+                  const active = selectedRoles.has(role);
+                  return (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => toggleRole(role)}
+                      disabled={submitting}
+                      aria-pressed={active}
+                      style={{
+                        padding:       "0.4rem 0.9rem",
+                        borderRadius:  "999px",
+                        border:        `1px solid ${active ? GREEN : "rgba(255,255,255,0.25)"}`,
+                        background:    active ? GREEN : "transparent",
+                        color:         "#f5f5f0",
+                        fontSize:      "0.8rem",
+                        fontFamily:    "var(--font-sans), sans-serif",
+                        cursor:        submitting ? "not-allowed" : "pointer",
+                        transition:    "background 0.15s, border-color 0.15s",
+                      }}
+                    >
+                      {role}
+                    </button>
+                  );
+                })}
+
+                {addingRole ? (
+                  <span style={{ display: "inline-flex", gap: "0.35rem", alignItems: "center" }}>
+                    <input
+                      type="text"
+                      value={customRole}
+                      onChange={(e) => setCustomRole(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") { e.preventDefault(); addCustomRole(); }
+                        if (e.key === "Escape") { setAddingRole(false); setCustomRole(""); }
+                      }}
+                      placeholder="New role…"
+                      maxLength={60}
+                      autoFocus
+                      style={{ ...inputStyle, width: 160, padding: "0.4rem 0.7rem", fontSize: "0.8rem" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={addCustomRole}
+                      style={{
+                        padding:      "0.4rem 0.8rem",
+                        borderRadius: "999px",
+                        border:       "none",
+                        background:   ORANGE,
+                        color:        "#fff",
+                        fontSize:     "0.8rem",
+                        fontWeight:   700,
+                        cursor:       "pointer",
+                      }}
+                    >
+                      Add
+                    </button>
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setAddingRole(true)}
+                    disabled={submitting}
+                    style={{
+                      padding:       "0.4rem 0.9rem",
+                      borderRadius:  "999px",
+                      border:        "1px dashed rgba(255,255,255,0.4)",
+                      background:    "transparent",
+                      color:         "#f5f5f0",
+                      fontSize:      "0.8rem",
+                      fontFamily:    "var(--font-sans), sans-serif",
+                      cursor:        submitting ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    + Other
+                  </button>
+                )}
+              </div>
             </Field>
 
             {/* Project image upload */}

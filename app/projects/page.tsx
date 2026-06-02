@@ -10,6 +10,7 @@ import ProjectDetailSheet, { type SheetProject } from "@/components/project/Proj
 import AuthGuard from "@/components/auth/AuthGuard";
 import { useAuth } from "@/lib/auth";
 import { cardPositions, CARD_WIDTH } from "@/lib/cardRegistry";
+import { COMMITMENTS } from "@/lib/commitment";
 
 // ── Project type ──────────────────────────────────────────────────────────────
 interface Project {
@@ -18,6 +19,7 @@ interface Project {
   creatorName: string;
   creatorUid?: string;
   discipline: string;
+  commitment?: string | null;
   tags: string[];
   positionsNeeded: string[];
   description: string;
@@ -144,6 +146,7 @@ export default function ProjectsPage() {
   const [selDisciplines, setSelDisciplines] = useState<Set<string>>(new Set());
   const [selTags,        setSelTags]        = useState<Set<string>>(new Set());
   const [selRoles,       setSelRoles]       = useState<Set<string>>(new Set());
+  const [selCommitments, setSelCommitments] = useState<Set<string>>(new Set());
 
   const [pins,  setPins]  = useState<PinState[]>(() => buildPinsForProjects(seedData as Project[], new Set()));
   const [holes, setHoles] = useState<Hole[]>([]);
@@ -169,17 +172,29 @@ export default function ProjectsPage() {
     setSelDisciplines(new Set());
     setSelTags(new Set());
     setSelRoles(new Set());
+    setSelCommitments(new Set());
   }
 
-  // ── Filter option lists derived from live data ────────────────────────────
-  const ALL_DISCIPLINES = useMemo(() => [...new Set(allProjects.map((p) => p.discipline))].sort(), [allProjects]);
-  const ALL_TAGS        = useMemo(() => [...new Set(allProjects.flatMap((p) => p.tags))].sort(), [allProjects]);
-  const ALL_ROLES       = useMemo(() => [...new Set(allProjects.flatMap((p) => p.positionsNeeded))].sort(), [allProjects]);
+  // ── Filter option lists, ranked by how often they appear in posted projects ──
+  const rankByFrequency = (values: string[]) => {
+    const counts = new Map<string, number>();
+    for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1);
+    return [...counts.keys()].sort((a, b) => {
+      const diff = (counts.get(b) ?? 0) - (counts.get(a) ?? 0);
+      return diff !== 0 ? diff : a.localeCompare(b);
+    });
+  };
+  const ALL_DISCIPLINES = useMemo(() => rankByFrequency(allProjects.map((p) => p.discipline)), [allProjects]);
+  const ALL_TAGS        = useMemo(() => rankByFrequency(allProjects.flatMap((p) => p.tags)), [allProjects]);
+  const ALL_ROLES       = useMemo(() => rankByFrequency(allProjects.flatMap((p) => p.positionsNeeded)), [allProjects]);
 
   // ── Filtering ──────────────────────────────────────────────────────────────
   const matchSet = useMemo(() => {
     const hasFilters =
-      selDisciplines.size > 0 || selTags.size > 0 || selRoles.size > 0;
+      selDisciplines.size > 0 ||
+      selTags.size > 0 ||
+      selRoles.size > 0 ||
+      selCommitments.size > 0;
     if (!hasFilters) return null;
 
     return new Set(
@@ -191,11 +206,13 @@ export default function ProjectsPage() {
             return false;
           if (selRoles.size > 0 && !p.positionsNeeded.some((r) => selRoles.has(r)))
             return false;
+          if (selCommitments.size > 0 && !(p.commitment && selCommitments.has(p.commitment)))
+            return false;
           return true;
         })
         .map((p) => p.id),
     );
-  }, [allProjects, selDisciplines, selTags, selRoles]);
+  }, [allProjects, selDisciplines, selTags, selRoles, selCommitments]);
 
   // ── Pin counts per card ────────────────────────────────────────────────────
   const pinCounts = useMemo(() => {
@@ -378,12 +395,15 @@ export default function ProjectsPage() {
               disciplines={ALL_DISCIPLINES}
               tags={ALL_TAGS}
               roles={ALL_ROLES}
+              commitments={COMMITMENTS}
               selectedDisciplines={selDisciplines}
               selectedTags={selTags}
               selectedRoles={selRoles}
+              selectedCommitments={selCommitments}
               onToggleDiscipline={(v) => toggle(selDisciplines, v, setSelDisciplines)}
               onToggleTag={(v) => toggle(selTags, v, setSelTags)}
               onToggleRole={(v) => toggle(selRoles, v, setSelRoles)}
+              onToggleCommitment={(v) => toggle(selCommitments, v, setSelCommitments)}
               onClearAll={clearAll}
             />
 

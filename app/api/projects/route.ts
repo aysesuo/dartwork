@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { DISCIPLINES } from "@/lib/disciplines";
+import { COMMITMENTS } from "@/lib/commitment";
 import { verifyDartmouth } from "@/lib/verify-dartmouth";
 
 // ── Simple in-memory rate limit: max 5 posts per 10 min per UID ──────────────
@@ -74,6 +75,7 @@ export async function GET(request: NextRequest) {
       title:           d.title,
       description:     d.description,
       discipline:      d.discipline,
+      commitment:      d.commitment ?? null,
       positionsNeeded: d.positionsNeeded ?? [],
       tags:            d.tags ?? [],
       mediaUrl:        d.mediaUrl ?? null,
@@ -113,6 +115,7 @@ export async function POST(request: NextRequest) {
   const title = typeof body.title === "string" ? body.title.trim() : "";
   const description = typeof body.description === "string" ? body.description.trim() : "";
   const discipline = typeof body.discipline === "string" ? body.discipline.trim() : "";
+  const commitmentRaw = typeof body.commitment === "string" ? body.commitment.trim() : "";
   const rolesRaw = typeof body.rolesNeeded === "string" ? body.rolesNeeded : "";
   const mediaUrlRaw = typeof body.mediaUrl === "string" ? body.mediaUrl.trim() : "";
 
@@ -128,6 +131,10 @@ export async function POST(request: NextRequest) {
 
   if (!DISCIPLINES.includes(discipline as never))
     return Response.json({ error: "Invalid discipline" }, { status: 400 });
+
+  // Commitment is optional; if present it must be one of the allowed values
+  const commitment =
+    commitmentRaw && COMMITMENTS.includes(commitmentRaw) ? commitmentRaw : null;
 
   if (rolesRaw.length > 400)
     return Response.json({ error: "Roles field must be 400 characters or fewer" }, { status: 400 });
@@ -163,6 +170,7 @@ export async function POST(request: NextRequest) {
     title,
     description,
     discipline,
+    commitment,
     positionsNeeded,
     tags:         positionsNeeded,
     mediaUrl,

@@ -1,17 +1,23 @@
 "use client";
 
-const CARD_TEXTURE = "/textures/pixelbuddha-studio-Ng5onpi5iRQ-unsplash.jpg";
+import { Children, useState } from "react";
+
+const CARD_TEXTURE = "/textures/crumpled_page.png";
+const VISIBLE_LIMIT = 5;
 
 interface Props {
   disciplines: string[];
   tags: string[];
   roles: string[];
+  commitments: string[];
   selectedDisciplines: Set<string>;
   selectedTags: Set<string>;
   selectedRoles: Set<string>;
+  selectedCommitments: Set<string>;
   onToggleDiscipline: (v: string) => void;
   onToggleTag: (v: string) => void;
   onToggleRole: (v: string) => void;
+  onToggleCommitment: (v: string) => void;
   onClearAll: () => void;
 }
 
@@ -87,6 +93,11 @@ function Section({
   title: string;
   children: React.ReactNode;
 }) {
+  const [expanded, setExpanded] = useState(false);
+  const items = Children.toArray(children);
+  const hidden = items.length - VISIBLE_LIMIT;
+  const visible = expanded ? items : items.slice(0, VISIBLE_LIMIT);
+
   return (
     <div style={{ marginBottom: "0.7rem" }}>
       <p
@@ -106,8 +117,30 @@ function Section({
         {title}
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: "0.05rem" }}>
-        {children}
+        {visible}
       </div>
+      {hidden > 0 && (
+        <button
+          onClick={() => setExpanded((e) => !e)}
+          style={{
+            marginTop: "0.2rem",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: "0.1rem 0",
+            fontFamily: 'var(--font-special-elite), "Courier New", monospace',
+            fontSize: "0.55rem",
+            color: INK,
+            opacity: 0.7,
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            textDecoration: "underline",
+          }}
+        >
+          {expanded ? "Show less" : `Show all (${hidden} more)…`}
+        </button>
+      )}
     </div>
   );
 }
@@ -116,18 +149,22 @@ export default function IndexCardFilter({
   disciplines,
   tags,
   roles,
+  commitments,
   selectedDisciplines,
   selectedTags,
   selectedRoles,
+  selectedCommitments,
   onToggleDiscipline,
   onToggleTag,
   onToggleRole,
+  onToggleCommitment,
   onClearAll,
 }: Props) {
   const hasAny =
     selectedDisciplines.size > 0 ||
     selectedTags.size > 0 ||
-    selectedRoles.size > 0;
+    selectedRoles.size > 0 ||
+    selectedCommitments.size > 0;
 
   return (
     <div
@@ -202,6 +239,17 @@ export default function IndexCardFilter({
 
       {/* Sections */}
       <div style={{ position: "relative" }}>
+        <Section title="Commitment">
+          {commitments.map((c) => (
+            <CheckRow
+              key={c}
+              label={c}
+              checked={selectedCommitments.has(c)}
+              onToggle={() => onToggleCommitment(c)}
+            />
+          ))}
+        </Section>
+
         <Section title="Interest Area">
           {disciplines.map((d) => (
             <CheckRow

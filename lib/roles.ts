@@ -1,0 +1,25 @@
+// Default roles offered when posting a project. Live roles already used in
+// posted projects are merged on top of these in the Post a Project form.
+export const DEFAULT_ROLES = [
+  "Director",
+  "Producer",
+  "Cinematographer",
+  "Editor",
+  "Sound Designer",
+  "Writer",
+  "Writer/Editor",
+  "Music Director",
+  "Composer",
+  "Bassist",
+  "Vocalist",
+  "Mixing Engineer",
+  "Choreographer",
+  "Dancer",
+  "Stage Manager",
+  "Actor",
+  "Photographer",
+  "Co-Photographer",
+  "Illustrator",
+  "Graphic Designer",
+  "UX Designer",
+];

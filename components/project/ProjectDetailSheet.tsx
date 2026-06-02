@@ -26,6 +26,7 @@ export interface SheetProject {
   creatorName: string;
   creatorUid?: string;
   discipline: string;
+  commitment?: string | null;
   positionsNeeded: string[];
   description: string;
   mediaUrl?: string | null;
@@ -244,14 +245,24 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
                   Project posted by {project.creatorName}
                 </SheetDescription>
 
-                {/* Discipline pill */}
-                {disciplineColors && (
-                  <div className="mb-2">
-                    <span
-                      className={`${disciplineColors.tailwindBg} ${disciplineColors.tailwindText} px-3 py-1 rounded-full text-xs font-semibold`}
-                    >
-                      {project.discipline}
-                    </span>
+                {/* Discipline + commitment pills */}
+                {(disciplineColors || project.commitment) && (
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    {disciplineColors && (
+                      <span
+                        className={`${disciplineColors.tailwindBg} ${disciplineColors.tailwindText} px-3 py-1 rounded-full text-xs font-semibold`}
+                      >
+                        {project.discipline}
+                      </span>
+                    )}
+                    {project.commitment && (
+                      <span
+                        className="px-3 py-1 rounded-full text-xs font-semibold"
+                        style={{ border: "1px solid #1e4430", color: "#7fa88a" }}
+                      >
+                        {project.commitment}
+                      </span>
+                    )}
                   </div>
                 )}
 
@@ -291,6 +302,26 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
                   gap:           "1.75rem",
                 }}
               >
+                {/* Project image */}
+                {project.mediaUrl && (
+                  <div
+                    style={{
+                      width: "100%",
+                      borderRadius: 8,
+                      overflow: "hidden",
+                      border: "1px solid #1e4430",
+                      backgroundColor: "rgba(255,255,255,0.03)",
+                    }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={project.mediaUrl}
+                      alt={project.title}
+                      style={{ width: "100%", display: "block", maxHeight: 320, objectFit: "cover" }}
+                    />
+                  </div>
+                )}
+
                 {/* Description */}
                 <p style={{ fontSize: "0.88rem", lineHeight: 1.8, color: "#c8ddd1" }}>
                   {project.description}
@@ -363,37 +394,6 @@ export default function ProjectDetailSheet({ project, onClose }: Props) {
                   </div>
                 )}
 
-                {/* Media link */}
-                {project.mediaUrl && (
-                  <div>
-                    <p
-                      style={{
-                        fontSize:      "0.6rem",
-                        fontWeight:    700,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.12em",
-                        color:         "#7fa88a",
-                        marginBottom:  "0.4rem",
-                      }}
-                    >
-                      Media / Demo
-                    </p>
-                    <a
-                      href={project.mediaUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        color:              "#FF6B35",
-                        fontSize:           "0.82rem",
-                        wordBreak:          "break-all",
-                        textDecoration:     "underline",
-                        textUnderlineOffset: 3,
-                      }}
-                    >
-                      {project.mediaUrl}
-                    </a>
-                  </div>
-                )}
               </div>
             </>
           )}

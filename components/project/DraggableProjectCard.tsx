@@ -52,6 +52,7 @@ interface Project {
   creatorName: string;
   creatorUid?: string;
   discipline: string;
+  commitment?: string | null;
   tags: string[];
   positionsNeeded: string[];
   description: string;
