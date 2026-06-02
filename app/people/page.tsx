@@ -233,7 +233,6 @@ function Column({ people, matchSet }: { people: Person[]; matchSet: Set<string> 
 function Poster({ person, located = false }: { person: Person; located?: boolean }) {
   const safeName = sanitize(person.name);
   const safeBio  = sanitize(person.bio ?? "");
-  const initials = safeName.split(" ").map((n) => n[0] ?? "").join("").slice(0, 2).toUpperCase();
 
   // Seeded stamp rotation so each card has a consistent but unique angle
   const stampRot = -6 - (person.id.charCodeAt(0) % 10); // –6° to –16°
@@ -285,7 +284,7 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
           <span
             style={{
               fontFamily:    "var(--font-barlow)",
-              fontSize:      "1.6rem",
+              fontSize:      "2.6rem",
               fontWeight:    900,
               letterSpacing: "0.45em",
               textTransform: "uppercase",
@@ -296,34 +295,101 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
           </span>
         </div>
 
-        {/* ── Photo (newspaper-ink) or initials box ───────────────────────── */}
-        {/* Photo (or Dr. Seuss default) — newspaper ink filter */}
-        <div
-          style={{
-            width:           80,
-            height:          80,
-            margin:          "0 auto 1rem",
-            border:          `2px solid ${INK}`,
-            overflow:        "hidden",
-            flexShrink:      0,
-            backgroundColor: "transparent", // must be transparent for multiply to reach paper
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={person.photoURL ?? "/images/dr_seuss.webp"}
-            alt={safeName}
+        {/* ── Three-column row: [FOR + disciplines] | [photo] | [REWARD + skills] ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
+
+          {/* LEFT: WANTED FOR + disciplines */}
+          <div style={{ flex: 1, textAlign: "right" }}>
+            <p
+              style={{
+                fontFamily:    "var(--font-special-elite)",
+                fontSize:      "0.58rem",
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color:         INK,
+                fontWeight:    700,
+                marginBottom:  "0.3rem",
+              }}
+            >
+              WANTED FOR
+            </p>
+            {person.disciplines.map((d) => (
+              <p
+                key={d}
+                style={{
+                  fontFamily:    "var(--font-special-elite)",
+                  fontSize:      "0.6rem",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color:         INK,
+                  opacity:       0.8,
+                  lineHeight:    1.5,
+                  margin:        0,
+                }}
+              >
+                {d}
+              </p>
+            ))}
+          </div>
+
+          {/* CENTER: photo — no border/box */}
+          <div
             style={{
-              width:        "100%",
-              height:       "100%",
-              objectFit:    "cover",
-              display:      "block",
-              // Strip colour → push contrast to near-B&W → multiply blends
-              // white areas with the paper beneath, leaving ink-black darks
-              filter:       "grayscale(1) contrast(5) brightness(0.85)",
-              mixBlendMode: "multiply",
+              width:           90,
+              height:          90,
+              overflow:        "hidden",
+              flexShrink:      0,
+              backgroundColor: "transparent",
             }}
-          />
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={person.photoURL ?? "/images/dr_seuss.webp"}
+              alt={safeName}
+              style={{
+                width:        "100%",
+                height:       "100%",
+                objectFit:    "cover",
+                display:      "block",
+                filter:       "grayscale(1) contrast(5) brightness(0.85)",
+                mixBlendMode: "multiply",
+              }}
+            />
+          </div>
+
+          {/* RIGHT: REWARD + skills */}
+          <div style={{ flex: 1, textAlign: "left" }}>
+            <p
+              style={{
+                fontFamily:    "var(--font-special-elite)",
+                fontSize:      "0.58rem",
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color:         INK,
+                fontWeight:    700,
+                marginBottom:  "0.3rem",
+              }}
+            >
+              REWARD
+            </p>
+            {person.skills.map((s) => (
+              <p
+                key={s}
+                style={{
+                  fontFamily:    "var(--font-special-elite)",
+                  fontSize:      "0.6rem",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color:         INK,
+                  opacity:       0.8,
+                  lineHeight:    1.5,
+                  margin:        0,
+                }}
+              >
+                {s}
+              </p>
+            ))}
+          </div>
         </div>
 
         {/* ── Name ──────────────────────────────────────────────────────────── */}
@@ -343,23 +409,6 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
           {safeName}
         </h2>
 
-        {/* ── FOR: disciplines (interests) ──────────────────────────────────── */}
-        {person.disciplines.length > 0 && (
-          <p
-            style={{
-              fontFamily:    "var(--font-special-elite)",
-              fontSize:      "0.63rem",
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              textAlign:     "center",
-              color:         INK,
-              marginBottom:  "0.6rem",
-            }}
-          >
-            <strong>FOR:</strong>&nbsp; {person.disciplines.join("  ·  ")}
-          </p>
-        )}
-
         <InkRule />
 
         {/* ── Bio ───────────────────────────────────────────────────────────── */}
@@ -375,23 +424,6 @@ function Poster({ person, located = false }: { person: Person; located?: boolean
             }}
           >
             {safeBio}
-          </p>
-        )}
-
-        {/* ── REWARD: skills ────────────────────────────────────────────────── */}
-        {person.skills.length > 0 && (
-          <p
-            style={{
-              fontFamily:    "var(--font-special-elite)",
-              fontSize:      "0.63rem",
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color:         INK,
-              opacity:       0.85,
-              marginBottom:  "0.5rem",
-            }}
-          >
-            <strong>REWARD:</strong>&nbsp; {person.skills.join("  ·  ")}
           </p>
         )}
 
