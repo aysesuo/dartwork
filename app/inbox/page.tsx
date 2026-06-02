@@ -25,6 +25,16 @@ interface Application {
   status:                 string;
 }
 
+interface Notification {
+  id:             string;
+  type:           "accepted" | "rejected";
+  projectId:      string;
+  projectTitle:   string;
+  roleAppliedFor: string;
+  onProfile:      boolean;
+  createdAt:      string;
+}
+
 // ── Page shell ────────────────────────────────────────────────────────────────
 export default function InboxPage() {
   return (
@@ -53,10 +63,11 @@ export default function InboxPage() {
 function InboxContent() {
   const { user } = useAuth();
 
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [loading,      setLoading]      = useState(true);
-  const [error,        setError]        = useState<string | null>(null);
-  const [expanded,     setExpanded]     = useState<string | null>(null); // expanded app id
+  const [applications,  setApplications]  = useState<Application[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading,       setLoading]       = useState(true);
+  const [error,         setError]         = useState<string | null>(null);
+  const [expanded,      setExpanded]      = useState<string | null>(null); // expanded app id
 
   async function decide(appId: string, status: "accepted" | "rejected") {
     if (!user) return;
@@ -72,18 +83,34 @@ function InboxContent() {
     );
   }
 
+  async function toggleProfile(notifId: string, onProfile: boolean) {
+    if (!user) return;
+    const idToken = await user.getIdToken();
+    const res = await fetch(`/api/notifications/${notifId}`, {
+      method:  "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+      body:    JSON.stringify({ onProfile }),
+    });
+    if (!res.ok) throw new Error("Failed to update notification");
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notifId ? { ...n, onProfile } : n)),
+    );
+  }
+
   useEffect(() => {
     if (!user) return;
     (async () => {
       try {
         const idToken = await user.getIdToken(true);
-        const res     = await fetch("/api/applications", {
-          headers: { Authorization: `Bearer ${idToken}` },
-        });
-        if (!res.ok) throw new Error("Failed to load applications");
-        setApplications(await res.json());
+        const [appsRes, notifsRes] = await Promise.all([
+          fetch("/api/applications",  { headers: { Authorization: `Bearer ${idToken}` } }),
+          fetch("/api/notifications", { headers: { Authorization: `Bearer ${idToken}` } }),
+        ]);
+        if (!appsRes.ok || !notifsRes.ok) throw new Error("Failed to load inbox");
+        setApplications(await appsRes.json());
+        setNotifications(await notifsRes.json());
       } catch {
-        setError("Could not load applications — please refresh");
+        setError("Could not load your inbox — please refresh");
       } finally {
         setLoading(false);
       }
@@ -132,15 +159,16 @@ function InboxContent() {
       </div>
 
       {/* ── Empty state ── */}
-      {applications.length === 0 && (
+      {applications.length === 0 && notifications.length === 0 && (
         <div
           className="rounded-3xl px-8 py-12 text-center"
           style={{ backgroundColor: "#132d1c", border: "1px solid #1e4430" }}
         >
           <p className="text-4xl mb-4">📭</p>
-          <p className="font-bold" style={{ color: "#f5f5f0" }}>No applications yet</p>
+          <p className="font-bold" style={{ color: "#f5f5f0" }}>Nothing here yet</p>
           <p className="text-sm mt-2" style={{ color: "#7fa88a" }}>
-            When someone applies to one of your projects, it will appear here.
+            Applications to your projects and decisions on your own applications
+            will appear here.
           </p>
           <Link
             href="/projects"
@@ -150,6 +178,23 @@ function InboxContent() {
             Browse Projects
           </Link>
         </div>
+      )}
+
+      {/* ── Decision notices for the user's own applications ── */}
+      {notifications.length > 0 && (
+        <section className="mb-10">
+          <h2
+            className="text-xs font-bold uppercase tracking-widest mb-3"
+            style={{ color: INK, fontFamily: TYPEWRITER }}
+          >
+            Your applications
+          </h2>
+          <div className="flex flex-col gap-3">
+            {notifications.map((n) => (
+              <NotificationCard key={n.id} notif={n} onToggleProfile={toggleProfile} />
+            ))}
+          </div>
+        </section>
       )}
 
       {/* ── Grouped by project ── */}
@@ -360,6 +405,88 @@ function ApplicationCard({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Notification card (decision on the user's own application) ──────────────────
+function NotificationCard({
+  notif,
+  onToggleProfile,
+}: {
+  notif:           Notification;
+  onToggleProfile: (notifId: string, onProfile: boolean) => Promise<void>;
+}) {
+  const dateStr = formatDate(notif.createdAt);
+  const accepted = notif.type === "accepted";
+  const [busy,    setBusy]    = useState(false);
+  const [toggleErr, setToggleErr] = useState<string | null>(null);
+
+  async function handleToggle() {
+    setToggleErr(null);
+    setBusy(true);
+    try {
+      await onToggleProfile(notif.id, !notif.onProfile);
+    } catch {
+      setToggleErr("Could not update — please try again");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div
+      className="px-5 py-4 flex items-start justify-between gap-4"
+      style={{ backgroundColor: "#ffffff", border: `1px solid ${INK}`, fontFamily: TYPEWRITER, boxShadow: "1px 2px 6px rgba(0,0,0,0.3)" }}
+    >
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span
+            className="text-xs font-bold uppercase tracking-widest px-2 py-0.5 shrink-0"
+            style={
+              accepted
+                ? { backgroundColor: "#dff0e4", color: "#1a6b3e" }
+                : { backgroundColor: "#f3dede", color: "#9a2d2d" }
+            }
+          >
+            {accepted ? "Approved" : "Denied"}
+          </span>
+          <span className="font-bold text-sm truncate" style={{ color: INK }}>
+            {accepted ? "Approved for" : "Denied from"} {notif.projectTitle}
+          </span>
+        </div>
+
+        <p className="text-xs mt-1" style={{ color: "#5a4a32" }}>
+          {notif.roleAppliedFor ? `${notif.roleAppliedFor} · ` : ""}{dateStr}
+        </p>
+
+        {/* Accepted notices auto-add the project to the applicant's profile */}
+        {accepted && (
+          <div className="mt-3">
+            <p className="text-xs mb-2" style={{ color: INK }}>
+              {notif.onProfile
+                ? "This project is showing on your profile."
+                : "This project is hidden from your profile."}
+            </p>
+            <button
+              type="button"
+              onClick={handleToggle}
+              disabled={busy}
+              className="px-4 py-2 text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-80 disabled:opacity-50"
+              style={
+                notif.onProfile
+                  ? { border: `1px solid ${INK}`, color: INK }
+                  : { backgroundColor: "#00693E", color: "#fff" }
+              }
+            >
+              {busy ? "…" : notif.onProfile ? "Remove from my profile" : "Add to my profile"}
+            </button>
+            {toggleErr && (
+              <p className="text-xs mt-2" style={{ color: "#9a2d2d" }}>{toggleErr}</p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

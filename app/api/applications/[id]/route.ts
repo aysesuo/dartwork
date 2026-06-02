@@ -38,9 +38,26 @@ export async function PATCH(
   if (app.ownerUid !== auth.callerUid)
     return Response.json({ error: "Forbidden" }, { status: 403 });
 
+  // Drop a decision notice into the applicant's inbox.
+  async function notifyApplicant(type: "accepted" | "rejected") {
+    await adminDb.collection("notifications").add({
+      recipientUid:   app.applicantUid,
+      type,
+      projectId:      app.projectId,
+      projectTitle:   app.projectTitle ?? "",
+      roleAppliedFor: app.roleAppliedFor ?? "",
+      applicationId:  id,
+      // Accepted applicants are auto-added to the project, so it starts on
+      // their profile; they can hide it from the notice itself.
+      onProfile:      type === "accepted",
+      createdAt:      new Date().toISOString(),
+    });
+  }
+
   // Decline — just flag the application
   if (status === "rejected") {
     await appRef.update({ status: "rejected" });
+    await notifyApplicant("rejected");
     return Response.json({ ok: true, status: "rejected" });
   }
 
@@ -61,6 +78,7 @@ export async function PATCH(
           : {}),
       });
     }
+    await notifyApplicant("accepted");
   }
 
   await appRef.update({ status: "accepted" });
