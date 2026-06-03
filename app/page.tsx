@@ -203,8 +203,8 @@ export default function LandingPage() {
           <span
             style={{
               position: "absolute",
-              left: "24%",
-              top: "8%",
+              left: "6%",
+              top: "4%",
               fontFamily: "var(--font-caveat), cursive",
               fontSize: "1.7rem",
               fontWeight: 700,
